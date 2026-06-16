@@ -331,7 +331,7 @@ body {
     #passages {
         margin: 0em !important;
         padding: 0em;
-        margin-right: 1.5em !important;
+        margin-right: 0.5em !important;
         padding-bottom: 4em; /* 控制内容与story底部的硬距离 */
         scrollbar-width: none;    
     }
@@ -361,6 +361,31 @@ body {
     #passages {
         padding-bottom: 4em; /* 控制内容与story底部的硬距离 */
         scrollbar-width: none; 
+    }
+}
+
+
+
+* ============================================
+   精准控制：大屏幕下"返回小说"变灰失效
+   ============================================ */
+
+/* 大屏幕模式 (宽度 > 768px) */
+@media screen and (min-width: 769px) {
+    /* 精准找到带有 mobile-only-link 类的列表项 */
+    li.mobile-only-link {
+        opacity: 0.4 !important;           /* 变灰（半透明） */
+        pointer-events: none !important;   /* 核心魔法：屏蔽一切鼠标/触摸点击事件 */
+        cursor: default !important;        /* 鼠标放上去不显示手指图标 */
+    }
+}
+
+/* 小屏幕模式 (宽度 <= 768px)，确保它是正常可用的 */
+@media screen and (max-width: 768px) {
+    li.mobile-only-link {
+        opacity: 1 !important;             /* 颜色恢复正常 */
+        pointer-events: auto !important;   /* 恢复点击功能 */
+        cursor: pointer !important;        /* 恢复手指图标 */
     }
 }</style><script role="script" id="twine-user-script" type="text/twine-javascript">/* twine-user-script #1: "cn.js" */
 /***********************************************************************************************************************
@@ -606,8 +631,7 @@ body {
 
 	l10nStrings.shareTitle = '分享';
 })();
-/* twine-user-script #2: "StoryScript" */
-/* twine-user-script #3: "UserScript" */
+/* twine-user-script #2: "UserScript" */
 // MENU RESPONSIVE    [[智普清言]]
 // 
 $(document).one(':storyready', function () {
@@ -695,7 +719,37 @@ Macro.add(&#39;popup&#39;, {
         Dialog.open();
     }
 });
-&lt;&lt;/script&gt;&gt;</tw-passagedata><tw-passagedata pid="2" name="About" tags="" position="100,1200" size="100,100">&lt;&lt;script&gt;&gt; UIBar.stow();&lt;&lt;/script&gt;&gt;
+&lt;&lt;/script&gt;&gt;</tw-passagedata><tw-passagedata pid="2" name="StoryCaption" tags="" position="0,900" size="100,100">我的成绩: A
+我的等级: 乙
+&lt;&lt;nobr&gt;&gt;&lt;div id=&quot;menu&quot;&gt;
+&lt;ul&gt;&lt;li&gt;
+    &lt;&lt;link &quot;关闭菜单&quot;&gt;&gt;
+        &lt;&lt;run $(&#39;#ui-bar&#39;).removeClass(&#39;menu-open&#39;); UIBar.stow();&gt;&gt;
+    &lt;&lt;/link&gt;&gt;
+&lt;/li&gt;&lt;/ul&gt;
+&lt;ul&gt;&lt;li&gt;
+    &lt;&lt;link &quot;🌙  ☀️&quot;&gt;&gt;
+        &lt;&lt;run 
+            const storyName = State.metadata.title;
+            const storageKey = `theme-${storyName}`;
+            /*切换 dark-mode 类*/ 
+            document.documentElement.classList.toggle(&#39;dark-mode&#39;); 
+            /*保存当前主题状态到 localStorage*/
+            const isDark = document.documentElement.classList.contains(&#39;dark-mode&#39;);
+            localStorage.setItem(storageKey, isDark ? &#39;dark&#39; : &#39;light&#39;); 
+            /*收起侧边栏*/
+            UIBar.stow();
+        &gt;&gt;
+    &lt;&lt;/link&gt;&gt;
+&lt;/li&gt;&lt;/ul&gt;
+
+&lt;/div&gt;&lt;&lt;/nobr&gt;&gt;</tw-passagedata><tw-passagedata pid="3" name="StoryMenu" tags="" position="0,1000" size="100,100">&lt;&lt;link &quot;&lt;strong&gt;故事人物&lt;/strong&gt;&quot;&gt;&gt;
+    &lt;&lt;popup &#39;&#39;  &#39;CharacterList&#39;&gt;&gt;&lt;&lt;/popup&gt;&gt;
+&lt;&lt;/link&gt;&gt;
+
+&lt;&lt;link &quot;关于&quot;&gt;&gt;
+    &lt;&lt;popup &#39;&#39;  &#39;About&#39;&gt;&gt;
+&lt;&lt;/popup&gt;&gt;&lt;&lt;/link&gt;&gt;</tw-passagedata><tw-passagedata pid="4" name="About" tags="" position="100,1200" size="100,100">&lt;&lt;script&gt;&gt; UIBar.stow();&lt;&lt;/script&gt;&gt;
 &lt;div style=&quot;font-size: 0.95em;&quot;&gt;
     &lt;h2 style=&quot;text-align: center; &quot;&gt;关于互动小说《木塔谍影》&lt;/h2&gt; 
     
@@ -718,7 +772,7 @@ Macro.add(&#39;popup&#39;, {
         &lt;p style=&quot;color: #7f8c8d; font-size: 0.9em;&quot;&gt;\
             文物保护，人人有责&lt;br&gt;
             传承文明，守护历史&lt;/p&gt;
-    &lt;/div&gt;</tw-passagedata><tw-passagedata pid="3" name="CharacterList" tags="" position="100,1100" size="100,100">&lt;&lt;script&gt;&gt; UIBar.stow();&lt;&lt;/script&gt;&gt;
+    &lt;/div&gt;</tw-passagedata><tw-passagedata pid="5" name="CharacterList" tags="" position="100,1100" size="100,100">&lt;&lt;script&gt;&gt; UIBar.stow();&lt;&lt;/script&gt;&gt;
 &lt;div style=&quot;font-size: 0.95em&quot;&gt;
     &lt;h2 &gt;主要人物&lt;/h2&gt;  \
 &lt;hr&gt;    
@@ -746,30 +800,7 @@ Macro.add(&#39;popup&#39;, {
 
 副厅长（省公安厅分管刑侦的领导）
 &lt;hr&gt;      
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="4" name="StoryCaption" tags="" position="0,900" size="100,100">我的成绩: A
-我的等级: 乙
-&lt;&lt;nobr&gt;&gt;&lt;div id=&quot;menu&quot;&gt;
-&lt;ul&gt;&lt;li&gt;
-    &lt;&lt;link &quot;🌙☀️&quot;&gt;&gt;
-        &lt;&lt;run 
-            const storyName = State.metadata.title;
-            const storageKey = `theme-${storyName}`;
-            /*切换 dark-mode 类*/ 
-            document.documentElement.classList.toggle(&#39;dark-mode&#39;); 
-            /*保存当前主题状态到 localStorage*/
-            const isDark = document.documentElement.classList.contains(&#39;dark-mode&#39;);
-            localStorage.setItem(storageKey, isDark ? &#39;dark&#39; : &#39;light&#39;); 
-            /*收起侧边栏*/
-            UIBar.stow();
-        &gt;&gt;
-    &lt;&lt;/link&gt;&gt;
-&lt;/li&gt;&lt;/ul&gt;
-&lt;/div&gt;&lt;&lt;/nobr&gt;&gt;</tw-passagedata><tw-passagedata pid="5" name="StoryMenu" tags="" position="0,1000" size="100,100">&lt;&lt;link &quot;&lt;strong&gt;故事人物&lt;/strong&gt;&quot;&gt;&gt;
-    &lt;&lt;popup &#39;&#39;  &#39;CharacterList&#39;&gt;&gt;&lt;&lt;/popup&gt;&gt;
-&lt;&lt;/link&gt;&gt;
-&lt;&lt;link &quot;关于&quot;&gt;&gt;
-    &lt;&lt;popup &#39;&#39;  &#39;About&#39;&gt;&gt;
-&lt;&lt;/popup&gt;&gt;&lt;&lt;/link&gt;&gt;</tw-passagedata><tw-passagedata pid="6" name="StoryDisplayTitle" tags="" position="0,600" size="100,100">进行时_互动小说</tw-passagedata><tw-passagedata pid="7" name="StorySubtitle" tags="" position="0,700" size="100,100">&lt;hr&gt;正在测....互动小说Twine版</tw-passagedata><tw-passagedata pid="8" name="StoryAuthor" tags="" position="0,800" size="100,100">戚久柱编著&lt;br&gt;qijiuzhu@tsinghua.org.cn</tw-passagedata><tw-passagedata pid="9" name="PassageHeader" tags="nobr" position="1100,100" size="100,100"></tw-passagedata><tw-passagedata pid="10" name="PassageFooter" tags="nobr" position="1225,100" size="100,100">&lt;br&gt;&lt;br&gt;
+&lt;/div&gt;</tw-passagedata><tw-passagedata pid="6" name="StoryDisplayTitle" tags="" position="0,600" size="100,100">进行时_互动小说</tw-passagedata><tw-passagedata pid="7" name="StorySubtitle" tags="" position="0,700" size="100,100">&lt;hr&gt;正在测....互动小说Twine版</tw-passagedata><tw-passagedata pid="8" name="StoryAuthor" tags="" position="0,800" size="100,100">戚久柱编著&lt;br&gt;qijiuzhu@tsinghua.org.cn</tw-passagedata><tw-passagedata pid="9" name="PassageHeader" tags="nobr" position="1100,100" size="100,100"></tw-passagedata><tw-passagedata pid="10" name="PassageFooter" tags="nobr" position="1225,100" size="100,100">&lt;br&gt;&lt;br&gt;
 &lt;br&gt;&lt;br&gt;
 &lt;hr&gt;
 &lt;div class=&quot;my-header&quot;&gt;
