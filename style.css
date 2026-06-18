@@ -81,18 +81,18 @@ h2 {
     -webkit-overflow-scrolling: touch;
     overflow: scroll;
     overflow-x: hidden;
-    height: 100%;
+    height: calc(100% - 24px);
     width: 100%;
-    top: 0;
+    top: 24px;
     left: 0;
-    margin-top: 24px;
     background-size: cover;
     background-repeat: no-repeat;
 }
 
 @media screen and (max-width: 980px) {
     .outerContainer {
-        margin-top: 44px;
+        top: 44px;
+        height: calc(100% - 44px);
         background-size: cover;
         background-repeat: no-repeat;
     }
@@ -104,6 +104,7 @@ h2 {
     margin: 0 auto;
     padding: 20px;
     padding-top: 4em;
+    padding-bottom: 60px;
     background: white;
 }
 
