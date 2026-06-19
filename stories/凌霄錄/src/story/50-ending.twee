@@ -1,0 +1,25 @@
+:: ending [game]
+<div class="scene end-card">
+<div class="big">✦ 前三卷 · 完 ✦</div>
+<p>你以廢材之身覺醒混沌靈根，自滅門廢墟一路走來——登臨凌霄劍宗，揚名宗門大比，又南下萬妖山，平定狐族之亂，混沌根大成。</p>
+<div class="sep"><span>此行所得</span></div>
+<p>
+當前境界：<span class="gold"><<= setup.realmName($p)>></span><br>
+靈石 <<= $p.stones>>　書幣 <<= $p.coins>>　習得功法 <<= $p.books.length>> 部<br>
+蘇羽瑤緣分：<span class="heart"><<= $p.rel.suyuyao>></span>（<<= setup.relText("suyuyao",$p.rel.suyuyao)>>）<br>
+青玲兒緣分：<span class="heart"><<= $p.rel.qingling>></span>（<<= setup.relText("qingling",$p.rel.qingling)>>）
+</p>
+<div class="sep"><span>未完之路</span></div>
+<p class="narr">
+第四卷「幽冥禁地篇」——女鬼使陰離之謎、仙紋碎片；<br>
+第五卷「魔道入侵篇」——血魔尊兵臨九洲；<br>
+還有那段藏在你元神最深處、萬年前的前世道侶之約……<br>
+都在等著被續寫。
+</p>
+<p class="sys">你仍可自由修煉、突破、推進兩位女主的情緣。</p>
+</div>
+<div class="choices">
+	<<link "⟳ 繼續自由修煉">><<goto "cultivate">><</link>>
+	<<link "← 返回原地">><<goto $p.loc>><</link>>
+	<<link "返回主選單">><<goto "Start">><</link>>
+</div>

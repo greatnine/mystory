@@ -1,0 +1,237 @@
+:: TribulationMacro [script]
+/* B3 心魔試煉（天劫小遊戲）
+ * 獨立挑戰：突破大境界時，Manager 於 breakthrough 導入 <<goto "Tribulation">>。
+ * 玩法：三道心魔幻象，每道以「定心指針」節奏小遊戲斬之（仿 heatgame 的 rAF 模式）。
+ *   斬中安全區＝斬斷心魔；錯失＝被侵蝕。難度受道心(助)／心魔(阻)影響，逐道收窄加速。
+ * 結算：≥2 道成功 → 道心+、心魔−、修為+；≤1 道 → 心魔+、氣血損。
+ * 全部在單一 macro 實例內完成，結束才 Engine.play("TribulationResult")，避免跨段落導航時序問題。
+ */
+Macro.add("tribulationgame", {
+	handler: function () {
+		const sv = State.variables;
+		const p = sv.p;
+		if (!p || !p.stats) { this.output.appendChild(document.createTextNode("（心魔試煉需角色資料）")); return; }
+
+		const ROUNDS = 3;
+		const daoxin = p.stats.daoxin || 0;
+		const xinmo  = p.stats.xinmo  || 0;
+
+		/* 三道心魔幻象：低語 + 主題 */
+		const VISIONS = [
+			{ title: "殺戮之念", whisper: "「斬盡負你之人，力量便是道理……」血光在識海中翻湧。" },
+			{ title: "情劫幻象", whisper: "故人音容浮現眼前，柔聲挽留：「留下罷，何必再苦修……」" },
+			{ title: "道心之疑", whisper: "一個與你一般無二的身影冷笑：「你算什麼天才？不過僥倖。」" }
+		];
+
+		let round = 0, success = 0;
+		let pos = 0, dir = 1, raf = 0, last = null, speed = 1, zoneL = 0, zoneW = 0, ideal = 50, live = false;
+
+		/* ── DOM 骨架 ── */
+		const wrap = document.createElement("div");
+		wrap.className = "trib-wrap";
+
+		const pips = document.createElement("div");
+		pips.className = "trib-pips";
+		for (let i = 0; i < ROUNDS; i++) {
+			const d = document.createElement("span");
+			d.className = "trib-pip";
+			pips.appendChild(d);
+		}
+
+		const whisper = document.createElement("p");
+		whisper.className = "trib-whisper";
+
+		const track = document.createElement("div");
+		track.className = "trib-track";
+		const zone = document.createElement("div");
+		zone.className = "trib-zone";
+		const needle = document.createElement("div");
+		needle.className = "trib-needle";
+		track.appendChild(zone);
+		track.appendChild(needle);
+
+		const btn = document.createElement("button");
+		btn.className = "lx-btn trib-btn";
+
+		const tip = document.createElement("div");
+		tip.className = "lx-hint trib-tip";
+		tip.style.textAlign = "center";
+
+		wrap.appendChild(pips);
+		wrap.appendChild(whisper);
+		wrap.appendChild(tip);
+		wrap.appendChild(track);
+		wrap.appendChild(btn);
+		this.output.appendChild(wrap);
+
+		/* ── 指針擺動 ── */
+		function step(ts) {
+			if (!document.body.contains(track)) return; // 段落已離開
+			if (!live) return;
+			if (last == null) last = ts;
+			const dt = ts - last; last = ts;
+			pos += dir * speed * (dt / 16);
+			if (pos >= 100) { pos = 100; dir = -1; }
+			if (pos <= 0)   { pos = 0;   dir = 1; }
+			needle.style.left = pos + "%";
+			raf = requestAnimationFrame(step);
+		}
+
+		/* ── 起一道幻象 ── */
+		function startRound() {
+			const v = VISIONS[round];
+			whisper.innerHTML = '<b class="trib-vname">幻象 ' + (round + 1) + ' · ' + v.title + '</b><br>' + v.whisper;
+			tip.textContent = "紫芒安全區為「定心」之機，於指針掠過時按下「斬」斬斷心魔。";
+			// 安全區半寬：逐道收窄；道心放寬、心魔收窄
+			let half = (16 - round * 3) + (daoxin - 30) * 0.10 - xinmo * 0.08;
+			half = Math.max(7, Math.min(20, half));
+			ideal = 25 + Math.floor(Math.random() * 51); // 25..75，確保整區可見
+			zoneL = Math.max(0, Math.min(100 - half * 2, ideal - half));
+			zoneW = half * 2;
+			zone.style.left  = zoneL + "%";
+			zone.style.width = zoneW + "%";
+			speed = 1.0 + round * 0.22 + xinmo * 0.010;
+			pos = 0; dir = 1; last = null; live = true;
+			btn.disabled = false;
+			btn.textContent = "🗡 斬·第 " + (round + 1) + " 道";
+			raf = requestAnimationFrame(step);
+		}
+
+		function judge() {
+			if (!live) return;
+			live = false;
+			cancelAnimationFrame(raf);
+			btn.disabled = true;
+			const ok = pos >= zoneL && pos <= (zoneL + zoneW);
+			const pip = pips.children[round];
+			pip.classList.add(ok ? "ok" : "bad");
+			if (ok) { success++; setup.toast("斬斷心魔 · " + VISIONS[round].title); }
+			else    { setup.toast("心魔侵蝕 · " + VISIONS[round].title); }
+			round++;
+			if (round < ROUNDS) {
+				whisper.classList.add("trib-flash");
+				setTimeout(function () {
+					if (!document.body.contains(track)) return;
+					whisper.classList.remove("trib-flash");
+					startRound();
+				}, 650);
+			} else {
+				finish();
+			}
+		}
+
+		/* ── 結算並套用 ── */
+		function finish() {
+			btn.textContent = "劫雲散去……";
+			const need = setup.cultNeed(p);
+			let res;
+			if (success >= 2) {
+				const dDao = success === 3 ? 8 : 4;
+				const dXin = success === 3 ? 18 : 10;
+				const dCul = Math.round(need * (success === 3 ? 0.15 : 0.10));
+				setup.addStat(p, "daoxin", dDao);
+				setup.addStat(p, "xinmo", -dXin);
+				p.cult = (p.cult || 0) + dCul;
+				res = {
+					tier: success === 3 ? "perfect" : "pass",
+					cls: "sys",
+					title: success === 3 ? "心魔盡斬 · 道心通明" : "心魔伏退 · 道心得固",
+					msg: (success === 3
+						? "三道幻象俱被你一劍斬碎，識海重歸澄澈。劫雲化作甘霖，灌頂而下。"
+						: "你斬退多數心魔，神魂雖有餘悸，道心終究守住。"),
+					deltas: "道心 +" + dDao + "　心魔 −" + dXin + "　修為 +" + dCul
+				};
+			} else {
+				const dXin = success === 1 ? 10 : 18;
+				const dHp  = Math.round(p.maxHp * (success === 1 ? 0.18 : 0.32));
+				setup.addStat(p, "xinmo", dXin);
+				p.hp = Math.max(1, (p.hp || p.maxHp) - dHp);
+				res = {
+					tier: success === 1 ? "hurt" : "fail",
+					cls: "dmg",
+					title: success === 1 ? "心魔未清 · 險渡此劫" : "心魔噬心 · 道基受創",
+					msg: (success === 1
+						? "心魔幻象揮之不去，你勉強撐過，神魂卻染上一縷塵翳。"
+						: "幻象如潮，將你徹底淹沒。你嘔出一口逆血，險些走火入魔。"),
+					deltas: "心魔 +" + dXin + "　氣血 −" + dHp
+				};
+			}
+			res.success = success;
+			sv.tribResult = res;
+			setTimeout(function () { Engine.play("TribulationResult"); }, 700);
+		}
+
+		btn.addEventListener("click", judge);
+
+		/* ── 起始：先給一個「步入劫雲」按鈕，讀完引導再開始 ── */
+		live = false;
+		whisper.innerHTML = '<b class="trib-vname">劫雲壓頂</b><br>突破大境界，天劫引動識海中的三道心魔。凝神——斬之則道心愈固，敗之則前功盡喪。';
+		tip.textContent = "共三道幻象，逐道收窄加速。準備好後按下方按鈕步入劫雲。";
+		btn.textContent = "▶ 步入劫雲";
+		const startHandler = function () {
+			btn.removeEventListener("click", startHandler);
+			btn.addEventListener("click", judge);
+			startRound();
+		};
+		btn.removeEventListener("click", judge);
+		btn.addEventListener("click", startHandler);
+	}
+});
+
+
+:: TribulationStyles [stylesheet]
+/* 心魔試煉自帶樣式（scoped .trib-*，不動 06-styles / 06c） */
+.trib-wrap { margin: 10px 0 4px; }
+.trib-pips { display:flex; gap:10px; justify-content:center; margin-bottom:14px; }
+.trib-pip {
+	width:12px; height:12px; border-radius:50%;
+	border:1px solid rgba(192,57,43,.6); background:rgba(40,12,40,.5);
+	box-shadow:0 0 6px rgba(120,40,120,.4) inset;
+}
+.trib-pip.ok  { background:#3d9b8a; border-color:#3d9b8a; box-shadow:0 0 10px rgba(61,155,138,.7); }
+.trib-pip.bad { background:#c0392b; border-color:#e0564a; box-shadow:0 0 10px rgba(224,86,74,.7); }
+.trib-whisper {
+	text-align:center; color:rgba(245,240,232,.78) !important; font-style:italic;
+	line-height:1.9 !important; margin:0 0 6px !important; transition:opacity .3s;
+}
+.trib-vname { color:#c77dde !important; font-style:normal; letter-spacing:.06em; }
+.trib-whisper.trib-flash { opacity:.25; }
+.trib-tip { margin-bottom:10px; }
+.trib-track {
+	position:relative; height:28px; margin:14px 0;
+	background:linear-gradient(90deg, #1a0820, #3a0f2a, #1a0820);
+	border:1px solid rgba(150,60,150,.45); border-radius:14px; overflow:hidden;
+	box-shadow:0 0 18px rgba(120,40,120,.25) inset;
+}
+.trib-zone {
+	position:absolute; top:0; bottom:0;
+	background:rgba(150,80,200,.42);
+	box-shadow:0 0 16px rgba(170,90,220,.7) inset;
+}
+.trib-needle {
+	position:absolute; top:-3px; bottom:-3px; width:3px; left:0;
+	background:#fff; box-shadow:0 0 10px #fff, 0 0 18px #c77dde;
+}
+.trib-btn { max-width:240px; margin:0 auto; text-align:center !important; }
+
+
+:: Tribulation [game]
+<<tip "tribulation" "大境界突破會引動心魔試煉天劫。心魔越高、試煉越險；平日多『打坐定心』或服凝神丹壓制心魔，渡劫更穩。修煉過度、迴避抉擇、魔氣潮都會累積心魔。">>
+<div class="scene">
+<div class="scene-title">心魔試煉 · 天劫</div>
+<p class="narr">境界將破，雷雲自心底升起。修為越高，心魔越烈——唯有斬盡識海幻象，方能更上一層。</p>
+<<tribulationgame>>
+</div>
+
+
+:: TribulationResult [game]
+<div class="scene">
+<div class="scene-title">劫後</div>
+<p class="trib-vname" style="text-align:center; font-size:17px; letter-spacing:.1em;"><<= $tribResult.title>></p>
+<p class="<<= $tribResult.cls>>"><<= $tribResult.msg>></p>
+<div class="sep"><span>斬 <<= $tribResult.success>> / 3</span></div>
+<p class="em" style="text-align:center;"><<= $tribResult.deltas>></p>
+</div>
+<div class="choices">
+	<<link "收功，睜眼">><<goto $p.loc>><</link>>
+</div>

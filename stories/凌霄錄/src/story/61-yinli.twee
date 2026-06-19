@@ -1,0 +1,73 @@
+/% 第四卷 · 陰離情感線 %/
+
+:: yinli_unbind [game]
+<div class="scene">
+<<portrait "yinli">>
+<div class="scene-title">關鍵 · 靈識解縛</div>
+<p>忘川邊，陰離再次出現。這一次她沒有奉命而來——她是拼著任務人格反噬的劇痛，自己掙來的。</p>
+<p class="em">「魂繫術……在我識海最深處。我自己解不開。」她垂著眼，「你若不願，我不怪你。換作是我，也會殺了我。」</p>
+<p>你知道這意味著什麼：你必須將神識探入她靈識最深處，一寸一寸切斷那些控制的絲線——這是早於任何肢體接觸的、最深的親密與信任。</p>
+</div>
+<div class="choices">
+	<<link "「把你交給我。」——沉入她的靈識<span class='lx-hint'>【核心選擇】</span>">><<goto "yinli_unbind_do">><</link>>
+	<<link "「我需要先確定你信得過我。」">><<rel "yinli" 3>><<goto "yinli_unbind_do">><</link>>
+</div>
+
+:: yinli_unbind_do [game]
+<<set $p.flags.yinliUnbind to true>>
+<<set _bonus to 300>>
+<<gainCult _bonus>>
+<<stat "daoxin" 4>>
+<div class="scene">
+<div class="scene-title">百年壓抑的潰堤</div>
+<p>你的神識沉入她識海。那裡是一片冰冷的、被鎖鏈纏繞的荒原。你一根一根地辨認、切斷魂繫的絲線，過程漫長如渡劫——而在絲線斷裂的縫隙裡，你<span class="em">看見</span>了被壓制前的她：</p>
+<p>一個熱愛收集山花的女孩；一個在大雪中，把受傷小狐狸揣進懷裡取暖的少女。那個原本的陰離，被囚禁了百年，第一次重見天光。</p>
+<p>最後一道絲線崩斷的瞬間，她在你的靈識懷抱裡，哭了出來——記不得上次哭是什麼時候，連哭泣的感覺都陌生。她死死抓著那縷你殘留的靈識氣息，像抓著唯一的浮木。</p>
+<p class="em">「你在裡面……你一直都在裡面。」</p>
+<p class="sys">【魂繫術解除 · 本我甦醒 — 修為 +<<= _bonus>>、道心+4】</p>
+<<rel "yinli" 25>>
+</div>
+<div class="choices"><<link "清晨，等她抬起頭">><<goto $p.loc>><</link>></div>
+
+:: yinli_rebuild [game]
+<div class="scene">
+<<portrait "yinli">>
+<div class="scene-title">重新學習「她自己」</div>
+<p>失去任務人格之後的陰離，像個剛睜眼看世界的人。她會忽然不知道自己「喜歡」什麼、「想要」什麼——百年的空白需要一點一點填回來。</p>
+<p>她開始寸步不離地跟著你。不是依附那種卑微的跟隨，而是——你是她重建自我的第一個座標。</p>
+<p class="em">「你別嫌我煩。」她低聲說，又飛快補一句，「……其實嫌也沒用，我還是會跟著。」</p>
+</div>
+<div class="choices">
+	<<link "「不嫌。慢慢來，我等你想起來。」">>
+		<<set $p.flags.yinliRebuild to true>>
+		<<rel "yinli" 8>>
+		<<goto $p.loc>>
+	<</link>>
+	<<link "帶她去看忘川邊的野花<span class='lx-hint'>她曾經最愛收集的東西</span>">>
+		<<set $p.flags.yinliRebuild to true>>
+		<<stat "daoxin" 1>>
+		<<rel "yinli" 10>>
+		<<goto $p.loc>>
+	<</link>>
+</div>
+
+:: yinli_touch [game]
+<div class="scene">
+<<portrait "yinli">>
+<div class="scene-title">停在手背上的指尖</div>
+<p>你在幽冥澤的廝殺中受了傷。陰離默默替你清理傷口，動作生疏卻極其專注——她在學著「照顧」一個人，這對她也是全新的事。</p>
+<p>包紮完，她的指尖停在你的手背上，沒有移開。很久。</p>
+<p class="em">「我以前替人取走靈識，」她輕聲說，眼白裡再無黑紋，只有月光般的清澈，「你卻替我，把我自己還了回來。這個帳……我一輩子還不完。」</p>
+</div>
+<div class="choices">
+	<<link "「那就用一輩子來還。」">>
+		<<set $p.flags.yinliTouch to true>>
+		<<rel "yinli" 10>>
+		<<goto $p.loc>>
+	<</link>>
+	<<link "反手，輕輕覆住她的指尖">>
+		<<set $p.flags.yinliTouch to true>>
+		<<rel "yinli" 12>>
+		<<goto $p.loc>>
+	<</link>>
+</div>

@@ -1,0 +1,62 @@
+:: SecludeWidgets [widget]
+/% 遠行耗時：御劍(金丹後)可大減 %/
+<<widget "farpass">>
+	<<pass `setup.canFly($p) ? 1 : 3`>>
+<</widget>>
+
+/% 閉關：推進多日，修為大進，但有走火入魔風險、且耗壽元 %/
+<<widget "seclude">>
+	<<set _d to _args[0]>>
+	<<run setup.passTime($p, _d*12)>>
+	<<dayTick>>
+	<<set _base to Math.round(_d * 9 * ($p.cultMul || 1) * (1 + $p.realm*0.4))>>
+	<<set _risk to Math.min(0.6, 0.08 + $p.stats.xinmo/220 + _d/600)>>
+	<<if Math.random() < _risk>>
+		<<set $p.secludeOk to false>>
+		<<set _gain to Math.round(_base*0.4)>>
+		<<set $p.cult += _gain>>
+		<<set $p.secludeGain to _gain>>
+		<<run setup.addStat($p, "xinmo", 18)>>
+		<<set $p.hp to Math.max(1, Math.floor($p.maxHp*0.5))>>
+	<<else>>
+		<<set $p.secludeOk to true>>
+		<<set $p.cult += _base>>
+		<<set $p.secludeGain to _base>>
+		<<run setup.addStat($p, "daoxin", 4)>>
+	<</if>>
+	<<set $p.stats.fatigue to 55>>
+<</widget>>
+
+
+:: Seclusion [game]
+<div class="panel">
+<h3>🧘 閉關</h3>
+<p class="desc">摒絕外緣、長閉死關，可在短時推進大量修為——但心魔伺機而動，閉關越久風險越高，且白白消磨壽元。<br><<= setup.lifeBadge($p)>></p>
+<<if $p.stats.xinmo >= 60>>
+	<p class="dmg">⚠ 你心魔深重（<<= $p.stats.xinmo>>），此時閉關極易走火入魔，宜先打坐定心。</p>
+<</if>>
+</div>
+<div class="choices">
+	<<link "閉關 30 日<span class='lx-hint'>小閉關，風險較低</span>">><<seclude 30>><<goto "Seclusion_do">><</link>>
+	<<link "閉關 90 日<span class='lx-hint'>中閉關，修為可觀</span>">><<seclude 90>><<goto "Seclusion_do">><</link>>
+	<<link "閉關 180 日<span class='lx-hint'>長閉死關，風險高、收穫豐</span>">><<seclude 180>><<goto "Seclusion_do">><</link>>
+	<<link "← 還是再想想">><<goto "cultivate">><</link>>
+</div>
+
+:: Seclusion_do [game]
+<div class="scene">
+<<if $p.secludeOk>>
+	<div class="scene-title">出關</div>
+	<p>死關之中，外界晝夜更迭、寒暑數易，於你而言只是一段綿長的入定。再睜眼時，經脈圓融，修為精進。</p>
+	<p class="sys">【閉關圓滿 · 修為 +<<= $p.secludeGain>>、道心 +4】</p>
+<<else>>
+	<div class="scene-title">走火入魔</div>
+	<p class="dmg">閉關途中，識海驟起波瀾，一縷心魔趁虛鑽入！你強行收功，雖未盡墨，卻也受了不輕的反噬。</p>
+	<p class="sys">【勉強收功 · 修為 +<<= $p.secludeGain>>（折損）、心魔 +18、氣血重挫】</p>
+<</if>>
+<p class="narr"><<= setup.lifeBadge($p)>>　歲月不饒人，閉關亦是壽元的消磨。</p>
+</div>
+<div class="choices">
+	<<link "← 返回修煉">><<goto "cultivate">><</link>>
+	<<link "🛏 歇息調養">><<sleep>><<goto $p.loc>><</link>>
+</div>

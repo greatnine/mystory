@@ -1,0 +1,67 @@
+:: SettingsSetup [script]
+/* C2 設定選單 —— SugarCube Settings API（值自動存於本機 localStorage，
+   會自動出現在左側 UI bar 的「設定」入口）。純 CSS 驅動，不碰 $p / 存檔。 */
+
+setup.lxApplySettings = function () {
+	var root = document.documentElement;
+
+	/* 字體大小 → 由 SettingsStylesheet 的 --lx-font 變數縮放主要閱讀字級 */
+	var f = (typeof settings.lxFont === "number") ? settings.lxFont : 15;
+	root.style.setProperty("--lx-font", f + "px");
+
+	/* 深色強度 → 切換 html class，覆蓋 06-styles 的背景 */
+	root.classList.remove("lx-bg-soft", "lx-bg-deep");
+	if (settings.lxDark === "柔和") root.classList.add("lx-bg-soft");
+	else if (settings.lxDark === "更深") root.classList.add("lx-bg-deep");
+
+	/* 介面動畫 → 關閉時停用所有 animation/transition（減少動態、利於低效能與動態敏感） */
+	root.classList.toggle("lx-noanim", settings.lxAnim === false);
+};
+
+Setting.addHeader("顯示設定", "調整閱讀體驗。設定會自動儲存於本機，與遊戲存檔無關。");
+
+Setting.addRange("lxFont", {
+	label: "字體大小",
+	min: 13, max: 20, step: 1, default: 15,
+	onInit: function () { setup.lxApplySettings(); },
+	onChange: function () { setup.lxApplySettings(); }
+});
+
+Setting.addList("lxDark", {
+	label: "深色強度",
+	list: ["標準", "更深", "柔和"], default: "標準",
+	desc: "「更深」更沉、「柔和」帶紫調夜色",
+	onInit: function () { setup.lxApplySettings(); },
+	onChange: function () { setup.lxApplySettings(); }
+});
+
+Setting.addToggle("lxAnim", {
+	label: "介面動畫",
+	default: true,
+	desc: "關閉可減少星空閃爍、浮現、印璽旋轉等動態效果",
+	onInit: function () { setup.lxApplySettings(); },
+	onChange: function () { setup.lxApplySettings(); }
+});
+
+
+:: SettingsStylesheet [stylesheet]
+/* 字體大小：以 --lx-font 縮放主要閱讀字級（檔名 0c 排在 06-styles 之後，故覆蓋其固定 15px） */
+.passage { font-size: var(--lx-font, 15px); }
+.passage p { font-size: var(--lx-font, 15px); }
+.choices a, a.lx-btn { font-size: var(--lx-font, 15px); }
+
+/* 深色強度：html.class 特異度高於 body，與堆疊順序無關皆能覆蓋 */
+html.lx-bg-deep { background: #020103; }
+html.lx-bg-deep body {
+	background: radial-gradient(ellipse at 30% 20%, #120810 0%, #070403 55%, #020103 100%) fixed;
+}
+html.lx-bg-soft { background: #0d0a14; }
+html.lx-bg-soft body {
+	background: radial-gradient(ellipse at 30% 20%, #241526 0%, #16101c 55%, #0d0a14 100%) fixed;
+}
+
+/* 介面動畫關閉 */
+html.lx-noanim *, html.lx-noanim *::before, html.lx-noanim *::after {
+	animation: none !important;
+	transition: none !important;
+}

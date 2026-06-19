@@ -1,0 +1,162 @@
+:: Map [game]
+<<set _reg to setup.regions[$p.region]>>
+<<set _disc to _reg.locs.filter(function(x){ return $p.seen and $p.seen.loc[x]; }).length>>
+<div class="scene">
+<div class="scene-title">🗺 <<= _reg.name>> · 輿圖</div>
+<p class="narr">擇一處前往（每次移動約耗一時辰<<if setup.canFly($p)>>，已可御劍<</if>）。已探索 <span class="em"><<= _disc>></span> / <<= _reg.locs.length>> 處。</p>
+</div>
+<div class="map-grid">
+<<for _i, _id range _reg.locs>>
+	<<capture _id>>
+	<<set _L to setup.locations[_id]>>
+	<<set _fog to not ($p.seen and $p.seen.loc[_id])>>
+	<<if _id === $p.loc>>
+		<a class="here"><span class="m-icon"><<= _L.icon>></span><span class="m-name"><<= _L.name>></span><span class="m-sub">你在此處</span></a>
+	<<elseif _fog>>
+		<<link `'<span class="m-icon m-fog">❓</span><span class="m-name m-fog">未探之地</span><span class="m-sub">前往一探究竟…</span>'`>><<travelTo _id>><</link>>
+	<<else>>
+		<<link `'<span class="m-icon">'+_L.icon+'</span><span class="m-name">'+_L.name+'</span><span class="m-sub">'+_L.desc.slice(0,18)+'…</span>'`>><<travelTo _id>><</link>>
+	<</if>>
+	<</capture>>
+<</for>>
+</div>
+<div class="choices">
+	<<if $p.region === "lingxiao" and $p.flags.tournament>>
+		<<link "↓ 南下萬妖山<span class='lx-hint'>遠行 · 推進第三卷</span>">><<goto "journey_south">><</link>>
+		<<link "❄ 北上冰嶺<span class='lx-hint'>遠行 · 冰心宗（裴冬雪）</span>">><<goto "journey_bingling">><</link>>
+	<</if>>
+	<<if $p.region === "bingling">>
+		<<link "↓ 返回凌霄劍宗<span class='lx-hint'>遠行</span>">><<farpass>><<enterLoc "dongfu">><<goto "dongfu">><</link>>
+	<</if>>
+	<<if $p.region === "nanjiang">>
+		<<link "↑ 返回凌霄劍宗<span class='lx-hint'>遠行（耗時較久）</span>">><<farpass>><<enterLoc "dongfu">><<goto "dongfu">><</link>>
+	<</if>>
+	<<if $p.region === "nanjiang" and $p.flags.qingHeat>>
+		<<link "🕯 潛入幽冥澤<span class='lx-hint'>遠行 · 推進第四卷</span>">><<goto "journey_youming">><</link>>
+	<</if>>
+	<<if $p.region === "youming">>
+		<<link "↑ 離開幽冥澤，返回南疆<span class='lx-hint'>遠行</span>">><<farpass>><<enterLoc "shanzhai">><<goto "shanzhai">><</link>>
+	<</if>>
+	<<if $p.region === "lingxiao" and $p.flags.bloodlord>>
+		<<link "🌌 問道中央神墟<span class='lx-hint'>遠行 · 第六卷 飛升謎題</span>">><<goto "journey_shenxu">><</link>>
+	<</if>>
+	<<if $p.region === "shenxu">>
+		<<link "↩ 離開神墟，返回凌霄劍宗<span class='lx-hint'>遠行</span>">><<farpass>><<enterLoc "dongfu">><<goto "dongfu">><</link>>
+	<</if>>
+	<<link "← 取消，留在原地">><<goto $p.loc>><</link>>
+</div>
+
+:: journey_south [game]
+<<farpass>>
+<<if not $p.flags.wentSouth>>
+	<<set $p.flags.wentSouth to true>>
+	<div class="scene">
+	<div class="scene-title">啟程 · 南疆</div>
+	<p>你領了宗門令牌，獨自南行。玄霄域的清冽劍氣漸遠，撲面而來的是南疆瘴境濕熱濃稠的妖氣。</p>
+	<p>臨行前夜，蘇羽瑤在山門石階上等你。她沒有多話，只遞來一枚溫潤的玉符：「劍宗的傳訊符。遇到解決不了的事……」她頓了頓，「記得還有人在凌霄峰等你回來。」</p>
+	<p class="narr">你握緊那枚還帶著她劍氣餘溫的玉符，轉身踏入了南疆的莽莽群山。</p>
+	</div>
+<<else>>
+	<div class="scene"><p class="narr">你再度跋涉南下，回到了熟悉的狐族山寨。</p></div>
+<</if>>
+<<enterLoc "shanzhai">>
+<div class="choices"><<link "踏入狐族山寨">><<goto "shanzhai">><</link>></div>
+
+:: journey_youming [game]
+<<farpass>>
+<<if not $p.flags.wentYouming>>
+	<<set $p.flags.wentYouming to true>>
+	<div class="scene">
+	<div class="scene-title">潛入 · 幽冥澤</div>
+	<p>循著仙紋碎片殘留的氣息，以及幽冥鬼道近來異常的動向，你獨自南行更南，踏入了地底死氣瀰漫的<span class="em">幽冥澤</span>。</p>
+	<p>愈往深處，那股窺探你的冰冷神識便愈清晰——鬼道，早已注意到你了。而在那重重死氣之後，似乎有一個被囚禁的靈魂，正無聲地朝你呼救。</p>
+	</div>
+<<else>>
+	<div class="scene"><p class="narr">你再度踏入幽冥澤的死氣之中。</p></div>
+<</if>>
+<<enterLoc "guimenguan">>
+<div class="choices"><<link "深入幽冥澤">><<goto "guimenguan">><</link>></div>
+
+:: journey_bingling [game]
+<<farpass>>
+<<if not $p.flags.wentBingling>>
+	<<set $p.flags.wentBingling to true>>
+	<div class="scene">
+	<div class="scene-title">北上 · 冰嶺</div>
+	<p>你受宗門之託，北上苦寒的冰嶺，與正道盟友冰心宗交涉一樁靈材互市之事。愈往北，天地愈是清寒，呼出的氣息瞬間凝成白霜。</p>
+	<p>冰心宗山門終年覆雪，弟子皆神情淡漠、心如止水——這裡的人，似乎連喜怒都被凍住了。</p>
+	</div>
+<<else>>
+	<div class="scene"><p class="narr">你再度踏雪北行，回到了清冷的冰嶺。</p></div>
+<</if>>
+<<enterLoc "binggate">>
+<div class="choices"><<link "踏入冰心宗">><<goto "binggate">><</link>></div>
+
+:: journey_shenxu [game]
+<<farpass>>
+<<if not $p.flags.wentShenxu>>
+	<<set $p.flags.wentShenxu to true>>
+	<div class="scene">
+	<div class="scene-title">問道 · 中央神墟</div>
+	<p>血魔尊隕落、仙紋在手，元神深處的烙印日夜搏動，指引你前往九洲心臟——封印重重的<span class="em">中央神墟</span>，萬年前那場撕裂天地的仙魔大戰遺址。</p>
+	<p>愈近神墟，空間愈是扭曲，殘存的仙威與魔氣彼此絞殺至今。你知道：通往仙界的門戶，與你前世的全部真相，都封在這裡。</p>
+	</div>
+<<else>>
+	<div class="scene"><p class="narr">你再度踏入中央神墟，空間裂隙在身畔無聲開闔。</p></div>
+<</if>>
+<<enterLoc "shenxu_gate">>
+<div class="choices"><<link "踏入神墟">><<goto "shenxu_gate">><</link>></div>
+
+:: TravelEvent [game]
+<<set _e to setup.travelEncounter($p)>>
+<<set _L to setup.locations[$p.travelDest]>>
+<div class="scene">
+<div class="scene-title">途中 · 往 <<= _L.name>></div>
+<p class="narr"><<= setup.travelFlavor($p.region)>></p>
+<<if _e.type === "loot">>
+	<<set $p.stones += _e.stones>>
+	<<set $p.herbs[_e.herb] to ($p.herbs[_e.herb]||0)+1>>
+	<p>路旁岩隙間，你眼尖拾得一些散落的靈材。</p>
+	<p class="sys">【獲得 靈石 ×<<= _e.stones>>、<<= setup.herbs[_e.herb].name>> ×1】</p>
+<<elseif _e.type === "fortune">>
+	<<gainCult _e.cult>>
+	<p>趕路途中，你忽有所感，駐足片刻，竟在行走間參透一絲道韻。</p>
+	<p class="sys">【途中頓悟 · 修為 +<<= _e.cult>>】</p>
+<<elseif _e.type === "fight">>
+	<<set _fe to setup.enemies[_e.foe]>>
+	<p>毫無預警，一頭 <span class="em"><<= _fe.name>></span> 自路旁竄出，攔住去路！</p>
+<<else>>
+	<p>這一程倒是平靜，唯有山風與自己的腳步聲相伴。</p>
+<</if>>
+</div>
+<div class="choices">
+<<if _e.type === "fight">>
+	<<set $p.travelFoe to _e.foe>>
+	<<link "⚔ 應戰">><<startBattle $p.travelFoe "travel_win" "travel_lose">><</link>>
+	<<link "🏃 繞道避開<span class='lx-hint'>氣運越高越易成功</span>">>
+		<<if Math.random() < (0.45 + $p.luck/400)>>
+			<<goto $p.travelDest>>
+		<<else>>
+			<<set $p.travelFoe to _e.foe>><<startBattle $p.travelFoe "travel_win" "travel_lose">>
+		<</if>>
+	<</link>>
+<<else>>
+	<<link `"繼續前往 " + _L.name`>><<goto $p.travelDest>><</link>>
+<</if>>
+</div>
+
+:: travel_win [game]
+<<set $p.stones += 6 + setup.rnd(10) + $p.realm*2>>
+<<set _g to 30 + $p.realm*18>>
+<<gainCult _g>>
+<div class="scene">
+<p>你擊退了攔路之敵，搜得些許靈石，繼續上路。</p>
+</div>
+<div class="choices"><<link `"繼續前往 " + setup.locations[$p.travelDest].name`>><<goto $p.travelDest>><</link>></div>
+
+:: travel_lose [game]
+<<if not $battle.fled>><<set $p.hp to Math.max(1, Math.floor($p.maxHp*0.5))>><</if>>
+<div class="scene">
+<p class="<<= $battle.fled ? 'narr' : 'dmg'>>"><<= $battle.fled ? "你擺脫糾纏，匆匆趕路。" : "你不敵敗退，負傷狼狽，只得勉力趕到目的地。">></p>
+</div>
+<div class="choices"><<link `"勉力前往 " + setup.locations[$p.travelDest].name`>><<goto $p.travelDest>><</link>></div>

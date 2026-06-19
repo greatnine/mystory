@@ -1,0 +1,73 @@
+:: DualCultScript [script]
+/* ════════ B1 雙修系統 ════════
+   高好感 + 完成該女主「核心親密里程碑」後解鎖。以陰陽二氣互補加速修為。
+   每日一次（睡眠後重置 $p.flags.dualToday）。合歡露(B5)可增幅。
+   設定依《情慾秘典》：靈識共鳴・靈脈交匯・情感共振，氛圍與留白呈現。 */
+setup.dualPartners = [
+	{ id: "suyuyao", name: "蘇羽瑤", flag: "dualSuyuyao",
+	  line: "她在你身後跪坐，雙掌抵背，劍氣在你的混沌靈氣前軟成一片溫流。靈識完整敞開，兩道修為交融奔湧。" },
+	{ id: "qingling", name: "青玲兒", flag: "qingHeat",
+	  line: "九尾自發垂落纏上你，狐族費洛蒙化作靈氣暖潮。混沌靜水承接她的洶湧，陰陽二氣彼此回饋。" },
+	{ id: "dongxue", name: "裴冬雪", flag: "dxFrost",
+	  line: "你的暖陽靈氣沿她寒道靈脈一寸寸鋪開，冰與火在經脈裡達成奇妙的平衡。她闔眼，記錄著每一分悸動。" },
+	{ id: "yinli", name: "陰離", flag: "yinliUnbind",
+	  line: "她的靈識毫無防備地與你交疊，月白與混沌相纏。她在你的神識懷抱裡，把修為與信任一併交付。" },
+];
+setup.dualAvailable = function (p) {
+	return setup.dualPartners.some(function (d) { return !!p.flags[d.flag]; });
+};
+setup.dualBoost = function (p, id) {
+	const prof = 1 + setup.profOf(p, "dual") * 0.004;   // 雙修熟練增益
+	return Math.round((160 + p.realm * 110) * (1 + (p.rel[id] || 0) / 200) * prof);
+};
+
+:: DualCult [game]
+<<tip "dual" "雙修以陰陽二氣互補、大幅增進修為，緣分越高增益越大；但靈脈交匯極耗心神，需間隔數日方能再續。服用合歡露可額外增幅五成。">>
+<div class="panel">
+<h3>☯ 陰陽合道 · 雙修</h3>
+<p class="desc">以靈識共鳴、靈脈交匯加速修為。靈脈交匯極耗心神，需間隔數日方能再續。<<if ($p.flags.hehuanlu||0)>><br>持有合歡露 <b class="gold"><<= $p.flags.hehuanlu>></b>（雙修時可選用，增幅五成）。<</if>></p>
+</div>
+<<if $p.dualCD and $p.dualCD > $p.time.day>>
+	<div class="scene"><p class="narr">前次靈識交融的餘韻仍在經脈中流轉，靈脈尚未復元。還需調息 <span class="em"><<= $p.dualCD - $p.time.day>></span> 日，方能再續。</p></div>
+	<div class="choices"><<link "← 返回">><<goto $return>><</link>></div>
+<<else>>
+	<div class="choices">
+	<<for _i, _d range setup.dualPartners>>
+		<<capture _d>>
+		<<if $p.flags[_d.flag]>>
+			<<link `'☯ 與 '+_d.name+' 雙修<span class="lx-hint">緣分 '+($p.rel[_d.id]||0)+'　預計修為 +'+setup.dualBoost($p,_d.id)+'</span>'`>>
+				<<set $p.dualWith to _d.id>>
+				<<goto "DualCult_do">>
+			<</link>>
+		<</if>>
+		<</capture>>
+	<</for>>
+	<<link "← 返回">><<goto $return>><</link>>
+	</div>
+<</if>>
+
+:: DualCult_do [game]
+<<pass 2>>
+<<set $p.dualCD to $p.time.day + 2>>
+<<set _d to setup.dualPartners.find(function(x){ return x.id === $p.dualWith; })>>
+<<set _boost to setup.dualBoost($p, _d.id)>>
+<<set _hh to false>>
+<<if ($p.flags.hehuanlu||0) > 0>>
+	<<set $p.flags.hehuanlu-->>
+	<<set _boost to Math.round(_boost * 1.5)>>
+	<<set _hh to true>>
+<</if>>
+<<gainCult _boost>>
+<<prof "dual" 2>>
+<div class="scene">
+<<portrait `_d.id`>>
+<div class="scene-title">陰陽合道 · <<= _d.name>></div>
+<p><<= _d.line>></p>
+<<if _hh>><p class="narr">合歡露入體，靈氣相性臨時拔高，情感感知亦隨之放大——這一次格外深刻。</p><</if>>
+<p class="sys">【雙修圓滿 — 修為 +<<= _boost>><<if _hh>>（合歡露增幅）<</if>>】</p>
+<<rel `_d.id` 2>>
+</div>
+<div class="choices">
+	<<link "再續片刻，靜靜相擁">><<rel `_d.id` 1>><<goto $return>><</link>>
+	<<link "← 收功">><<goto $return>><</link>>
+</div>

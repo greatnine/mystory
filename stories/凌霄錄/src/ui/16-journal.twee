@@ -1,0 +1,86 @@
+:: JournalScript [script]
+/* ════════ 劇情日誌（事件回看） ════════
+   由既有旗標推導已發生的主線節點，無須改動任何事件段落。
+   依序列出 flag 已設者；vol 用於分卷標題。 */
+setup.journal = [
+	{ vol: "第一卷 · 廢材覺醒", flag: "enteredSect", title: "踏入凌霄劍宗", line: "自滅門廢墟登臨仙途，以雜役之身潛入劍宗，藏經閣盡在咫尺。" },
+	{ flag: "metSuyuyao",   title: "演武場上的白衣身影", line: "初遇蘇羽瑤——那位令外門弟子噤聲的劍道天驕。" },
+	{ flag: "qinxiangBeaten", title: "比武臺折辱天驕", line: "你當眾擊敗了不可一世的秦驤，廢材之名不攻自破。" },
+	{ flag: "suyuyaoNoticed", title: "走火入魔的師弟", line: "你出手化解危局，蘇羽瑤第一次正眼看你。" },
+	{ flag: "tournament",   title: "五年一度宗門大比", line: "大比之上嶄露頭角，聲名鵲起。" },
+	{ flag: "shrineNight",  title: "深夜祠堂的一盞燈", line: "祠堂獨坐的兩個人，心照不宣地靠近了一步。" },
+	{ flag: "dualSuyuyao",  title: "有人深夜叩響洞府", line: "與蘇羽瑤靈脈初次貫通，陰陽合道。" },
+	{ vol: "第二／三卷 · 南疆萬妖", flag: "metQing", title: "靈泉邊的狐族少女", line: "南疆初遇青玲兒，一個沒有貪婪眼神的『怪人』。" },
+	{ flag: "chaosAwaken",  title: "混沌靈根覺醒", line: "濃烈血腥妖氣中，你體內的混沌之力終於甦醒，自此可剋五行。" },
+	{ flag: "foxPolitics",  title: "狐族內亂驟起", line: "你捲入九尾狐族的權力暗流。" },
+	{ flag: "qingKiss",     title: "夜半的窗欞", line: "玲兒的尾巴不聽話地纏上了你。" },
+	{ flag: "qingHeat",     title: "失控的靈慾潮期", line: "狐族標記期將至，你陪她渡過了最難熬的一夜。" },
+	{ vol: "第四卷 · 幽冥禁地", flag: "metYinli", title: "殺意森然的女鬼使", line: "幽冥澤初遇被操縱的陰離——『目標……凌霄。執行。』" },
+	{ flag: "yinliUnbind",  title: "她靈識深處的鎖鏈", line: "你斬斷了束縛陰離神魂的傀儡之術。" },
+	{ flag: "yinliRebuild", title: "重新學習『她自己』", line: "失去任務人格的陰離，像一張白紙，重新認識世界。" },
+	{ flag: "mingzun",      title: "冥尊法器的森冷低語", line: "你直面幽冥鬼道的中樞，揭開了一角陰謀。" },
+	{ flag: "jindan",       title: "金丹凝聚的契機", line: "你的修為躍入金丹之境。" },
+	{ vol: "並行 · 冰心宗", flag: "metDongxue", title: "寒潭邊如冰雕的聖女", line: "冰嶺初遇絕情冰體的裴冬雪——第十七次接觸。" },
+	{ flag: "dxFrost",      title: "暴走的寒冰", line: "你以暖陽靈氣鎮住她失控的寒冰。" },
+	{ flag: "dxBreak",      title: "清情大典的鐘聲", line: "你攪亂了冰心宗欲斬斷她情根的清情大典。" },
+	{ vol: "第五卷 · 魔道入侵", flag: "vol5started", title: "魔道入侵！宗門告急", line: "血煞魔宗大舉來犯，你挺身守護宗門。" },
+	{ flag: "daoLu",        title: "前世道侶揭曉", line: "跨越萬年的靈魂烙印，終於認出了今生的那個人。" },
+	{ flag: "bloodlord",    title: "血魔尊隕落", line: "你斬殺了盤踞六千年的血魔尊，震動九洲。" },
+	{ vol: "第六卷 · 飛升謎題", flag: "vol6started", title: "中央神墟的封印", line: "你踏入仙魔大戰遺址，追尋飛升與前世的真相。" },
+	{ flag: "xianwenFull",  title: "散落的仙紋碎片", line: "你集齊了仙紋，萬年真相呼之欲出。" },
+	{ flag: "truthDone",    title: "封印中的萬年真相", line: "仙魔大戰的真相，遠比傳說更為驚心。" },
+	{ flag: "sealBroken",   title: "破開最後的封印", line: "通往仙界的門戶，在你面前緩緩開啟。" },
+	{ flag: "ascended",     title: "飛升抉擇", line: "你做出了屬於自己的、最後的抉擇。" },
+];
+setup.journalSeen = function (p) {
+	return setup.journal.filter(function (e) { return p.flags && p.flags[e.flag]; });
+};
+
+
+:: TipWidget [widget]
+/% 首次提示：<<tip "key" "說明文字…">>，同 key 只顯示一次（記於 $p.tips） %/
+<<widget "tip">>
+	<<if not $p.tips>><<set $p.tips to {}>><</if>>
+	<<if not $p.tips[_args[0]]>>
+		<<set $p.tips[_args[0]] to true>>
+		<div class="lx-tip"><span class="lx-tip-i">💡</span><span class="lx-tip-t"><<= _args[1]>></span></div>
+	<</if>>
+<</widget>>
+
+
+:: Journal [game]
+<<set _seen to setup.journalSeen($p)>>
+<div class="panel">
+<h3>📖 劇情日誌</h3>
+<p class="desc">你一路走來的足跡。共 <b class="gold"><<= _seen.length>></b> / <<= setup.journal.length>> 個節點。</p>
+<<if _seen.length === 0>>
+	<p class="narr">旅程才剛開始，尚無可回顧的往事。</p>
+<<else>>
+	<<for _i, _e range _seen>>
+		<<if _e.vol>><h4 class="jr-vol"><<= _e.vol>></h4><</if>>
+		<div class="jr-row">
+			<div class="jr-title">◆ <<= _e.title>></div>
+			<div class="jr-line"><<= _e.line>></div>
+		</div>
+	<</for>>
+<</if>>
+</div>
+<div class="choices">
+	<<link "← 返回">><<goto $return>><</link>>
+</div>
+
+
+:: JournalStylesheet [stylesheet]
+.lx-tip {
+	display: flex; gap: 8px; align-items: flex-start;
+	margin: 10px 0; padding: 9px 12px;
+	background: rgba(90,169,214,.08); border: 1px solid rgba(90,169,214,.35);
+	border-radius: 6px; font-size: 13px; line-height: 1.6;
+}
+.lx-tip-i { flex: 0 0 auto; }
+.lx-tip-t { color: #bcd6e6; }
+.jr-vol { color: var(--gold); font-size: 12px; letter-spacing: .2em; margin: 16px 0 6px; opacity: .85; }
+.jr-vol:first-of-type { margin-top: 2px; }
+.jr-row { margin: 0 0 9px; padding-left: 4px; border-left: 2px solid rgba(201,149,42,.3); padding: 2px 0 2px 10px; }
+.jr-title { color: var(--gold-light); font-size: 14px; }
+.jr-line { color: rgba(245,240,232,.72); font-size: 12.5px; margin-top: 2px; }

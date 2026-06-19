@@ -1,0 +1,183 @@
+:: QuestsScript [script]
+/* ════════════════════════════════════════════════════════════
+   任務日誌 + 解鎖提示（feat/quests）
+   - setup.quests：靜態定義（不進存檔），全用既有旗標／緣分判定。
+   - 每筆：id / title / desc / start(p) 是否已開啟 / done(p) 是否完成 /
+     hint(p) 依當前進度回傳「下一步」提示字串。
+   - 條件對齊 setup.events 的觸發鏈，提示即玩家實際該做的下一步。
+   - 入口連結由 Manager 整合時加（本檔不碰 caption）。
+   ════════════════════════════════════════════════════════════ */
+setup.quests = [
+	{
+		id: "sect", title: "劍宗立身",
+		desc: "轉生凌霄、身負混沌靈根。拜入凌霄劍宗，在天驕林立的演武場站穩腳跟。",
+		start: function (p) { return true; },
+		done:  function (p) { return !!p.flags.tournament; },
+		hint:  function (p) {
+			if (!p.flags.enteredSect)     return "完成序章歷練，拜入凌霄劍宗。";
+			if (!p.flags.qinxiangBeaten)  return "於演武場應下秦驤的比武之約，挫其銳氣。";
+			if (p.realm < 1)              return "閉關苦修，突破至築基期，方有資格參加宗門大比。";
+			return "築基已成——於演武場參加五年一度的宗門大比。";
+		}
+	},
+	{
+		id: "jindan", title: "金丹之路",
+		desc: "修為是仙途的根基。一步步推進境界，凝聚屬於自己的金丹。",
+		start: function (p) { return !!p.flags.enteredSect; },
+		done:  function (p) { return !!p.flags.jindan; },
+		hint:  function (p) {
+			if (p.realm < 2) return "勤修功法、服丹突破，將修為推進至金丹期門檻。";
+			return "修為已足——前往鬼門關，把握金丹凝聚的契機。";
+		}
+	},
+	{
+		id: "suyuyao", title: "蘇羽瑤 · 劍宗情緣",
+		desc: "凌霄劍宗第一天才，外表清冷。她對你的在意，始於「被看見」。",
+		start: function (p) { return !!p.flags.metSuyuyao; },
+		done:  function (p) { return !!p.flags.dualSuyuyao; },
+		hint:  function (p) {
+			if (!p.flags.suyuyaoNoticed) return "在演武場與她切磋，讓蘇羽瑤真正注意到你（緣分需 ≥12）。";
+			if (!p.flags.shrineNight)    return "夜深時前往祠堂，那盞孤燈下與她長談（緣分 ≥20）。";
+			return "築基後的深夜，於洞府回應她的叩門，貫通靈脈、結為道侶（緣分 ≥35）。";
+		}
+	},
+	{
+		id: "qingling", title: "青玲兒 · 南疆山盟",
+		desc: "萬妖山九尾狐族公主，率真而媚。她嗅到了你毫無貪婪的氣息。",
+		start: function (p) { return !!p.flags.metQing; },
+		done:  function (p) { return !!p.flags.qingKiss; },
+		hint:  function (p) {
+			if (!p.flags.qingTail) return "重返靈泉與青玲兒相處，讓她在你身旁卸下戒心（緣分 ≥12）。";
+			return "夜半回到山寨，回應那扇窗欞邊等你的她（緣分 ≥24）。";
+		}
+	},
+	{
+		id: "dongxue", title: "裴冬雪 · 冰心解凍",
+		desc: "冰心宗聖女，身具絕情冰體、感知不到情緒。你的混沌靈氣，竟能讓她解凍。",
+		start: function (p) { return !!p.flags.metDongxue; },
+		done:  function (p) { return !!p.flags.dxBreak; },
+		hint:  function (p) {
+			if (!p.flags.dxRecord) return "在聖女居翻看她那本寫滿異常數據的修煉日誌（緣分 ≥8）。";
+			if (!p.flags.dxFrost)  return "前往寒玉洞，助她壓制暴走的寒冰（緣分 ≥18）。";
+			if (!p.flags.dxDoor)   return "夜深時於聖女居等候，叩門的人會是她（緣分 ≥30）。";
+			return "清情大典的鐘聲將響——阻止它，喚醒她剛萌芽的心（緣分 ≥42）。";
+		}
+	},
+	{
+		id: "yinli", title: "陰離 · 解咒重生",
+		desc: "幽冥前女鬼使，被魂繫術植入殺意人格。她的本我，是個愛收集山花的少女。",
+		start: function (p) { return !!p.flags.metYinli; },
+		done:  function (p) { return !!p.flags.yinliTouch; },
+		hint:  function (p) {
+			if (!p.flags.yinliUnbind)  return "於忘川以靈識解開陰離深處的攝魂鎖鏈（緣分 ≥12）。";
+			if (!p.flags.yinliRebuild) return "重返忘川，陪她一點一點重新學習「她自己」。";
+			return "在鬼門關靜靜守候，等那停在你手背上的指尖（緣分 ≥40）。";
+		}
+	},
+	{
+		id: "mingzun", title: "幽冥真相 · 冥尊",
+		desc: "亂葬崗下的仙紋微光、冥尊法器的森冷低語——幽冥禁地藏著萬年的秘密。",
+		start: function (p) { return !!p.flags.metYinli; },
+		done:  function (p) { return !!p.flags.mingzun; },
+		hint:  function (p) {
+			if (!p.flags.xianwen)     return "在亂葬崗下探查那道仙紋微光。";
+			if (!p.flags.yinliUnbind) return "先解開陰離的攝魂禁制，方能撼動操控她的冥尊。";
+			return "集齊仙紋與解咒之力，於幽冥殿直面冥尊法器的低語。";
+		}
+	},
+	{
+		id: "invasion", title: "魔道入侵 · 血魔尊",
+		desc: "六千年殺戮之氣的血魔尊覬覦你的混沌之體。宗門告急，正魔之爭一觸即發。",
+		start: function (p) { return !!(p.flags.jindan || p.flags.mingzun || p.flags.vol5started); },
+		done:  function (p) { return !!p.flags.bloodlord; },
+		hint:  function (p) {
+			if (!p.flags.vol5started) return "金丹大成（或挫敗冥尊）後，魔道將兵臨城下——回到演武場馳援。";
+			if (!p.flags.yuanying)    return "集結群雄死守凌霄劍宗，於絕境中催動元嬰突破。";
+			return "元嬰已成——傾盡全力，終結血色雲海之巔的血魔尊。";
+		}
+	},
+	{
+		id: "ascend", title: "飛升謎題 · 中央神墟",
+		desc: "血魔尊隕落，封印鬆動。中央神墟之中，沉睡著關於這方天地的萬年真相。",
+		start: function (p) { return !!p.flags.bloodlord; },
+		done:  function (p) { return !!p.flags.ascended; },
+		hint:  function (p) {
+			if (!p.flags.vol6started) return "前往中央神墟，探查那道古老的封印。";
+			if (!p.flags.xianwenFull) return "在神墟戰場上，收集散落各處的仙紋碎片。";
+			if (!p.flags.truthDone)   return "於封印之前，揭開塵封萬年的真相。";
+			if (!p.flags.sealBroken)  return "凝聚全部仙紋之力，破開最後的封印。";
+			return "立於仙門之前——做出屬於你的飛升抉擇。";
+		}
+	}
+];
+
+/* 依玩家狀態把任務分成「進行中／已完成」兩桶（未開啟者隱藏，避免劇情暴雷） */
+setup.questBuckets = function (p) {
+	var active = [], done = [];
+	setup.quests.forEach(function (q) {
+		if (q.done(p)) done.push(q);
+		else if (q.start(p)) active.push(q);
+	});
+	return { active: active, done: done };
+};
+
+
+:: Quests [game]
+<<set _qb to setup.questBuckets($p)>>
+<div class="panel">
+<h3>📜 任務日誌</h3>
+<p class="desc">進行中 <<= _qb.active.length>> · 已完成 <<= _qb.done.length>> —— 仙途漫漫，記你所行、指你所往。</p>
+</div>
+
+<div class="q-section">
+<div class="q-head q-head-active">▶ 進行中</div>
+<<if _qb.active.length>>
+	<<for _q range _qb.active>>
+		<div class="quest active">
+			<div class="q-title"><<= _q.title>></div>
+			<div class="q-desc"><<= _q.desc>></div>
+			<div class="q-hint"><span class="q-hint-tag">下一步</span> <<= _q.hint($p)>></div>
+		</div>
+	<</for>>
+<<else>>
+	<p class="narr">目前沒有進行中的任務。</p>
+<</if>>
+</div>
+
+<div class="q-section">
+<div class="q-head q-head-done">✓ 已完成</div>
+<<if _qb.done.length>>
+	<<for _q range _qb.done>>
+		<div class="quest done">
+			<div class="q-title"><<= _q.title>></div>
+			<div class="q-desc"><<= _q.desc>></div>
+		</div>
+	<</for>>
+<<else>>
+	<p class="narr">尚無已完成的任務。</p>
+<</if>>
+</div>
+
+<div class="choices">
+	<<link "← 返回">><<goto $p.loc>><</link>>
+</div>
+
+
+:: QuestsStylesheet [stylesheet]
+/* 任務日誌樣式（與 14-quests.twee 同檔，獨立 stylesheet；不動 06-styles） */
+.q-section { margin: 0 0 14px; }
+.q-head { font-size: 12px; letter-spacing: .2em; margin: 14px 0 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(201,149,42,.18); }
+.q-head-active { color: var(--gold-light); }
+.q-head-done { color: var(--jade-light); }
+
+.quest { padding: 12px 14px; border-radius: 6px; margin-bottom: 8px; border: 1px solid rgba(201,149,42,.22); background: rgba(20,14,9,.45); }
+.quest.active { border-left: 3px solid var(--gold); }
+.quest.done { border-left: 3px solid var(--jade); opacity: .72; }
+
+.q-title { font-size: 15px; color: var(--gold-light); letter-spacing: .04em; margin-bottom: 3px; }
+.quest.done .q-title { color: rgba(245,240,232,.75); }
+.quest.done .q-title::after { content: " ✓"; color: var(--jade-light); font-size: 13px; }
+.q-desc { font-size: 13px; color: rgba(245,240,232,.6); line-height: 1.7; }
+
+.q-hint { margin-top: 8px; font-size: 13px; color: var(--rose); line-height: 1.7; padding: 7px 10px; background: rgba(232,124,110,.08); border-radius: 4px; }
+.q-hint-tag { display: inline-block; font-size: 10px; letter-spacing: .15em; color: #0d0805; background: var(--rose); border-radius: 3px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }

@@ -1,0 +1,773 @@
+:: EngineScript [script]
+/* ════════════════════════════════════════════════════════════
+   凌霄錄 · 引擎核心 (static data + helpers)
+   SugarCube 2 — 同 Degrees of Lewdity 引擎
+   靜態資料掛在 setup.* (不進存檔)；玩家狀態在 $p (進存檔)
+   ════════════════════════════════════════════════════════════ */
+
+/* 全段落啟用 nobr：移除原始換行產生的 <br>，段落間距改由 <p> 控制 */
+Config.passages.nobr = true;
+
+/* ── 境界表 ── */
+setup.realms = [
+	{ name: "練氣期", layers: 9, need: 80,   sub: null },
+	{ name: "築基期", layers: 3, need: 500,  sub: ["", "黃品", "玄品", "天品"] },
+	{ name: "金丹期", layers: 9, need: 1800, sub: null },
+	{ name: "元嬰期", layers: 3, need: 6000, sub: ["", "初期", "中期", "後期"] },
+];
+
+/* ── 功法典籍 (藏書閣) ── */
+setup.books = {
+	tuna:  { name: "《吐納引氣訣》",      cost: 0, school: "基礎", desc: "最基礎的引氣法門。修煉效率 +25%。", eff: { cultMul: 0.25 } },
+	sword: { name: "《凌霄基礎劍訣》",    cost: 2, school: "劍修", desc: "劍宗入門劍法。攻擊 +6，戰鬥時偶爾連擊。", eff: { atk: 6, combo: 0.30 } },
+	body:  { name: "《混沌淬體經》",      cost: 3, school: "體修", desc: "借混沌靈根淬鍊肉身。氣血上限 +50、防禦 +4。", eff: { maxHp: 50, def: 4 } },
+	pill:  { name: "《丹方資料庫·初階》", cost: 3, school: "丹修", desc: "解鎖回元丹、凝神丹、破境丹等進階丹方。", eff: { unlockAlchemy: true } },
+	eye:   { name: "《天眼判靈·殘卷》",   cost: 4, school: "輔助", desc: "氣運 +20，探索更易得機緣，煉丹略增成功率。", eff: { luck: 20, alchemyBonus: 0.10 } },
+	storm: { name: "《五雷天罡決》",      cost: 6, school: "符籙", desc: "強力雷系一擊，攻擊 +14（戰鬥耗靈力）。", eff: { atk: 14 } },
+	sword2:{ name: "《追星逐月劍意》",    cost: 8, school: "劍修", desc: "進階劍意，攻擊 +20、暴擊率提升。", eff: { atk: 20, crit: 0.15 } },
+	dual:  { name: "《陰陽合道術·殘頁》", cost: 5, school: "雙修", desc: "雙修引導功法，可與道侶靈脈貫通，大幅增進修為。", eff: { dual: true } },
+	beast: { name: "《萬獸馴心訣》",      cost: 5, school: "御獸", desc: "可安撫、收服靈獸妖獸，南疆之行的關鍵。", eff: { tame: true } },
+};
+
+/* ── 藥材 ── */
+setup.herbs = {
+	lingcao:  { name: "靈草",     desc: "最常見的低階靈植。" },
+	hanyu:    { name: "寒玉芝",   desc: "生於陰寒之地，性涼。" },
+	huoxin:   { name: "火心果",   desc: "蘊含暖陽火氣。" },
+	yuelan:   { name: "月蘭花",   desc: "月華所養，安神定識。" },
+	xuelian:  { name: "百年雪蓮", desc: "稀有靈藥，藥力雄渾。" },
+	yaodan:   { name: "妖丹碎屑", desc: "妖獸內丹殘片，靈氣狂暴。" },
+};
+
+/* ── 丹方 ── */
+setup.recipes = {
+	juqi:    { name: "聚氣丹", mat: { lingcao: 2 },               ideal: 45, tol: 18, desc: "回復大量修為。" },
+	huiyuan: { name: "回元丹", mat: { lingcao: 1, huoxin: 1 },    ideal: 60, tol: 15, desc: "戰鬥中回復氣血靈力。" },
+	ningshen:{ name: "凝神丹", mat: { yuelan: 2 },                ideal: 35, tol: 14, desc: "安神定識，氣運 +10、心魔 −8。" },
+	pojing:  { name: "破境丹", mat: { xuelian: 1, hanyu: 1, huoxin: 1 }, ideal: 72, tol: 10, desc: "下一次突破成功率大增。" },
+};
+
+/* ── 敵人 ── */
+setup.enemies = {
+	scout: { img:"img/foe_scout.png", name: "玄冥王府散修",   hp: 70,   atk: 12, def: 1,  stones: 12, intro: "那散修獰笑著拔刀撲來。" },
+	scout2: { img:"img/foe_scout.png", name: "玄冥王府散修",   hp: 78,   atk: 14, def: 2,  stones: 10, intro: "被發現了，只能一戰！" },
+	qinxiang: { img:"img/foe_qinxiang.png", name: "天驕弟子·秦驤",  hp: 160,  atk: 22, def: 6,  stones: 0,  intro: "秦驤一身華貴錦袍，劍尖斜指，眼底滿是輕蔑：「廢物，也配站上比武臺？」" },
+	beast:    { img:"img/foe_beast.png", name: "受傷的上古妖獸",  hp: 520,  atk: 34, def: 12, stones: 0,  intro: "妖獸渾身浴血，金瞳赤紅，受傷反而更加狂暴。", tameable: true },
+	foxrebel: { img:"img/foe_foxrebel.png", name: "狐族叛黨修士",   hp: 460,  atk: 32, def: 10, stones: 30, intro: "狐族叛黨足尖一點，挾著妖風撲來。" },
+	wildbeast: { img:"img/foe_wildbeast.png", name: "瘴境妖狼",       hp: 160,  atk: 18, def: 4,  stones: 8,  intro: "一頭瘴氣纏身的妖狼從密林竄出。" },
+	ligui: { img:"img/foe_ligui.png", name: "亂葬厲鬼",       hp: 360,  atk: 28, def: 6,  stones: 12, intro: "一隻死於執念的厲鬼自屍堆中嘶嚎而起。" },
+	guidao: { img:"img/foe_guidao.png", name: "幽冥鬼道修士",   hp: 680,  atk: 36, def: 11, stones: 24, intro: "鬼道修士御使陰風，攝魂之術森然襲來。" },
+	yinli: { img:"img/foe_yinli.png", name: "幽冥女鬼使·陰離", hp: 820,  atk: 42, def: 13, stones: 0,  intro: "半透明白髮的女子持刃而立，眼神空洞如被操縱的傀儡：「目標……凌霄。執行。」", spare: true },
+	binglao: { img:"img/foe_binglao.png", name: "冰心宗執法長老", hp: 800,  atk: 42, def: 14, stones: 0,  intro: "執法長老一身冬藍道袍，周身寒霜凝結：「清情大典乃宗門根本，閒雜人等，退下。」" },
+	moqian: { img:"img/foe_moqian.png", name: "血煞魔宗先鋒",   hp: 720,  atk: 38, def: 11, stones: 30, intro: "血煞魔修踏著屍山獰笑而來，渾身浴血、殺氣騰騰。" },
+	bloodlord: { img:"img/foe_bloodlord.png", name: "血魔尊",         hp: 1700, atk: 68, def: 20, stones: 0,  intro: "血魔尊立於血色雲海之巔，六千年殺戮之氣壓得天地變色：「凌霄……你那混沌之體，本尊收下了。」" },
+	xianmoremnant: { img:"img/foe_xianmoremnant.png", name: "仙魔殘念",   hp: 2050, atk: 70, def: 24, stones: 0, intro: "封印崩裂處，凝聚著萬年前仙魔大戰雙方的殘餘執念——它既非仙，也非魔，只認得『擋路者，殺』。" },
+};
+
+/* ════════ 五行相剋 ════════
+   敵人屬性 → setup.enemyElem。混沌靈根覺醒後，攻擊自動以相剋之力壓制五行(含冰)之敵；
+   妖/鬼/魔等非五行屬性不受相剋（含 BOSS 血魔尊，不被輕易剋制）。 */
+setup.enemyElem = { scout:"金", scout2:"金", qinxiang:"金", beast:"妖", foxrebel:"妖", wildbeast:"妖", ligui:"鬼", guidao:"鬼", yinli:"鬼", binglao:"冰", moqian:"火", bloodlord:"魔", xianmoremnant:"魔" };
+setup.elemColor = { "金":"#e8c97a","木":"#6fae5a","水":"#5aa9d6","火":"#e0564a","土":"#c0925a","冰":"#8fdbe8","雷":"#b99cf0","妖":"#f0b94a","鬼":"#b9a9e0","魔":"#c0392b" };
+setup.elemCounterable = { "金":1,"木":1,"水":1,"火":1,"土":1,"冰":1 };
+setup.chaosCounter = function (p, foeId) {
+	const e = setup.enemyElem[foeId];
+	if (p.flags.chaosAwaken && e && setup.elemCounterable[e]) {
+		return { mult: 1.35, label: "<span class='sys'>✦ 混沌相剋（剋" + e + "）！</span> " };
+	}
+	return { mult: 1, label: "" };
+};
+setup.thunderVs = function (foeId) {
+	const e = setup.enemyElem[foeId];
+	return (e === "金" || e === "水") ? 1.35 : 1;
+};
+
+/* ════════ 時間系統 ════════
+   $p.time = { day, tick }；tick 0..11 = 子丑寅卯辰巳午未申酉戌亥 */
+setup.tickNames = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+setup.timeOfDay = function (tick) {
+	if (tick >= 3 && tick <= 5)  return "晨";   // 卯辰巳
+	if (tick >= 6 && tick <= 8)  return "午後"; // 午未申
+	if (tick === 9 || tick === 10) return "黃昏"; // 酉戌
+	return "夜";                                // 亥子丑寅
+};
+setup.isNight = function (p) { const t = p.time.tick; return (t >= 10 || t <= 2); };
+setup.timeName = function (p) {
+	return "第 " + p.time.day + " 日 · " + setup.tickNames[p.time.tick] + "時（" + setup.timeOfDay(p.time.tick) + "）";
+};
+/* 推進時間 N 個時辰，回傳是否跨日 */
+setup.passTime = function (p, n) {
+	let crossed = false;
+	for (let i = 0; i < n; i++) {
+		p.time.tick++;
+		if (p.time.tick >= 12) { p.time.tick = 0; p.time.day++; crossed = true; }
+	}
+	return crossed;
+};
+
+/* ════════ 天時節律（讓「日」有意義） ════════
+   靈氣潮汐（每 7 日）：修煉效率提升；魔氣潮（每 9 日）：心魔壓力。
+   純由 day 推算，dayTick widget 於跨日時施加一次性效應。 */
+setup.worldPulse = function (day) {
+	return { ling: (day % 7 === 0), mo: (day % 9 === 0) };
+};
+setup.pulseBadge = function (p) {
+	const d = p.time.day, parts = [];
+	if (d % 7 === 0) parts.push('<span class="pulse-tag ling">🌊 靈氣潮汐 · 修煉↑</span>');
+	if (d % 9 === 0) parts.push('<span class="pulse-tag mo">🩸 魔氣潮 · 心魔↑</span>');
+	return parts.length ? '<div class="pulse-row">' + parts.join("") + "</div>" : "";
+};
+/* ════════ 天氣 / 季節（決定性，依 day 推算，當日穩定不閃動） ════════ */
+setup.season = function (day) {
+	const i = Math.floor((day - 1) / 15) % 4;
+	return [{ name: "春", icon: "🌸" }, { name: "夏", icon: "☀" }, { name: "秋", icon: "🍂" }, { name: "冬", icon: "❄" }][i];
+};
+setup._weatherMeta = {
+	"晴":   { icon: "☀", desc: "" },
+	"陰":   { icon: "☁", desc: "" },
+	"雨":   { icon: "🌧", desc: "採集靈材更易" },
+	"雷雨": { icon: "⛈", desc: "雷氣盛 · 修煉↑" },
+	"霧":   { icon: "🌫", desc: "旅途遇敵↑" },
+	"雪":   { icon: "🌨", desc: "寒材豐 · 天地苦寒" },
+};
+setup.weather = function (day) {
+	const sIdx = Math.floor((day - 1) / 15) % 4;
+	const pools = [
+		["晴", "晴", "陰", "雨", "雷雨"],   // 春
+		["晴", "晴", "陰", "雷雨", "霧"],   // 夏
+		["晴", "陰", "陰", "雨", "霧"],     // 秋
+		["陰", "雪", "雪", "霧", "晴"],     // 冬
+	];
+	const pool = pools[sIdx];
+	const key = pool[(day * 3 + 7) % pool.length];
+	const m = setup._weatherMeta[key];
+	return { key: key, name: key, icon: m.icon, desc: m.desc };
+};
+/* 天氣對修煉的加成（雷雨且習雷法 → +10%） */
+setup.weatherCultMul = function (p) {
+	const w = setup.weather(p.time.day).key;
+	if (w === "雷雨" && setup.has(p, "storm")) return 1.1;
+	return 1;
+};
+/* 天氣對採集的加成（雨/雪 → +0.10 命中） */
+setup.weatherExplore = function (p) {
+	const w = setup.weather(p.time.day).key;
+	return (w === "雨" || w === "雪") ? 0.10 : 0;
+};
+setup.weatherBadge = function (p) {
+	const s = setup.season(p.time.day), w = setup.weather(p.time.day);
+	let html = '<span class="wx-tag">' + s.icon + s.name + ' · ' + w.icon + w.name;
+	if (w.desc) html += ' <span class="wx-desc">' + w.desc + '</span>';
+	return html + '</span>';
+};
+
+/* 期限／倒數登錄表：在 caption 顯示「距 X 還有 N 日」，逾期則提示 */
+setup.deadlines = [
+	{ id: "tournament", label: "五年宗門大比",
+	  active: function (p) { return p.flags.enteredSect && p.flags.sectDay && !p.flags.tournament; },
+	  dueDay: function (p) { return (p.flags.sectDay || 0) + 24; } },
+];
+setup.activeDeadlines = function (p) {
+	return setup.deadlines.filter(function (d) { return d.active(p); }).map(function (d) {
+		return { label: d.label, left: d.dueDay(p) - p.time.day };
+	});
+};
+
+/* ════════ 深度數值系統 ════════
+   每項：bands = [{max, label, cls}]，取第一個 value<max 的 band */
+setup.statDefs = {
+	daoxin:  { name: "道心", good: true,  bands: [
+		{ max: 20, label: "渾噩", cls: "st-grey" },
+		{ max: 40, label: "初定", cls: "st-jade" },
+		{ max: 60, label: "清明", cls: "st-gold" },
+		{ max: 80, label: "通透", cls: "st-goldl" },
+		{ max: 999, label: "圓融", cls: "st-glow" } ] },
+	xinmo:   { name: "心魔", good: false, bands: [
+		{ max: 1,  label: "無",   cls: "st-grey" },
+		{ max: 25, label: "萌動", cls: "st-rose" },
+		{ max: 50, label: "滋長", cls: "st-verm" },
+		{ max: 75, label: "紊亂", cls: "st-verm-b" },
+		{ max: 999, label: "噬心", cls: "st-danger" } ] },
+	fame:    { name: "聲望", good: true,  bands: [
+		{ max: 10,  label: "無名",     cls: "st-grey" },
+		{ max: 30,  label: "嶄露頭角", cls: "st-jade" },
+		{ max: 60,  label: "小有名氣", cls: "st-gold" },
+		{ max: 100, label: "聲名鵲起", cls: "st-goldl" },
+		{ max: 9999,label: "名動九洲", cls: "st-glow" } ] },
+	fatigue: { name: "疲勞", good: false, bands: [
+		{ max: 25, label: "精神", cls: "st-jade" },
+		{ max: 50, label: "微倦", cls: "st-gold" },
+		{ max: 75, label: "疲憊", cls: "st-rose" },
+		{ max: 999, label: "力竭", cls: "st-verm-b" } ] },
+};
+setup.statBand = function (key, v) {
+	const def = setup.statDefs[key];
+	for (let i = 0; i < def.bands.length; i++) if (v < def.bands[i].max) return def.bands[i];
+	return def.bands[def.bands.length - 1];
+};
+/* 帶門檻顏色的數值字串 */
+setup.gstatHtml = function (key, v) {
+	const def = setup.statDefs[key];
+	const b = setup.statBand(key, v);
+	return '<span class="gstat ' + b.cls + '">' + def.name + ' ' + Math.round(v) + '〔' + b.label + '〕</span>';
+};
+/* 安全增減數值並夾在 [0,cap] */
+setup.addStat = function (p, key, delta, cap) {
+	cap = cap || 100;
+	p.stats[key] = Math.max(0, Math.min(cap, (p.stats[key] || 0) + delta));
+};
+
+/* ════════ 地點與區域 ════════ */
+setup.regions = {
+	lingxiao: { name: "凌霄峰", locs: ["dongfu","wuwuchang","cangjingge","danfang","citang","jianya","houshan"] },
+	nanjiang: { name: "南疆萬妖山", locs: ["shanzhai","lingquan","milin","yishitang","mijing"] },
+	youming:  { name: "幽冥澤", locs: ["guimenguan","huangquan","wangchuan","luanzang","youmingdian"] },
+	bingling: { name: "冰嶺", locs: ["binggate","hantan","shengnv","bingyu","bingfeng"] },
+	shenxu:   { name: "中央神墟", locs: ["shenxu_gate","zhanchang","fengyin","xianmen"] },
+};
+setup.locations = {
+	dongfu:     { name: "洞府",     region: "lingxiao", icon: "🏠", home: true,  desc: "你的清修洞府。一榻、一蒲團、一盞長明燈，靜謐宜修。" },
+	wuwuchang:  { name: "演武場",   region: "lingxiao", icon: "⚔",  desc: "外門弟子操演劍術之地，劍氣縱橫，喧聲不絕。" },
+	cangjingge: { name: "藏經閣",   region: "lingxiao", icon: "📖", desc: "萬卷功法典籍封塵其中，你掛名雜役，得以時時親近。" },
+	danfang:    { name: "丹房",     region: "lingxiao", icon: "🔥", desc: "宗門煉丹之所，藥香與爐火晝夜不息。" },
+	citang:     { name: "祠堂",     region: "lingxiao", icon: "🕯", desc: "供奉歷代劍宗先賢，夜裡常有人在此獨自靜思。" },
+	jianya:     { name: "劍崖",     region: "lingxiao", icon: "🗻", desc: "凌霄峰絕頂，雲海翻湧，最宜悟劍觀道。" },
+	houshan:    { name: "後山",     region: "lingxiao", icon: "🌿", desc: "靈植叢生的後山幽谷，可採集靈材。" },
+	shanzhai:   { name: "狐族山寨", region: "nanjiang", icon: "🏯", home: true,  desc: "九尾狐族聚居的山寨，妖氣氤氳，異於中原。" },
+	lingquan:   { name: "靈泉",     region: "nanjiang", icon: "💧", desc: "清冽靈泉自岩隙湧出，狐族常於此沐浴嬉戲。" },
+	milin:      { name: "瘴境密林", region: "nanjiang", icon: "🌲", desc: "妖獸出沒的濃密叢林，危機與機緣並存。" },
+	yishitang:  { name: "議事堂",   region: "nanjiang", icon: "🏛", desc: "狐族議決族務之地，近來暗流洶湧。" },
+	mijing:     { name: "南疆秘境", region: "nanjiang", icon: "🌀", desc: "靈氣紊亂的上古秘境深處，傳說與危險之地。" },
+	guimenguan: { name: "鬼門關", region: "youming", icon: "⛩", home: true, desc: "幽冥澤的入口，死氣森森，唯此處尚算「安全」。" },
+	huangquan:  { name: "黃泉路", region: "youming", icon: "🛣", desc: "通往幽冥深處的長路，沿途鬼影幢幢。" },
+	wangchuan:  { name: "忘川",   region: "youming", icon: "🌊", desc: "忘川之水載著無數執念，靜得令人心折。" },
+	luanzang:   { name: "亂葬崗", region: "youming", icon: "⚰", desc: "屍骨累累、厲鬼橫行，卻也埋著上古遺物。" },
+	youmingdian:{ name: "幽冥殿", region: "youming", icon: "💀", desc: "冥尊法器所在的森冷大殿，幽冥鬼道的中樞。" },
+	binggate:   { name: "冰心宗山門", region: "bingling", icon: "❄", home: true, desc: "北荒冰嶺之巔，冰心宗山門終年覆雪，清冷孤高。" },
+	hantan:     { name: "寒潭",   region: "bingling", icon: "🧊", desc: "千年不化的寒潭，潭底沉著冰屬靈材，水氣寒冽刺骨。" },
+	shengnv:    { name: "聖女居", region: "bingling", icon: "🏔", desc: "冰心宗聖女的清修之所，素淨如雪，几案上攤著一本寫滿異常數據的日誌。" },
+	bingyu:     { name: "寒玉洞", region: "bingling", icon: "💎", desc: "蘊藏寒玉與雪蓮的冰洞，亦是聖女壓制體內寒冰的閉關之地。" },
+	bingfeng:   { name: "冰嶺絕頂", region: "bingling", icon: "🗻", desc: "冰嶺最高處，風雪呼嘯，天地一色，最宜觀道。" },
+	shenxu_gate:{ name: "神墟之門", region: "shenxu", icon: "🌌", home: true, desc: "中央神墟外圍，仙魔大戰的餘威仍鎮在空間裂隙之間，連時間都彷彿凝滯。" },
+	zhanchang:  { name: "大戰遺址", region: "shenxu", icon: "⚔", desc: "萬年前仙魔大戰的戰場，殘兵斷戟與破碎仙紋散落其間，怨念與道則交織。" },
+	fengyin:    { name: "封印之地", region: "shenxu", icon: "🔒", desc: "層層上古封印，鎮著大戰的真相，也鎮著通往仙界的門戶。" },
+	xianmen:    { name: "仙門",     region: "shenxu", icon: "🌠", desc: "傳說中飛升仙界的門戶，仙光自門縫透出，叩問每一個走到此處的人。" },
+};
+
+/* ════════ 事件登錄表（沙盒中的引導主線） ════════
+   依序檢查；nextEventAt 回傳該地點第一個條件成立的事件。
+   事件段落本身會設旗標，使其 cond 之後不再成立。 */
+setup.events = [
+	// 凌霄峰（passage 即事件段落名）
+	{ passage:"suyuyao_first",     loc:"wuwuchang", label:"⚡ 演武場上的白衣身影", cond:function(p){ return !p.flags.metSuyuyao; } },
+	{ passage:"suyuyao_notice",    loc:"wuwuchang", label:"⚡ 走火入魔的師弟",     cond:function(p){ return p.flags.metSuyuyao && p.rel.suyuyao>=12 && !p.flags.suyuyaoNoticed; } },
+	{ passage:"qinxiang_challenge",loc:"wuwuchang", label:"⚡ 秦驤的比武之約",     cond:function(p){ return p.flags.enteredSect && !p.flags.qinxiangBeaten; } },
+	{ passage:"tournament_intro",  loc:"wuwuchang", label:"⚡ 五年一度宗門大比",   cond:function(p){ return p.flags.qinxiangBeaten && p.realm>=1 && !p.flags.tournament; } },
+	{ passage:"shrine_night",      loc:"citang",    label:"⚡ 深夜祠堂的一盞燈",   cond:function(p){ return p.flags.suyuyaoNoticed && p.rel.suyuyao>=20 && !p.flags.shrineNight && setup.isNight(p); } },
+	{ passage:"dual_cult_sword",   loc:"dongfu",    label:"⚡ 有人深夜叩響洞府",   cond:function(p){ return p.flags.shrineNight && p.realm>=1 && p.rel.suyuyao>=35 && !p.flags.dualSuyuyao && setup.isNight(p); } },
+	{ passage:"twin_sword",        loc:"jianya",    label:"⚡ 她約你上劍崖",       cond:function(p){ return p.flags.tournament && p.rel.suyuyao>=55 && !p.flags.twinSword; } },
+	// 南疆
+	{ passage:"qingling_first",    loc:"lingquan",  label:"⚡ 靈泉邊的狐族少女",   cond:function(p){ return !p.flags.metQing; } },
+	{ passage:"qingling_tail",     loc:"lingquan",  label:"⚡ 她在你身旁打盹",     cond:function(p){ return p.flags.metQing && p.rel.qingling>=12 && !p.flags.qingTail; } },
+	{ passage:"yaodan_intro",      loc:"milin",     label:"⚡ 濃烈血腥妖氣",       cond:function(p){ return !p.flags.chaosAwaken; } },
+	{ passage:"foxpolitics_intro", loc:"yishitang", label:"⚡ 狐族內亂驟起",       cond:function(p){ return p.flags.metQing && !p.flags.foxPolitics; } },
+	{ passage:"qingling_kiss",     loc:"shanzhai",  label:"⚡ 夜半的窗欞",         cond:function(p){ return p.flags.qingTail && p.rel.qingling>=24 && !p.flags.qingKiss && setup.isNight(p); } },
+	{ passage:"qingling_heat",     loc:"mijing",    label:"⚡ 失控的靈慾潮期",     cond:function(p){ return p.flags.qingKiss && p.rel.qingling>=40 && !p.flags.qingHeat; } },
+	// 第四卷 · 幽冥禁地（陰離線）
+	{ passage:"yinli_ambush",   loc:"huangquan",  label:"⚡ 殺意森然的女鬼使",   cond:function(p){ return !p.flags.metYinli; } },
+	{ passage:"xianwen_shard",  loc:"luanzang",   label:"⚡ 亂葬崗下的仙紋微光", cond:function(p){ return p.flags.metYinli && !p.flags.xianwen; } },
+	{ passage:"yinli_unbind",   loc:"wangchuan",  label:"⚡ 她靈識深處的鎖鏈",   cond:function(p){ return p.flags.metYinli && p.rel.yinli>=12 && !p.flags.yinliUnbind; } },
+	{ passage:"yinli_rebuild",  loc:"wangchuan",  label:"⚡ 重新學習「她自己」",   cond:function(p){ return p.flags.yinliUnbind && !p.flags.yinliRebuild; } },
+	{ passage:"yinli_touch",    loc:"guimenguan", label:"⚡ 停在你手背上的指尖",   cond:function(p){ return p.flags.yinliRebuild && p.rel.yinli>=40 && !p.flags.yinliTouch; } },
+	{ passage:"jindan_great",   loc:"guimenguan", label:"⚡ 金丹凝聚的契機",       cond:function(p){ return p.realm>=2 && !p.flags.jindan; } },
+	{ passage:"mingzun_confront",loc:"youmingdian",label:"⚡ 冥尊法器的森冷低語",  cond:function(p){ return p.flags.yinliUnbind && p.flags.xianwen && !p.flags.mingzun; } },
+	// 裴冬雪 · 冰心宗（並行線，大比後可北上）
+	{ passage:"dongxue_first",  loc:"hantan",   label:"⚡ 寒潭邊如冰雕的聖女",   cond:function(p){ return !p.flags.metDongxue; } },
+	{ passage:"dongxue_record", loc:"shengnv",  label:"⚡ 寫滿異常數據的日誌",   cond:function(p){ return p.flags.metDongxue && p.rel.dongxue>=8 && !p.flags.dxRecord; } },
+	{ passage:"dongxue_frost",  loc:"bingyu",   label:"⚡ 暴走的寒冰",           cond:function(p){ return p.flags.metDongxue && p.rel.dongxue>=18 && !p.flags.dxFrost; } },
+	{ passage:"dongxue_door",   loc:"shengnv",  label:"⚡ 深夜叩響聖女居的人是她", cond:function(p){ return p.flags.dxFrost && p.rel.dongxue>=30 && !p.flags.dxDoor && setup.isNight(p); } },
+	{ passage:"qingqing_threat",loc:"binggate", label:"⚡ 清情大典的鐘聲",       cond:function(p){ return p.flags.dxDoor && p.rel.dongxue>=42 && !p.flags.dxBreak; } },
+	// 中段約會 / 感情深化（一次性，標籤 ♡ 與主線 ⚡ 區分）
+	{ passage:"sy_date_spar",   loc:"jianya",   label:"♡ 邀蘇師姐上劍崖切磋",   cond:function(p){ return p.flags.metSuyuyao && p.rel.suyuyao>=6 && !p.flags.syD1; } },
+	{ passage:"sy_date_herb",   loc:"houshan",  label:"♡ 與蘇師姐同採靈藥",     cond:function(p){ return p.flags.suyuyaoNoticed && p.rel.suyuyao>=26 && !p.flags.syD2; } },
+	{ passage:"ql_date_firefly",loc:"lingquan", label:"♡ 玲兒拉你去看螢蟲海",   cond:function(p){ return p.flags.metQing && p.rel.qingling>=6 && !p.flags.qlD1; } },
+	{ passage:"ql_date_huaxing",loc:"shanzhai", label:"♡ 化形大典的邀約",       cond:function(p){ return p.flags.qingKiss && p.rel.qingling>=24 && !p.flags.qlD2; } },
+	{ passage:"yl_date_flowers",loc:"wangchuan",label:"♡ 陪陰離收集山花",       cond:function(p){ return p.flags.yinliRebuild && !p.flags.ylD1; } },
+	{ passage:"yl_date_snow",   loc:"guimenguan",label:"♡ 雪中小狐狸的記憶",    cond:function(p){ return p.flags.yinliRebuild && p.rel.yinli>=45 && !p.flags.ylD2; } },
+	{ passage:"dx_date_tea",    loc:"hantan",   label:"♡ 寒潭邊的一壺溫茶",     cond:function(p){ return p.flags.metDongxue && p.rel.dongxue>=8 && !p.flags.dxD1; } },
+	{ passage:"dx_date_peak",   loc:"bingfeng", label:"♡ 與冬雪同看絕頂風雪",   cond:function(p){ return p.flags.dxFrost && p.rel.dongxue>=30 && !p.flags.dxD2; } },
+	// 第五卷 · 魔道入侵（金丹大成或挫敗冥尊後，於凌霄劍宗觸發）
+	{ passage:"invasion_call",  loc:"wuwuchang",label:"🔥 魔道入侵！宗門告急",   cond:function(p){ return (p.flags.jindan || p.flags.mingzun) && !p.flags.vol5started; } },
+	// 第六卷 · 飛升謎題（血魔尊隕落後，中央神墟）
+	{ passage:"shenxu_enter",   loc:"shenxu_gate",label:"🌌 中央神墟的封印",     cond:function(p){ return p.flags.bloodlord && !p.flags.vol6started; } },
+	{ passage:"xianwen_gather", loc:"zhanchang",  label:"⚡ 散落的仙紋碎片",       cond:function(p){ return p.flags.vol6started && !p.flags.xianwenFull; } },
+	{ passage:"truth_reveal",   loc:"fengyin",    label:"⚡ 封印中的萬年真相",     cond:function(p){ return p.flags.xianwenFull && !p.flags.truthDone; } },
+	{ passage:"seal_break",     loc:"fengyin",    label:"⚡ 破開最後的封印",       cond:function(p){ return p.flags.truthDone && !p.flags.sealBroken; } },
+	{ passage:"ascension_choice",loc:"xianmen",   label:"🌠 飛升抉擇",             cond:function(p){ return p.flags.sealBroken && !p.flags.ascended; } },
+	// A3 拓展支線（各女主後期深化，緣分高時觸發）
+	{ passage:"sy_sword_tomb", loc:"jianya",   label:"⚜ 蘇羽瑤的祖傳劍冢",     cond:function(p){ return p.flags.shrineNight && p.rel.suyuyao>=40 && !p.flags.syQuest; } },
+	{ passage:"ql_lifespan",   loc:"lingquan",  label:"⚜ 壽命難題",             cond:function(p){ return p.flags.qingKiss && p.rel.qingling>=45 && !p.flags.qlQuest; } },
+	{ passage:"dx_unseal",     loc:"shengnv",   label:"⚜ 冰心解封",             cond:function(p){ return p.flags.dxBreak && p.rel.dongxue>=45 && !p.flags.dxQuest; } },
+	{ passage:"yl_repay",      loc:"wangchuan", label:"⚜ 以魂報恩",             cond:function(p){ return p.flags.yinliTouch && p.rel.yinli>=55 && !p.flags.ylQuest; } },
+	// A4 反派支線 · 血蓮（單向迷戀悲劇，血魔尊隕落後）
+	{ passage:"xuelian_fate",  loc:"houshan",   label:"⚜ 血蓮的執念",           cond:function(p){ return p.flags.bloodlord && !p.flags.xuelian; } },
+	// 後宮張力 · 吃醋與抉擇（≥2 位女主緣分高時，一次性）
+	{ passage:"harem_jealousy", loc:"dongfu",   label:"♡ 三人之間微妙的空氣",     cond:function(p){ return setup.highLovers(p,55).length>=2 && !p.flags.haremJealousy; } },
+];
+/* ════════ 坊市地點化 + 旅商 ════════
+   坊市只在「聚居／市集」地點開放（破除「到處可開」）；
+   旅商於荒野要道按日輪替出現，每次只做一單生意。 */
+/* ════════ 多勢力聲望／陣營 ════════ */
+setup.factions = {
+	zhengdao: { name: "正道盟",   desc: "凌霄劍宗、冰心宗等名門正派。" },
+	yaozu:    { name: "南疆妖族", desc: "九尾狐族與萬妖山諸部。" },
+	youming:  { name: "幽冥鬼道", desc: "盤踞幽冥澤的鬼修勢力。" },
+	mozong:   { name: "血煞魔宗", desc: "嗜殺成性的魔道宗門。" },
+};
+setup.factionTier = function (v) {
+	if (v <= -40) return { label: "敵視", cls: "st-danger" };
+	if (v < -10)  return { label: "提防", cls: "st-verm" };
+	if (v < 15)   return { label: "中立", cls: "st-grey" };
+	if (v < 45)   return { label: "友好", cls: "st-jade" };
+	if (v < 80)   return { label: "信賴", cls: "st-gold" };
+	return { label: "盟友", cls: "st-glow" };
+};
+setup.marketFaction = { shanzhai: "yaozu", guimenguan: "youming", binggate: "zhengdao", wuwuchang: "zhengdao" };
+setup.marketDiscount = function (p) {
+	const fid = setup.marketFaction[p.loc]; if (!fid) return 0;
+	const v = (p.faction && p.faction[fid]) || 0;
+	if (v >= 80) return 0.20; if (v >= 45) return 0.12; if (v >= 15) return 0.05; return 0;
+};
+setup.factionPrice = function (p, base) { return Math.max(1, Math.round(base * (1 - setup.marketDiscount(p)))); };
+
+setup.marketLocs = ["wuwuchang", "shanzhai", "guimenguan", "binggate"];
+setup.hasMarket = function (p) { return setup.marketLocs.indexOf(p.loc) >= 0; };
+setup.marketName = function (loc) {
+	const m = { wuwuchang: "凌霄坊市", shanzhai: "狐族市集", guimenguan: "鬼市", binggate: "冰嶺商棧" };
+	return m[loc] || "坊市";
+};
+setup.merchantLocs = ["houshan", "milin", "huangquan", "hantan", "zhanchang"];
+/* 旅商是否在此地（按日輪替，且今日尚未在此交易過） */
+setup.merchantHere = function (p) {
+	if (setup.merchantLocs.indexOf(p.loc) < 0) return false;
+	if (p.merchTradeDay === p.time.day) return false;          // 今日已交易
+	const idx = setup.merchantLocs.indexOf(p.loc);
+	return (p.time.day % setup.merchantLocs.length) === idx;   // 每地各自的輪值日
+};
+/* 旅商當日貨品（依日推算，價格略低於坊市） */
+setup.merchantStock = function (p) {
+	const goods = [
+		{ kind: "pill", key: "pojing",  name: "破境丹", price: 95,  desc: "下次突破成功率大增。坊市售 140，旅商讓利。" },
+		{ kind: "ware", flag: "hehuanlu", name: "合歡露", price: 55, desc: "雙修秘藥，增幅五成。坊市售 80。" },
+		{ kind: "herb", key: "xuelian", name: "百年雪蓮", price: 42, desc: "稀有靈藥，藥力雄渾。坊市售 60。" },
+		{ kind: "ware", flag: "juling_pei", name: "聚靈玉珮", price: 270, once: true, luck: 5, desc: "上古聚靈法寶，氣運 +5（永久）。坊市售 320。" },
+	];
+	return goods[p.time.day % goods.length];
+};
+
+/* ════════ 旅途隨機遭遇（移動時觸發） ════════ */
+setup.travelRoll = function (p) { return Math.random() < (setup.weather(p.time.day).key === "霧" ? 0.32 : 0.20); };
+setup.travelFlavor = function (region) {
+	const f = {
+		lingxiao: "山道清幽，劍氣自遠峰隱隱傳來，你緩步而行，心境亦隨之澄澈。",
+		nanjiang: "瘴林濕熱，藤蔓間妖蟲低鳴，你謹慎擇路，不敢稍有鬆懈。",
+		youming:  "黃泉霧氣裡鬼火明滅，腳步聲在死寂中格外清晰，你按住心神前行。",
+		bingling: "風雪撲面，天地一片蒼茫，呼出的氣息瞬間凝成白霜。",
+		shenxu:   "空間裂隙在身畔無聲開闔，殘存的仙威與魔氣彼此絞殺，步步驚心。",
+	};
+	return f[region] || "你獨自趕路，四下無人。";
+};
+setup.travelEncounter = function (p) {
+	const r = Math.random();
+	if (r < 0.26) return { type: "fight", foe: setup.srFoe(p) };
+	if (r < 0.56) return { type: "loot", stones: 4 + setup.rnd(8) + p.realm * 2, herb: setup.srHerb(p) };
+	if (r < 0.76) return { type: "fortune", cult: Math.round((30 + p.realm * 20) * (p.cultMul || 1)) };
+	return { type: "flavor" };
+};
+
+/* ════════ NPC 作息排程（DoL 式「活的世界」） ════════
+   已結識的女主依時段出現在不同地點；玩家可在對的時間到對的地點上門尋訪。
+   時段鍵對應 setup.timeOfDay：晨 / 午後 / 黃昏 / 夜。 */
+setup.npcSchedule = {
+	suyuyao: { met: "metSuyuyao", region: "lingxiao", name: "蘇羽瑤",
+		loc: { "晨": "wuwuchang", "午後": "cangjingge", "黃昏": "jianya", "夜": "citang" } },
+	qingling: { met: "metQing", region: "nanjiang", name: "青玲兒",
+		loc: { "晨": "lingquan", "午後": "milin", "黃昏": "shanzhai", "夜": "shanzhai" } },
+	dongxue: { met: "metDongxue", region: "bingling", name: "裴冬雪",
+		loc: { "晨": "hantan", "午後": "shengnv", "黃昏": "bingyu", "夜": "shengnv" } },
+	yinli: { met: "metYinli", region: "youming", name: "陰離",
+		loc: { "晨": "wangchuan", "午後": "huangquan", "黃昏": "wangchuan", "夜": "guimenguan" } },
+};
+setup.npcLocNow = function (id, p) {
+	const s = setup.npcSchedule[id];
+	if (!s || !p.flags[s.met]) return null;
+	return s.loc[setup.timeOfDay(p.time.tick)] || null;
+};
+/* 此地此刻可遇見的（已結識）女主 id 清單 */
+setup.npcHere = function (p) {
+	const out = [];
+	for (const id in setup.npcSchedule) if (setup.npcLocNow(id, p) === p.loc) out.push(id);
+	return out;
+};
+
+/* ════════ 技藝熟練度（DoL 式「用進廢退」技能成長） ════════
+   各技藝隨對應行動增長；劍術→攻擊、悟道→修煉效率、丹道/雙修/馭獸→各自系統。 */
+setup.profDefs = {
+	sword:   { name: "劍術", desc: "攻擊加成" },
+	dao:     { name: "悟道", desc: "修煉效率加成" },
+	alchemy: { name: "丹道", desc: "煉丹成功率加成" },
+	dual:    { name: "雙修", desc: "雙修增益加成" },
+	beast:   { name: "馭獸", desc: "馴服與靈獸加成" },
+};
+setup.profTier = function (v) {
+	if (v < 15)  return { label: "初窺", cls: "st-grey" };
+	if (v < 35)  return { label: "入門", cls: "st-jade" };
+	if (v < 60)  return { label: "小成", cls: "st-gold" };
+	if (v < 85)  return { label: "大成", cls: "st-goldl" };
+	return { label: "登峰", cls: "st-glow" };
+};
+setup.profOf = function (p, key) { return (p.prof && p.prof[key]) || 0; };
+setup.addProf = function (p, key, n) {
+	if (!p.prof) p.prof = {};
+	p.prof[key] = Math.min(100, (p.prof[key] || 0) + n);
+};
+
+setup.nextEventAt = function (p, loc) {
+	for (let i = 0; i < setup.events.length; i++) {
+		const e = setup.events[i];
+		if (e.loc === loc && e.cond(p)) return e;
+	}
+	return null;
+};
+setup.eventsAt = function (p, loc) {
+	return setup.events.filter(function (e) { return e.loc === loc && e.cond(p); });
+};
+
+/* ════════ 屬性結算 ════════ */
+setup.recompute = function (p) {
+	let atk = 8, maxHp = 60, maxMp = 30, def = 2, cultMul = 1, luck = 88;
+	let crit = 0.05, combo = 0;
+	(p.books || []).forEach(function (id) {
+		const b = setup.books[id]; if (!b || !b.eff) return; const e = b.eff;
+		if (e.atk) atk += e.atk; if (e.maxHp) maxHp += e.maxHp; if (e.def) def += e.def;
+		if (e.cultMul) cultMul += e.cultMul; if (e.luck) luck += e.luck;
+		if (e.crit) crit += e.crit; if (e.combo) combo = Math.max(combo, e.combo);
+	});
+	/* 出戰靈獸加成（luck 因 p.luck 為狀態值，於 equip/unequip widget 以差值處理） */
+	if (p.beastEquipped && setup.beasts && setup.beasts[p.beastEquipped]) {
+		const bb = setup.beasts[p.beastEquipped].bonus || {};
+		const blv = (p.beastLv && p.beastLv[p.beastEquipped]) || 0;
+		const bm = 1 + blv * 0.25;   // 靈獸進階：每階 +25% 加成
+		atk += Math.round((bb.atk || 0) * bm); def += Math.round((bb.def || 0) * bm);
+		cultMul += (bb.cultMul || 0) * bm;
+		p.exploreBonus = (bb.exploreBonus || 0) * bm;
+	} else { p.exploreBonus = 0; }
+	/* 祭煉法寶加成（luck 同樣由 equip/unequip widget 以差值處理） */
+	if (p.artiEquipped && setup.artifacts && setup.artifacts[p.artiEquipped]) {
+		const ab = setup.artifacts[p.artiEquipped].bonus || {};
+		atk += ab.atk || 0; def += ab.def || 0; maxHp += ab.maxHp || 0; cultMul += ab.cultMul || 0; crit += ab.crit || 0;
+	}
+	if (p.dongfuLv && p.dongfuLv > 1) cultMul += (p.dongfuLv - 1) * 0.05;   // 洞府升級·聚靈陣法增益修煉
+	if (p.prof) {   // 技藝熟練度：劍術→攻擊、悟道→修煉效率
+		atk += Math.floor((p.prof.sword || 0) / 8);
+		cultMul += (p.prof.dao || 0) * 0.002;
+	}
+	if (p.ngCultMul) cultMul += p.ngCultMul;   // 多周目傳承修煉加成
+	const tier = p.realm * 40 + p.layer * 4;
+	p.atk = atk + tier; p.def = def + Math.floor(tier / 4);
+	p.maxHp = maxHp + tier * 3; p.maxMp = maxMp + tier;
+	p.cultMul = cultMul; p.luckBase = luck; p.crit = crit; p.combo = combo;
+	if (p.hp > p.maxHp) p.hp = p.maxHp;
+	if (p.mp > p.maxMp) p.mp = p.maxMp;
+	return p;
+};
+
+/* ════════ 壽元（隨境界延長） ════════
+   1 載 = 120 日；起始 16 歲；境界越高壽命越長。 */
+setup.lifespanOf = function (realm) { return [120, 200, 400, 800][realm] || 1200; };
+setup.ageYears = function (p) { return 16 + Math.floor(((p.time ? p.time.day : 1) - 1) / 120); };
+setup.lifeLeft = function (p) { return setup.lifespanOf(p.realm) - setup.ageYears(p); };
+setup.lifeBadge = function (p) {
+	const left = setup.lifeLeft(p), cls = (left < 20) ? "st-danger" : (left < 60) ? "st-gold" : "st-jade";
+	return '<span class="gstat ' + cls + '">壽元 ' + setup.ageYears(p) + ' / ' + setup.lifespanOf(p.realm) + ' 載</span>';
+};
+/* 御劍飛行：金丹(realm≥2)後可御劍遠行，遠行耗時減少 */
+setup.canFly = function (p) { return p.realm >= 2; };
+
+setup.realmName = function (p) {
+	const r = setup.realms[p.realm]; if (!r) return "未知";
+	if (r.sub) return r.name + (r.sub[p.layer] || "");
+	return r.name + " " + p.layer + " 層";
+};
+setup.cultNeed = function (p) {
+	const r = setup.realms[p.realm];
+	return Math.round(r.need + p.layer * r.need * 0.18);
+};
+setup.nextRealmLabel = function (p) {
+	const r = setup.realms[p.realm];
+	if (p.layer < r.layers) {
+		if (r.sub) return r.name + (r.sub[p.layer + 1] || "更高品階");
+		return r.name + " " + (p.layer + 1) + " 層";
+	}
+	return setup.realms[p.realm + 1] ? setup.realms[p.realm + 1].name : "飛升之境";
+};
+setup.relText = function (who, v) {
+	if (who === "suyuyao") {
+		if (v <= 0)  return "尚未接觸";
+		if (v < 12)  return "廢材（有些疑惑）";
+		if (v < 24)  return "不尋常的外門弟子";
+		if (v < 40)  return "值得注意的存在";
+		if (v < 60)  return "……（她自己說不清楚）";
+		if (v < 85)  return "道心傾斜（她不承認）";
+		return "靈犀相通";
+	}
+	if (who === "qingling") {
+		if (v <= 0)  return "尚未相遇";
+		if (v < 12)  return "有趣的人類";
+		if (v < 24)  return "沒有貪婪眼神的怪人";
+		if (v < 40)  return "讓人想靠近";
+		if (v < 60)  return "尾巴不聽話（她否認）";
+		if (v < 85)  return "標記期將至";
+		return "以心映心";
+	}
+	if (who === "yinli") {
+		if (v <= 0)  return "敵意（任務人格）";
+		if (v < 12)  return "動搖的殺意";
+		if (v < 24)  return "困惑的注視";
+		if (v < 40)  return "依賴漸生";
+		if (v < 60)  return "贖罪與牽掛";
+		if (v < 85)  return "以魂相報";
+		return "魂之所繫";
+	}
+	if (who === "dongxue") {
+		if (v <= 0)  return "無感（絕情冰體）";
+		if (v < 8)   return "觀測對象";
+		if (v < 18)  return "異常數據";
+		if (v < 30)  return "持續時間延長";
+		if (v < 45)  return "第十七次接觸";
+		if (v < 70)  return "解凍中";
+		return "情非寒道之敵";
+	}
+	return "";
+};
+setup.rnd = function (n) { return Math.floor(Math.random() * n); };
+
+/* 好感最高的女主（前世道侶揭曉用） */
+setup.topLove = function (p) {
+	const names = { suyuyao: "蘇羽瑤", qingling: "青玲兒", dongxue: "裴冬雪", yinli: "陰離" };
+	let best = null, bv = -1;
+	["suyuyao", "qingling", "dongxue", "yinli"].forEach(function (k) {
+		const v = (p.rel && p.rel[k]) || 0;
+		if (v > bv) { bv = v; best = k; }
+	});
+	return { id: best, name: names[best] || "", val: bv, has: bv > 0 };
+};
+/* 已締緣的女主清單（道侶大典用） */
+setup.lovers = function (p) {
+	const names = { suyuyao: "蘇羽瑤", qingling: "青玲兒", dongxue: "裴冬雪", yinli: "陰離" };
+	return ["suyuyao", "qingling", "dongxue", "yinli"]
+		.filter(function (k) { return ((p.rel && p.rel[k]) || 0) >= 40; })
+		.map(function (k) { return names[k]; });
+};
+setup.heroNames = { suyuyao: "蘇羽瑤", qingling: "青玲兒", dongxue: "裴冬雪", yinli: "陰離" };
+/* 緣分達門檻的女主（吃醋/抉擇用） */
+setup.highLovers = function (p, thresh) {
+	thresh = thresh || 55;
+	return ["suyuyao", "qingling", "dongxue", "yinli"]
+		.filter(function (k) { return ((p.rel && p.rel[k]) || 0) >= thresh; });
+};
+/* 前世道侶：玩家於大典明確抉擇者($p.flags.daoLu) 優先，否則回退最高好感 */
+setup.daoLu = function (p) {
+	if (p.flags && p.flags.daoLu && setup.heroNames[p.flags.daoLu]) {
+		return { id: p.flags.daoLu, name: setup.heroNames[p.flags.daoLu], val: (p.rel && p.rel[p.flags.daoLu]) || 0, has: true, chosen: true };
+	}
+	const t = setup.topLove(p);
+	return { id: t.id, name: t.name, val: t.val, has: t.has, chosen: false };
+};
+setup.has = function (p, id) { return (p.books || []).indexOf(id) !== -1; };
+
+/* 建立戰鬥狀態（在 JS 組裝，避免 twee 多行物件字面量陷阱） */
+setup.newBattle = function (foeId, winPassage, losePassage) {
+	const e = setup.enemies[foeId];
+	return {
+		foeId: foeId, foeHp: e.hp, foeMax: e.hp, win: winPassage, lose: losePassage,
+		started: false, msg: "", emsg: "",
+		/* C-deep 戰鬥深化狀態（皆隨戰鬥消滅，不進長期存檔語意） */
+		elem: "金",            // 玩家本回合出招屬性（可切換）
+		turn: 0,               // 回合數
+		foeBurn: 0, foePoison: 0, foeStun: 0, foeWeak: 0,  // 敵方狀態（剩餘回合）
+		pAtkBuff: 0, pAtkBuffT: 0,                          // 玩家攻擊增益（量 / 剩餘回合）
+		pShieldT: 0,                                        // 玩家護體（減傷回合）
+		pWeakT: 0, pPoison: 0,                              // 玩家被弱化 / 中毒（剩餘回合）
+		phase2: false,         // BOSS 二階段是否已觸發
+		assisted: false        // 道侶開場援助是否已給
+	};
+};
+
+/* ── 全新玩家 ── */
+setup.newPlayer = function () {
+	const p = {
+		name: "凌霄",
+		realm: 0, layer: 1, cult: 0,
+		hp: 60, maxHp: 60, mp: 30, maxMp: 30,
+		atk: 8, def: 2,
+		stones: 0, coins: 1,
+		luck: 88,
+		books: ["tuna"],
+		recipes: ["juqi"],
+		pills: {},
+		herbs: { lingcao: 3 },
+		rel: { suyuyao: 0, qingling: 0, yinli: 0, dongxue: 0 },
+		stats: { daoxin: 30, xinmo: 0, fame: 0, fatigue: 0 },
+		flags: {},
+		buffs: {},
+		ngplus: 0, ngCultMul: 0,     // 多周目傳承（NewGamePlus 套用）
+		seen: { loc: {}, foe: {} },  // 圖鑑探索紀錄
+		time: { day: 1, tick: 4 },   // 第1日 辰時
+		loc: "dongfu",
+		region: "lingxiao",
+		placeName: "凌氏廢墟",       // 狀態欄顯示用；序章手動設定，沙盒由地點同步
+		sandbox: false               // 入宗後開啟地圖沙盒
+	};
+	setup.recompute(p);
+	p.hp = p.maxHp; p.mp = p.maxMp;
+	p.luck = p.luckBase;
+	p.ver = setup.SAVE_VER;
+	return p;
+};
+
+/* ════════ 存檔遷移（版本化） ════════
+   後加欄位的統一補全處，取代散落的 PassageReady 臨時補丁。
+   版本不符才執行；新欄位請加進 defaults 並 ++SAVE_VER。 */
+setup.SAVE_VER = 7;
+setup.migrate = function (p) {
+	if (!p || !p.maxHp) return;
+	if (p.ver === setup.SAVE_VER) return;
+	if (!p.seen) p.seen = { loc: {}, foe: {} };
+	if (!p.seen.loc) p.seen.loc = {};
+	if (!p.seen.foe) p.seen.foe = {};
+	if (!p.rel) p.rel = {};
+	["suyuyao", "qingling", "yinli", "dongxue"].forEach(function (k) { if (typeof p.rel[k] !== "number") p.rel[k] = 0; });
+	if (!p.stats) p.stats = {};
+	["daoxin", "xinmo", "fame", "fatigue"].forEach(function (k) { if (typeof p.stats[k] !== "number") p.stats[k] = (k === "daoxin" ? 30 : 0); });
+	if (!p.flags) p.flags = {};
+	if (!p.buffs) p.buffs = {};
+	if (!p.pills) p.pills = {};
+	if (!p.herbs) p.herbs = {};
+	if (!Array.isArray(p.recipes)) p.recipes = ["juqi"];
+	if (!Array.isArray(p.books)) p.books = ["tuna"];
+	if (!Array.isArray(p.artifacts)) p.artifacts = [];
+	if (!Array.isArray(p.beasts)) p.beasts = [];
+	if (!Array.isArray(p.formations)) p.formations = [];
+	if (!p.talismans) p.talismans = {};
+	if (!p.tips) p.tips = {};
+	if (!p.faction) p.faction = { zhengdao: 0, yaozu: 0, youming: 0, mozong: 0 };
+	if (typeof p.dongfuLv !== "number") p.dongfuLv = 1;
+	if (!p.field) p.field = { crop: null, plantDay: 0 };
+	if (typeof p.mineDay !== "number") p.mineDay = p.time ? p.time.day : 1;
+	if (typeof p.sectMerit !== "number") p.sectMerit = 0;
+	if (typeof p.sectRank !== "number") p.sectRank = 0;
+	if (!p.beastLv) p.beastLv = {};
+	if (!p.prof) p.prof = {};
+	if (!p.visited) p.visited = {};
+	if (!p.time) p.time = { day: 1, tick: 4 };
+	const defs = { ngplus: 0, ngCultMul: 0, cultCount: 0, cultDay: 0, dualCD: 0, pulseDay: 0,
+		merchTradeDay: -1, artiLuckApplied: 0, beastLuckApplied: 0, exploreBonus: 0, coins: 0, stones: 0 };
+	for (const k in defs) if (typeof p[k] === "undefined") p[k] = defs[k];
+	setup.recompute(p);
+	if (typeof p.luck !== "number") p.luck = p.luckBase;
+	p.ver = setup.SAVE_VER;
+};
+
+/* 多周目傳承加成：遞減累加、各有上限（防膨脹） */
+setup.ngBonus = function (ng) {
+	if (!ng || ng <= 0) return { cultMul: 0, coins: 0, stones: 0, luck: 0 };
+	const dim = function (per, cap) { let s = 0, step = per; for (let i = 0; i < ng; i++) { s += step; step *= 0.7; } return Math.min(cap, s); };
+	return {
+		cultMul: Math.round(Math.min(0.45, dim(0.12, 0.45)) * 100) / 100,
+		coins: Math.round(dim(6, 30)),
+		stones: Math.round(dim(40, 260)),
+		luck: Math.round(dim(7, 35)),
+	};
+};
+
+/* ════════ 數字鍵 hotkey ════════
+   把段落中的主要選項（事件・選項・地圖・標題選單）依序綁定 1–9 */
+setup.hotkeyLinkSel = "#passages .passage .event-link a.link-internal, " +
+	"#passages .passage .choices a.link-internal, " +
+	"#passages .passage .map-grid a.link-internal, " +
+	"#passages .passage .title-menu a.link-internal";
+setup.hotkeyLinks = function (includeHidden) {
+	return Array.prototype.slice.call(document.querySelectorAll(setup.hotkeyLinkSel))
+		.filter(function (a) {
+			if (a.classList.contains("disabled")) return false;
+			if (!includeHidden && a.offsetParent === null) return false;
+			return true;
+		});
+};
+
+/* 段落顯示後：為前 9 個選項加上數字徽章（不看可見性，避免初始 init-screen 時被濾掉） */
+setup.addHotkeyBadges = function () {
+	const links = setup.hotkeyLinks(true);
+	for (let i = 0; i < links.length && i < 9; i++) {
+		if (links[i].querySelector(".key-num")) continue;
+		const b = document.createElement("span");
+		b.className = "key-num";
+		b.textContent = (i + 1);
+		links[i].insertBefore(b, links[i].firstChild);
+	}
+};
+$(document).on(":passagedisplay", setup.addHotkeyBadges);
+$(document).on(":storyready", function () { setTimeout(setup.addHotkeyBadges, 0); });
+
+/* 依文字內容點擊第一個可用連結（段落或狀態欄） */
+setup.clickByText = function (subs) {
+	const all = document.querySelectorAll("#passages a.link-internal, #story-caption a.link-internal");
+	for (let i = 0; i < all.length; i++) {
+		const a = all[i];
+		if (a.classList.contains("disabled") || a.offsetParent === null) continue;
+		for (let j = 0; j < subs.length; j++) {
+			if (a.textContent.indexOf(subs[j]) !== -1) { a.click(); return true; }
+		}
+	}
+	return false;
+};
+
+/* 全域鍵盤監聽（只裝一次）：數字 1–9 選項；M 地圖、R 歇息、空白 確認、Esc/B 返回 */
+$(document).on("keydown.lxhotkey", function (e) {
+	if (e.ctrlKey || e.metaKey || e.altKey) return;
+	const tag = (e.target && e.target.tagName) || "";
+	if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
+	const dlg = document.getElementById("ui-dialog");
+	if (dlg && dlg.classList.contains("open")) return;   // 存檔/設定對話框開啟時不攔
+
+	// 數字鍵 1–9
+	const n = parseInt(e.key, 10);
+	if (n >= 1 && n <= 9) {
+		const links = setup.hotkeyLinks();
+		if (links[n - 1]) { e.preventDefault(); links[n - 1].click(); }
+		return;
+	}
+
+	// 空白鍵 = 第一個選項（多用於「繼續」）
+	if (e.key === " " || e.code === "Space") {
+		const links = setup.hotkeyLinks();
+		if (links[0]) { e.preventDefault(); links[0].click(); }
+		return;
+	}
+
+	const k = (e.key || "").toLowerCase();
+	if (k === "m")      { if (setup.clickByText(["前往他處", "🗺"])) e.preventDefault(); return; }
+	if (k === "r")      { if (setup.clickByText(["歇息"]))           e.preventDefault(); return; }
+	if (k === "b" || e.key === "Escape") { if (setup.clickByText(["返回", "離開", "取消", "返回前路"])) e.preventDefault(); return; }
+});
+
+/* Toast 浮動提示 */
+setup.toast = function (msg) {
+	let el = document.getElementById("lx-toast");
+	if (!el) { el = document.createElement("div"); el.id = "lx-toast"; el.className = "lx-toast"; document.body.appendChild(el); }
+	el.innerHTML = msg;
+	el.classList.add("show");
+	clearTimeout(el._tm);
+	el._tm = setTimeout(function () { el.classList.remove("show"); }, 2200);
+};

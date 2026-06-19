@@ -1,0 +1,159 @@
+:: DailyScript [script]
+/* ════════ 地點日常／隨機小事件 ════════
+   每筆：{ t:敘述, sys:系統提示(可選), 以及效果欄位：
+   cult / stones / hp / mp / herb:id / book? / stat:[key,n] / rel:[who,n] } */
+setup.dailies = {
+	dongfu: [
+		{ t: "你在蒲團上靜坐良久，識海澄明，於混沌之氣的流轉間又有微悟。", cult: 25, stat: ["daoxin", 2] },
+		{ t: "玉佩中的萬界藏書閣傳來一縷微光，一頁殘卷無意間翻動，記下了一道煉氣的小竅門。", cult: 18 },
+		{ t: "你擦拭著洞府裡那盞長明燈，前世的某段回憶忽明忽暗地浮起，心緒寧定了些。", stat: ["xinmo", -6] },
+	],
+	wuwuchang: [
+		{ t: "你混在外門弟子間操演劍式，一名師弟偷偷向你請教，你隨手點撥，竟也教學相長。", cult: 22, stat: ["fame", 1], frep: ["zhengdao", 1] },
+		{ t: "演武場角落，幾名弟子正議論著蘇師姐近來的劍陣研究，你默默聽了一耳。", rel: ["suyuyao", 1] },
+		{ t: "你撿起一柄無人問津的舊劍，試了試手感——劍雖鈍，劍意可以自己磨。", cult: 16 },
+	],
+	cangjingge: [
+		{ t: "掃灑之餘，你在書架夾縫裡尋得一冊蒙塵殘頁，雖不成功法，卻補全了某處關竅。", cult: 20, coins: 1 },
+		{ t: "一名管事弟子見你勤勉，多分了你幾枚打掃的工錢。", stones: 6 },
+		{ t: "你借閱典籍時瞥見一則丹道筆記，順手記下，或許煉丹時用得上。", herb: "yuelan" },
+	],
+	danfang: [
+		{ t: "你幫丹房師兄看了會兒火，學到一手穩定爐溫的訣竅。", stat: ["daoxin", 1], stones: 4 },
+		{ t: "爐邊散落幾味廢棄藥渣，你細看之下，竟挑出一枚仍有藥性的火心果。", herb: "huoxin" },
+	],
+	citang: [
+		{ t: "你在先賢牌位前枯坐一陣，心中那點浮躁被香火氣慢慢撫平。", stat: ["xinmo", -10], stat2: ["daoxin", 2] },
+		{ t: "夜風穿堂，燭影搖曳，你忽然想通了一個一直卡著的修煉關竅。", cult: 20 },
+	],
+	jianya: [
+		{ t: "雲海在腳下翻湧，你負手而立，劍意隨天地開闊而舒展。", cult: 30, stat: ["daoxin", 2] },
+		{ t: "崖風凜冽，你閉目感應遠方劍氣，竟摸到一絲『以勢馭劍』的門檻。", cult: 24 },
+	],
+	houshan: [
+		{ t: "你在幽谷裡尋到一叢長勢正好的靈草。", herb: "lingcao", stones: 3 },
+		{ t: "一隻火靈鼠從石縫探頭，見你無惡意，叼來一枚火心果便竄走了。", herb: "huoxin" },
+		{ t: "後山溪畔清涼，你掬水洗面，疲憊一掃。", stat: ["fatigue", -15] },
+	],
+	shanzhai: [
+		{ t: "山寨裡的小狐妖們圍著你嘰嘰喳喳，塞給你一把野果，鬧了好一陣。", stat: ["fatigue", -10], rel: ["qingling", 1] },
+		{ t: "一名狐族長老難得對你拱手致意——你這人族客卿，漸漸被接納了。", stat: ["fame", 2], frep: ["yaozu", 2] },
+	],
+	lingquan: [
+		{ t: "靈泉霧氣氤氳，你在泉邊調息，靈力溫養，舒暢無比。", mp: 30, stat: ["fatigue", -12] },
+		{ t: "你瞥見青玲兒的尾毛落在泉石上，鬼使神差地收進了袖中——又覺得自己莫名其妙。", rel: ["qingling", 1] },
+	],
+	yishitang: [
+		{ t: "你旁聽族務，對南疆各方勢力的盤算又多了幾分了解。", stat: ["fame", 1], frep: ["yaozu", 1] },
+		{ t: "幾名狐族修士向你討教人族修煉之法，相談甚歡。", rel: ["qingling", 1] },
+	],
+	mijing: [
+		{ t: "秘境靈氣紊亂卻精純，你冒險吐納一周天，修為大進。", cult: 40 },
+		{ t: "亂流深處，你拾得一枚不知名的晶石，靈光內蘊。", stones: 12 },
+	],
+	guimenguan: [
+		{ t: "你以混沌靈氣護住心神，於死氣瀰漫處強行打坐，竟磨出幾分定力。", cult: 26, stat: ["daoxin", 2] },
+		{ t: "陰離沉默地坐在不遠處，沒有說話，卻也沒有離開。那道氣息漸漸不再令你警惕。", rel: ["yinli", 1] },
+	],
+	huangquan: [
+		{ t: "黃泉路上鬼火幽幽，你辨明了一條相對安穩的路徑。", stat: ["daoxin", 1] },
+		{ t: "你斬散幾縷遊蕩的怨念，順手收攏了散落的陰煞晶石。", stones: 8 },
+		{ t: "你以混沌之力安撫了一縷不甘的孤魂，附近的鬼修遠遠頷首，似有幾分認可。", frep: ["youming", 1], stat: ["xinmo", -3] },
+	],
+	wangchuan: [
+		{ t: "忘川之水照出你前世今生的殘影，心湖一靜，心魔稍歛。", stat: ["xinmo", -12] },
+		{ t: "你陪陰離在川邊枯坐，她忽然極輕地問了一句『我以前……是什麼樣子』，你沒答，只是陪著。", rel: ["yinli", 1] },
+	],
+	luanzang: [
+		{ t: "亂葬崗的屍氣中混著上古遺物的靈光，你掘得一枚陰屬靈材。", herb: "hanyu", stones: 6 },
+		{ t: "你超度了幾縷無主厲鬼，因果業力似有微妙的回饋。", stat: ["fame", 1], stat2: ["xinmo", -4] },
+	],
+	youmingdian: [
+		{ t: "殿中陰風森冷，你不敢久留，只匆匆探得鬼道佈防的一鱗半爪。", stat: ["fame", 1] },
+		{ t: "你借混沌靈氣壓住四面湧來的攝魂陰風，於極端之境反而磨礪了神識。", cult: 24, stat: ["daoxin", 1] },
+	],
+	binggate: [
+		{ t: "冰心宗弟子默然掃雪，無人多言。你也尋了處背風石階，靜坐吐納。", cult: 22, stat: ["daoxin", 1] },
+		{ t: "山門前的長明冰燈映著飛雪，你立了一陣，心湖竟也隨之澄澈如鏡。", stat: ["xinmo", -8] },
+		{ t: "一名冰心宗執事見你守禮，遞來一盞驅寒的靈茶，言語雖冷，意卻不惡。", stat: ["fame", 1], mp: 20, frep: ["zhengdao", 1] },
+	],
+	hantan: [
+		{ t: "寒潭水氣刺骨，你以暖陽混沌之氣護體，竟摸到了冰火相濟的一絲門道。", cult: 28 },
+		{ t: "潭面結著薄冰，倒映出你的身影。你忽然想起前世某個同樣寒冷的冬夜。", stat: ["daoxin", 2] },
+		{ t: "你自潭邊岩縫採得一小簇凝著寒氣的靈苔。", herb: "hanyu", stones: 4 },
+	],
+	shengnv: [
+		{ t: "聖女居素淨如雪，几案上的數據日誌攤開著。你不敢翻動，只默默退開。", rel: ["dongxue", 1] },
+		{ t: "你在窗外瞥見裴冬雪正以靈力反覆測試體內寒冰的波動，神情專注得近乎倔強。", rel: ["dongxue", 1] },
+	],
+	bingyu: [
+		{ t: "寒玉洞深處寒氣最盛，你咬牙打坐，於極寒中逼出一身潛能。", cult: 30, stat: ["fatigue", 6] },
+		{ t: "你採得一小片千年寒玉，玉中似有微光流轉。", herb: "hanyu", stones: 8 },
+		{ t: "洞壁雪蓮無聲綻放，你小心採下一株，藥香清冽。", herb: "xuelian" },
+	],
+	bingfeng: [
+		{ t: "絕頂風雪呼嘯，天地一色，你負手而立，胸中塊壘盡為長風滌淨。", cult: 34, stat: ["daoxin", 2] },
+		{ t: "你於風雪中靜立，聽風辨勢，竟悟得幾分『以靜制動』的劍意。", cult: 26 },
+	],
+	shenxu_gate: [
+		{ t: "神墟外圍時間彷彿凝滯，你借這份『靜』收攝心神，雜念盡消。", stat: ["xinmo", -10], cult: 18 },
+		{ t: "殘存的仙威自裂隙滲出，你以元神細細感應，於玄奧道則間又有所悟。", cult: 30, stat: ["daoxin", 2] },
+	],
+	zhanchang: [
+		{ t: "大戰遺址殘兵斷戟遍地，你拾得一截仍蘊著仙紋餘韻的斷劍碎片。", stones: 14, cult: 16 },
+		{ t: "你撫過一道萬年前留下的劍痕，那一瞬彷彿窺見了當年仙魔廝殺的慘烈。", stat: ["daoxin", 2] },
+	],
+	fengyin: [
+		{ t: "層層封印低鳴如謁，你於陣前靜參，借其道則磨礪自身對『界』的理解。", cult: 26, stat: ["daoxin", 1] },
+		{ t: "封印深處傳來若有似無的搏動，與你元神的烙印隱隱共鳴。", stat: ["xinmo", -6] },
+	],
+	xianmen: [
+		{ t: "仙門縫隙透出的仙光照在身上，你只覺自身道行的淺薄，謙卑之心油然而生。", cult: 32, stat: ["daoxin", 3] },
+	],
+	milin: [
+		{ t: "你在密林深處採得數味南疆特有的靈材。", herb: "hanyu", stones: 5 },
+		{ t: "瘴氣濃處傳來低吼，你謹慎避開，倒也摸清了一條安全的路徑。", stat: ["daoxin", 1] },
+		{ t: "一隻通體赤紅的火靈雀在你肩頭歇了歇，留下一根尚帶暖意的羽毛便飛走了。", herb: "huoxin", stat: ["fatigue", -8] },
+	],
+};
+
+/* 執行一則隨機日常：變更 $p 並回傳敘述 HTML */
+setup.runDaily = function (p, locId) {
+	const pool = setup.dailies[locId];
+	if (!pool || !pool.length) return '<p class="narr">四下無事，你信步走了一圈。</p>';
+	const d = pool[setup.rnd(pool.length)];
+	let notes = [];
+	if (d.cult)   { const a = Math.round(d.cult * (p.cultMul || 1)); p.cult += a; notes.push("修為 +" + a); }
+	if (d.stones) { p.stones += d.stones; notes.push("靈石 +" + d.stones); }
+	if (d.coins)  { p.coins += d.coins; notes.push("書幣 +" + d.coins); }
+	if (d.hp)     { p.hp = Math.min(p.maxHp, p.hp + d.hp); notes.push("氣血 +" + d.hp); }
+	if (d.mp)     { p.mp = Math.min(p.maxMp, p.mp + d.mp); notes.push("靈力 +" + d.mp); }
+	if (d.herb)   { p.herbs[d.herb] = (p.herbs[d.herb] || 0) + 1; notes.push(setup.herbs[d.herb].name + " +1"); }
+	[d.stat, d.stat2].forEach(function (s) {
+		if (!s) return;
+		setup.addStat(p, s[0], s[1]);
+		notes.push(setup.statDefs[s[0]].name + " " + (s[1] >= 0 ? "+" : "") + s[1]);
+	});
+	if (d.frep) {
+		if (!p.faction) p.faction = { zhengdao: 0, yaozu: 0, youming: 0, mozong: 0 };
+		p.faction[d.frep[0]] = (p.faction[d.frep[0]] || 0) + d.frep[1];
+		notes.push(setup.factions[d.frep[0]].name + "聲望 " + (d.frep[1] >= 0 ? "+" : "") + d.frep[1]);
+	}
+	let relLine = "";
+	if (d.rel) {
+		const rn = { suyuyao: "蘇羽瑤", qingling: "青玲兒", dongxue: "裴冬雪", yinli: "陰離" };
+		p.rel[d.rel[0]] += d.rel[1];
+		relLine = '<p class="heart">[ ' + (rn[d.rel[0]] || d.rel[0]) + " 緣分 +" + d.rel[1] + " ]</p>";
+	}
+	return '<p>' + d.t + '</p>' + (notes.length ? '<p class="sys">【' + notes.join("、") + "】</p>" : "") + relLine;
+};
+
+:: daily [game]
+<div class="scene">
+<div class="scene-title">閒步</div>
+<<= setup.runDaily($p, $p.loc)>>
+</div>
+<div class="choices">
+	<<link "↻ 再走走">><<pass 1>><<goto "daily">><</link>>
+	<<link "← 返回">><<goto $p.loc>><</link>>
+</div>

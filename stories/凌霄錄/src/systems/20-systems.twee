@@ -1,0 +1,197 @@
+:: cultivate [game]
+<div class="scene">
+<div class="scene-title">打坐修煉</div>
+<p class="narr">你盤膝而坐，引天地靈氣入體。<<if setup.has($p,"tuna")>>《吐納引氣訣》運轉之下，靈氣如溪流匯入丹田。<</if>></p>
+</div>
+<<set _need to setup.cultNeed($p)>>
+<<set _canBreak to $p.cult >= _need>>
+<div class="choices">
+	<<link "⟳ 潛心修煉兩時辰<span class='lx-hint'>累積修為、回復靈力（增疲勞）</span>">>
+		<<pass 2>>
+		<<set _g to 28 + setup.rnd(24) + $p.realm * 22>>
+		<<train _g>>
+		<<prof "dao" 1>>
+		<<heal 6 $p.maxMp>>
+		<<goto "cultivate">>
+	<</link>>
+	<<if _canBreak>>
+		<<link "☯ 嘗試突破境界<span class='lx-hint'>修為已足，可衝擊 <<= setup.nextRealmLabel($p)>></span>">><<goto "breakthrough">><</link>>
+	<<else>>
+		<a class="disabled">☯ 嘗試突破境界<span class="lx-hint">修為不足（<<= $p.cult>>/<<= _need>>）</span></a>
+	<</if>>
+	<<if ($p.pills.juqi || 0) > 0>>
+		<<link "丹 服用聚氣丹<span class='lx-hint'>立即獲得大量修為（剩 <<= $p.pills.juqi>> 顆）</span>">>
+			<<set $p.pills.juqi-->>
+			<<gainCult 120>>
+			<<goto "cultivate">>
+		<</link>>
+	<</if>>
+	<<if ($p.pills.ningshen || 0) > 0>>
+		<<link "丹 服用凝神丹<span class='lx-hint'>氣運 +10（剩 <<= $p.pills.ningshen>> 顆）</span>">>
+			<<set $p.pills.ningshen-->>
+			<<set $p.luck += 10>>
+			<<stat "xinmo" -8>><<run setup.toast("氣運 +10、心魔 −8")>>
+			<<goto "cultivate">>
+		<</link>>
+	<</if>>
+	<<if ($p.pills.pojing || 0) > 0>>
+		<<link "丹 服用破境丹<span class='lx-hint'>下次突破成功率大增（剩 <<= $p.pills.pojing>> 顆）</span>">>
+			<<set $p.pills.pojing-->>
+			<<set $p.buffs.breakRate to 0.25>>
+			<<run setup.toast("破境丹藥力運轉，突破在即")>>
+			<<goto "cultivate">>
+		<</link>>
+	<</if>>
+	<<if setup.dualAvailable($p)>>
+		<<link "☯ 雙修<span class='lx-hint'>與道侶靈脈交匯，大幅增進修為（每日一次）</span>">><<goto "DualCult">><</link>>
+	<</if>>
+	<<if $p.realm >= 1>>
+		<<link "🧘 閉關<span class='lx-hint'>長閉死關，短時推進大量修為（耗壽元・有風險）</span>">><<goto "Seclusion">><</link>>
+	<</if>>
+	<<link "📚 進入萬界藏書閣">><<goto "library">><</link>>
+	<<link "📜 技藝熟練<span class='lx-hint'>查看劍術/悟道/丹道/雙修/馭獸熟練度</span>">><<goto "Proficiency">><</link>>
+	<<link "← 返回前路">><<goto $return>><</link>>
+</div>
+
+:: breakthrough [game]
+<<set _need to setup.cultNeed($p)>>
+<<if $p.cult < _need>>
+	<<goto "cultivate">>
+<<else>>
+<div class="scene">
+<div class="scene-title">衝擊瓶頸</div>
+<<pass 1>>
+<<set _rate to 0.50 + $p.luck/400 + $p.stats.daoxin/400 - $p.stats.xinmo/300>>
+<<if $p.realm >= 1>><<set _rate to _rate - 0.08>><</if>>
+<<if $p.buffs.breakRate>><<set _rate to _rate + $p.buffs.breakRate>><</if>>
+<<set _rate to Math.max(0.15, Math.min(0.96, _rate))>>
+<<set _ok to Math.random() < _rate>>
+<<set $p.cult to 0>>
+<<set $p.buffs.breakRate to 0>>
+<<if _ok>>
+	<<set _r to setup.realms[$p.realm]>>
+	<<stat "xinmo" -5>><<stat "daoxin" 2>>
+	<<if $p.layer < _r.layers>>
+		<<set $p.layer++>>
+		<<recompute>>
+		<<run setup.audio.playSfx("break")>>
+		<<run setup.toast("✦ 突破成功！" + setup.realmName($p))>>
+		<p>靈力在經脈中奔流，舊有桎梏應聲碎裂。你突破至 <span class="em"><<= setup.realmName($p)>></span>，氣血與攻伐之力俱增。</p>
+	<<elseif setup.realms[$p.realm + 1]>>
+		<<set $p.realm++, $p.layer to 1>>
+		<<set $p.coins += 2>>
+		<<recompute>>
+		<<run setup.toast("✦ 境界突破！" + setup.realms[$p.realm].name)>>
+		<<if $p.realm === 2 and not $p.flags.flyShown>><<set $p.flags.flyShown to true>><<run setup.toast("✦ 金丹既成，可御劍飛行！遠行耗時大減")>><</if>>
+		/% 大境界躍遷 → 心魔試煉天劫（B3）；結束後回到所在地 %/
+		<<goto "Tribulation">>
+	<<else>>
+		<<set $p.cult to setup.cultNeed($p)>>
+		<<run setup.toast("已臻當前境界之巔")>>
+		<p>你的修為已臻 <span class="em"><<= setup.realmName($p)>></span> 之巔。更上一層的渡劫飛升之路，需仙緣機遇方能叩開——那是後話了。</p>
+	<</if>>
+<<else>>
+	<<stat "xinmo" 12>>
+	<<if $p.stats.xinmo >= 70>>
+		<<set _loss to Math.floor($p.maxHp*0.4)>>
+		<<set $p.hp to Math.max(1, $p.hp - _loss)>>
+		/% 走火入魔：心魔已深時，衝關慘敗有機率震退境界 %/
+		<<set _demote to Math.random() < (0.35 + ($p.stats.xinmo-70)/200)>>
+		<<if _demote and ($p.layer > 1 or $p.realm > 0)>>
+			<<if $p.layer > 1>>
+				<<set $p.layer-->>
+			<<else>>
+				<<set $p.realm-->><<set $p.layer to setup.realms[$p.realm].layers>>
+			<</if>>
+			<<recompute>>
+			<<if $p.hp > $p.maxHp>><<set $p.hp to $p.maxHp>><</if>>
+			<<run setup.toast("⚠ 走火入魔・境界震退至 " + setup.realmName($p))>>
+			<p class="dmg">衝關失敗，心魔趁虛而入！經脈逆流、神識劇震，你竟當場<span class="em">走火入魔</span>，境界倒退、氣血重挫 <<= _loss>>。</p>
+			<p class="narr">境界跌回 <span class="em"><<= setup.realmName($p)>></span>。心魔已深，須儘速「打坐定心」壓制。</p>
+		<<else>>
+			<p class="dmg">衝關失敗，心魔趁虛而入！經脈逆流、神識劇震，幾乎走火入魔，氣血重挫 <<= _loss>>。</p>
+			<p class="narr">心魔已深，須儘速「打坐定心」壓制，否則危殆。</p>
+		<</if>>
+	<<else>>
+		<<set _loss to Math.floor($p.maxHp*0.22)>>
+		<<set $p.hp to Math.max(1, $p.hp - _loss)>>
+		<p class="dmg">靈力衝關失敗，反噬之力震得你經脈劇痛，氣血損失 <<= _loss>>，心魔暗生。</p>
+		<p class="narr">瓶頸非一朝可破，調息後再試。</p>
+	<</if>>
+<</if>>
+</div>
+<div class="choices">
+	<<link "⟳ 繼續修煉">><<goto "cultivate">><</link>>
+	<<link "← 返回前路">><<goto $return>><</link>>
+</div>
+<</if>>
+
+:: library [game]
+<div class="panel">
+<h3>📚 萬界藏書閣</h3>
+<p class="desc">封存於凌氏玉佩中的上古空間法寶。書幣可解鎖典籍，每逢突破或機緣可得。<br>書幣 <b class="gold"><<= $p.coins>></b>　靈石 <b class="gold"><<= $p.stones>></b></p>
+<<for _id range Object.keys(setup.books)>>
+	<<capture _id>>
+	<<set _b to setup.books[_id]>>
+	<<set _owned to setup.has($p, _id)>>
+	<div class="book <<if _owned>>owned<</if>>">
+		<div class="book-info">
+			<h4><<= _b.name>><span class="tag-school"><<= _b.school>></span></h4>
+			<p><<= _b.desc>></p>
+		</div>
+		<div class="book-buy">
+			<<if _owned>>
+				<span class="owned-tag">✓ 已習得</span>
+			<<elseif $p.coins >= _b.cost>>
+				<<link "解鎖 · <<= _b.cost>> 書幣">>
+					<<set $p.coins -= setup.books[_id].cost>>
+					<<set $p.books.push(_id)>>
+					<<recompute>>
+					<<if setup.books[_id].eff && setup.books[_id].eff.luck>><<set $p.luck += setup.books[_id].eff.luck>><</if>>
+					<<if setup.books[_id].eff && setup.books[_id].eff.maxHp>><<set $p.hp to $p.maxHp>><</if>>
+					<<if _id is "pill">><<run ["huiyuan","ningshen","pojing"].forEach(function(r){ if(State.variables.p.recipes.indexOf(r)<0) State.variables.p.recipes.push(r); })>><</if>>
+					<<run setup.toast("習得 " + setup.books[_id].name)>>
+					<<goto "library">>
+				<</link>>
+			<<else>>
+				<a class="disabled">解鎖 · <<= _b.cost>> 書幣</a>
+			<</if>>
+		</div>
+	</div>
+	<</capture>>
+<</for>>
+</div>
+<div class="choices">
+	<<link "← 離開藏書閣">><<goto $return>><</link>>
+</div>
+
+:: explore [game]
+<<pass 2>>
+<div class="scene">
+<div class="scene-title">採集探索</div>
+<<set _luckRoll to Math.random() < (0.4 + $p.luck/300 + ($p.exploreBonus||0) + setup.weatherExplore($p))>>
+<<set _eye to setup.has($p,"eye")>>
+<<if _luckRoll or _eye>>
+	<<set _gainStone to 4 + setup.rnd(8) + $p.realm*3>>
+	<<set $p.stones += _gainStone>>
+	<<set _herbKeys to ["lingcao","lingcao","huoxin","hanyu","yuelan"]>>
+	<<if $p.region === "bingling">><<set _herbKeys to ["hanyu","hanyu","xuelian","yuelan"]>>
+	<<elseif $p.region === "youming">><<set _herbKeys to ["hanyu","yuelan","lingcao"]>>
+	<<elseif $p.region === "nanjiang">><<set _herbKeys to ["lingcao","huoxin","huoxin","yuelan"]>><</if>>
+	<<set _h to _herbKeys[setup.rnd(_herbKeys.length)]>>
+	<<set $p.herbs[_h] to ($p.herbs[_h]||0) + 1>>
+	<p>你依前世的細緻心思在山野間搜尋<<if _eye>>，《天眼判靈》令靈材無所遁形<</if>>。</p>
+	<p class="sys">【獲得 靈石 ×<<= _gainStone>>、<<= setup.herbs[_h].name>> ×1】</p>
+	<<set _rb to ($p.region==="lingxiao") ? "lingyuan" : ($p.region==="nanjiang") ? "chiyanque" : ($p.region==="bingling") ? "xuanbingjiao" : "">>
+	<<if _rb and Math.random() < 0.12 and (not $p.beasts or $p.beasts.indexOf(_rb) < 0)>>
+		<<gainBeast _rb>>
+		<p class="sys">【意外結緣：一頭 <<= setup.beasts[_rb].name>> 與你親近，被你收為夥伴！可於御獸閣出戰。】</p>
+	<</if>>
+<<else>>
+	<p class="narr">你尋覓良久，此處靈材早已被人採盡，只餘塵埃。</p>
+<</if>>
+</div>
+<div class="choices">
+	<<link "↻ 再探一次<span class='lx-hint'>耗時，可能空手而回</span>">><<goto "explore">><</link>>
+	<<link "← 返回前路">><<goto $return>><</link>>
+</div>

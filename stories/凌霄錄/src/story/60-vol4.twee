@@ -1,0 +1,139 @@
+/% 第四卷 · 幽冥禁地篇（陰離線主線事件） %/
+
+:: yinli_ambush [game]
+<div class="scene">
+<<portrait "yinli">>
+<div class="scene-title">衝突 · 殺意森然的女鬼使</div>
+<p>黃泉路的鬼霧中，一道半透明白髮的身影攔住去路。她皮膚泛著月光般的冷澤，眼白浮著細微的黑色紋路——那是魂繫術的烙印。</p>
+<p class="em">「目標……凌霄。奉冥尊之命，監視、暗殺。執行。」</p>
+<p class="narr">她的聲音沒有起伏，像被人從喉嚨裡替她說出來。你忽然意識到：說話的不是她，是植入她體內的「任務人格」。</p>
+</div>
+<div class="choices">
+	<<link "⚔ 接下她的攻勢<span class='lx-hint'>強敵 · 幽冥女鬼使</span>">><<startBattle "yinli" "yinli_falter" "yinli_falter">><</link>>
+	<<link "📚 先行備戰">><<set $return to "yinli_ambush">><<goto "library">><</link>>
+	<<link "← 暫退">><<goto $p.loc>><</link>>
+</div>
+
+:: yinli_falter [game]
+<<set $p.flags.metYinli to true>>
+<<set $p.hp to Math.max(1, $p.hp)>>
+<div class="scene">
+<div class="scene-title">停住的劍</div>
+<<if $battle.fled>>
+	<p>你險險避開她致命的一擊，拉開了距離。就在她該追擊的那一瞬——她卻僵住了。</p>
+<<else>>
+	<p>劍鋒往來不知幾合，就在生死交錯的一瞬——她那本該取你性命的刃，竟在離你咽喉三寸處<span class="em">硬生生停住了</span>。</p>
+<</if>>
+<p>她渾身劇烈顫抖，黑紋在眼白裡掙扎翻湧，像有兩個她在彼此撕咬。</p>
+<p class="em">「為什麼……我的手，不聽……」</p>
+<p>下一瞬，她化作一道月白殘影遁入鬼霧，消失了。你怔在原地——那一刻她眼中閃過的，分明不是殺意，而是<span class="em">求救</span>。</p>
+<<rel "yinli" 12>>
+</div>
+<div class="choices"><<link "← 記下此事，繼續前行">><<goto $p.loc>><</link>></div>
+
+:: xianwen_shard [game]
+<div class="scene">
+<div class="scene-title">機緣 · 仙紋碎片</div>
+<p>亂葬崗最深處，一塊半埋於屍骨的古碑透出極淡的金色微光，與你玉佩中藏書閣的氣息隱隱共鳴。那是開啟仙界門戶的關鍵之一——<span class="em">仙紋碎片</span>。</p>
+<p>碑前盤踞著一隻吸納了百年屍氣的厲鬼，正是這碎片的看守。</p>
+</div>
+<div class="choices">
+	<<link "⚔ 擊破看守，取得碎片">><<startBattle "ligui" "xianwen_get" "xianwen_fail">><</link>>
+	<<link "← 暫且退開">><<goto $p.loc>><</link>>
+</div>
+
+:: xianwen_get [game]
+<<set $p.flags.xianwen to true>>
+<<set $p.coins += 3>>
+<<gainCult 200>>
+<<stat "fame" 10>>
+<div class="scene">
+<p>厲鬼消散，你取下那塊溫潤的仙紋碎片。指尖觸及的剎那，藏書閣的虛影在識海中劇烈震動，一段段殘缺的仙文如星火般點亮。</p>
+<p class="sys">【獲得仙紋碎片 — 修為 +200、書幣 ×3。這是飛升仙界的關鍵之一。】</p>
+<p class="narr">萬年前的某段記憶，似乎正隨著仙紋的甦醒，一點一點向你滲來……</p>
+</div>
+<div class="choices"><<link "← 收好碎片">><<goto $p.loc>><</link>></div>
+
+:: xianwen_fail [game]
+<<if not $battle.fled>><<set $p.hp to Math.max(1, Math.floor($p.maxHp*0.4))>><</if>>
+<div class="scene"><p class="<<= $battle.fled ? 'narr' : 'dmg'>>"><<= $battle.fled ? "你暫避厲鬼鋒芒，退出了亂葬崗。" : "看守厲鬼太過兇悍，你負傷退走。碎片仍在，待你更強時再來。">></p></div>
+<div class="choices"><<link "← 返回">><<goto $p.loc>><</link>></div>
+
+:: jindan_great [game]
+<<set $p.flags.jindan to true>>
+<<set $p.coins += 3>>
+<<stat "fame" 25>>
+<div class="scene">
+<div class="scene-title">重大事件 · 金丹大成</div>
+<p>仙紋碎片的滋養下，你體內混沌之氣終於凝練到了極致。這一日，你於鬼門關前盤膝，引動周身靈氣——丹田之中，一枚九品金丹轟然凝聚，金光沖霄，震動整片幽冥澤！</p>
+<p>連幽冥殿的陰風都為之一滯。各大勢力的神識遙遙投來——那個曾被譏為「廢材」的凌氏子，如今以九品金丹之姿，正式踏入了九洲頂尖修士之列。</p>
+<p class="sys">【金丹大成 · 聲名震動九洲 — 書幣 ×3、聲望大漲】</p>
+</div>
+<div class="choices"><<link "← 收功">><<goto $p.loc>><</link>></div>
+
+:: mingzun_confront [game]
+<div class="scene">
+<<portrait "yinli">>
+<div class="scene-title">高潮 · 冥尊的低語</div>
+<p>幽冥殿中央，那具承載冥尊殘魂的森冷法器發出嗤笑——你解開陰離的魂繫，等同當面打了冥尊一巴掌。</p>
+<p class="em">「凌霄……你壞了本尊的棋子。也好，省得本尊再尋藉口。鬼道眾修，取他與那叛徒的魂魄，獻祭冥界之門！」</p>
+<p>鬼道修士自四面湧出。陰離按刃上前，這一次，她站在你身側——眼神清明，再無黑紋。</p>
+<p class="em">「這一戰，」她輕聲說，「我替自己打。」</p>
+</div>
+<div class="choices">
+	<<link "⚔ 與陰離並肩，殺出幽冥殿">><<startBattle "guidao" "mingzun_win" "mingzun_lose">><</link>>
+	<<link "📚 先穩固狀態">><<set $return to "mingzun_confront">><<goto "cultivate">><</link>>
+</div>
+
+:: mingzun_win [game]
+<<set $p.flags.mingzun to true>>
+<<set $p.stones += 60>>
+<<set $p.coins += 4>>
+<<gainCult 400>>
+<<stat "fame" 20>>
+<<rel "yinli" 8>>
+<div class="scene">
+<div class="scene-title">破殿而出</div>
+<p>你一身混沌金丹之力，陰離以禁術相和，兩人殺穿了鬼道的圍堵。冥尊的法器在你劍下崩出一道裂痕，那縷殘魂悻悻退入冥界之門的更深處——它的計畫被攔下了，至少這一次。</p>
+<p>奔出幽冥殿時，天光乍現。陰離仰頭看著久違的日光，忽然落下淚來。</p>
+<p class="em">「我以前替人取走靈識……你卻替我，把我自己還了回來。」</p>
+<p class="sys">【挫敗冥尊之謀 · 仙紋碎片到手 — 修為 +400、書幣 ×4、靈石 ×60】</p>
+<<rel "yinli" 8>>
+</div>
+<div class="choices"><<link "← 帶她離開這裡">><<goto $p.loc>><</link>></div>
+
+:: mingzun_lose [game]
+<<if $battle.fled>>
+	<div class="scene"><p class="narr">敵眾我寡，你護著陰離殺出一條血路，暫退幽冥澤外。冥尊未除，來日再戰。</p></div>
+<<else>>
+	<<set $p.hp to Math.max(1, Math.floor($p.maxHp*0.45))>>
+	<div class="scene"><p class="dmg">鬼道修士潮水般湧來，你與陰離背靠背力戰，終究寡不敵眾，負傷退走。</p><p class="narr">需更強，方能斬斷這幽冥之網。</p></div>
+<</if>>
+<div class="choices">
+	<<link "⟳ 療傷再戰">><<set $return to "mingzun_confront">><<goto "cultivate">><</link>>
+	<<link "← 返回">><<goto $p.loc>><</link>>
+</div>
+
+:: ending_vol4 [game]
+<div class="scene end-card">
+<div class="big">✦ 第四卷 · 完 ✦</div>
+<p>自幽冥禁地走出，你已是九品金丹、仙紋在手；而那個熱愛收集山花、會在大雪中為小狐狸取暖的<span class="em">陰離</span>，也終於在你的靈識懷抱中重見天光。</p>
+<div class="sep"><span>此行所得</span></div>
+<p>
+當前境界：<span class="gold"><<= setup.realmName($p)>></span><br>
+靈石 <<= $p.stones>>　書幣 <<= $p.coins>>　習得功法 <<= $p.books.length>> 部<br>
+蘇羽瑤 <span class="heart"><<= $p.rel.suyuyao>></span>　青玲兒 <span class="heart"><<= $p.rel.qingling>></span>　陰離 <span class="heart"><<= $p.rel.yinli>></span>
+</p>
+<div class="sep"><span>未完之路</span></div>
+<p class="narr">
+第五卷「魔道入侵篇」——血魔尊聯合幽冥殘黨兵臨九洲；<br>
+以及那段隨仙紋甦醒、萬年前仙魔大戰中的<span class="em">前世道侶之約</span>……<br>
+都在元神最深處，等著被揭曉。
+</p>
+<p class="sys">你仍可自由修煉、突破、推進三位女主的情緣。</p>
+</div>
+<div class="choices">
+	<<link "⟳ 繼續自由修煉">><<goto "cultivate">><</link>>
+	<<link "← 返回原地">><<goto $p.loc>><</link>>
+	<<link "返回主選單">><<goto "Start">><</link>>
+</div>

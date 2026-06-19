@@ -1,0 +1,206 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>灯塔守护者的谜团 - 微信读书风格互动故事</title>
+    <style>
+        /* 全局重置 & 微信读书基础样式 */
+        * {
+            margin:0;
+            padding:0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background-color: #f5f5f5;
+            font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            color: #333333;
+            line-height: 1.75;
+            font-size: 17px;
+            min-height: 100vh;
+        }
+
+        /* 微信读书顶栏样式 */
+        .wx-header {
+            background-color: #ffffff;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e5e5e5;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+        .wx-header-inner {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        .wx-book-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+        .wx-book-subtitle {
+            font-size: 13px;
+            color: #888888;
+        }
+
+        /* 微信读书阅读区样式 */
+        .wx-reader {
+            background-color: #ffffff;
+            max-width: 760px;
+            margin: 16px auto;
+            padding: 32px 28px;
+            min-height: calc(100vh - 160px);
+        }
+        @media (max-width: 768px) {
+            .wx-reader {
+                margin: 0 auto;
+                padding: 24px 20px;
+                font-size: 16px;
+            }
+            .wx-header {
+                padding: 12px 20px;
+            }
+        }
+
+        /* 故事正文段落 */
+        .wx-paragraph {
+            text-align: justify;
+            text-indent: 2em;
+            margin-bottom: 1em;
+            letter-spacing: 0.3px;
+            word-break: break-all;
+        }
+
+        /* 微信读书风格选项 */
+        .wx-choice {
+            background-color: #f8f8f8;
+            border-left: 4px solid #07c160;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin: 12px 0;
+            cursor: pointer;
+            font-size: 16px;
+            color: #333333;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+        .wx-choice:hover {
+            background-color: #f0faf4;
+            border-left-color: #06ad56;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+        .wx-choice:active {
+            background-color: #e8f5ee;
+            transform: scale(0.995);
+        }
+
+        /* 加载提示 */
+        .wx-loading {
+            text-align: center;
+            color: #888888;
+            padding: 40px 0;
+            font-size: 15px;
+        }
+
+        /* 微信读书底栏样式 */
+        .wx-footer {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 20px 24px;
+            text-align: center;
+            color: #999999;
+            font-size: 13px;
+            border-top: 1px solid #e5e5e5;
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <!-- 微信读书风格顶栏 -->
+    <div class="wx-header">
+        <div class="wx-header-inner">
+            <div class="wx-book-title">🗼 灯塔守护者的谜团</div>
+            <div class="wx-book-subtitle">互动故事 · InkGameScript 驱动</div>
+        </div>
+    </div>
+
+    <!-- 阅读内容区 -->
+    <div class="wx-reader">
+        <div id="story-content">
+            <div class="wx-loading">正在加载故事，请稍候...</div>
+        </div>
+    </div>
+
+    <!-- 微信读书风格底栏 -->
+    <div class="wx-footer">
+        内容由 InkGameScript 引擎提供支持 · 交互体验参考微信读书阅读界面
+    </div>
+
+    <!-- 引入 Ink 运行时引擎 -->
+    <script src="js/ink.js"></script>
+    <!-- 引入编译后的 Ink 故事文件（需和本文件同目录） -->
+    <script src="守护者.js"></script>
+
+    <script>
+        // 初始化故事实例（storyContent 来自 lighthouse_mystery.js）
+        const story = new inkjs.Story(storyContent);
+        const contentContainer = document.getElementById("story-content");
+
+        /**
+         * 主逻辑：推进故事、渲染文本和选项
+         * 【修改点1】函数开头新增清空容器逻辑，每次渲染前清除所有旧内容
+         */
+        function continueStory() {
+            // 清空之前的所有内容（旧文本+旧选项+加载提示）
+            contentContainer.innerHTML = "";
+
+            // 1. 渲染所有可用文本
+            while (story.canContinue) {
+                const paragraphText = story.Continue();
+                const paragraphEl = document.createElement("p");
+                paragraphEl.classList.add("wx-paragraph");
+                paragraphEl.innerHTML = paragraphText;
+                contentContainer.appendChild(paragraphEl);
+            }
+
+            // 2. 渲染可选分支（如果有）
+            if (story.currentChoices.length > 0) {
+                story.currentChoices.forEach((choice, index) => {
+                    const choiceEl = document.createElement("div");
+                    choiceEl.classList.add("wx-choice");
+                    choiceEl.innerHTML = choice.text;
+
+                    // 绑定选项点击事件
+                    choiceEl.addEventListener("click", () => {
+                        // 推进故事状态
+                        story.ChooseChoiceIndex(index);
+                        // 继续渲染后续内容（会自动清空旧内容）
+                        continueStory();
+                        // 新内容从顶部开始显示，滚动到顶部
+                        window.scrollTo({
+                            top: 0,
+                            behavior: "smooth"
+                        });
+                    });
+
+                    contentContainer.appendChild(choiceEl);
+                });
+            } else if (!story.canContinue) {
+                // 故事结束，显示结束提示
+                const endEl = document.createElement("p");
+                endEl.classList.add("wx-paragraph");
+                endEl.innerHTML = "———— 故事终 ————";
+                endEl.style.textAlign = "center";
+                endEl.style.textIndent = "0";
+                endEl.style.color = "#888888";
+                endEl.style.marginTop = "24px";
+                contentContainer.appendChild(endEl);
+            }
+        }
+
+        // 【修改点2】删除原来单独清空加载提示的代码，直接启动故事
+        continueStory();
+    </script>
+</body>
+</html>

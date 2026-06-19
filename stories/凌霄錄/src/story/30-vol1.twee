@@ -1,0 +1,199 @@
+:: intro [game]
+<div class="scene">
+<<portrait "lingxiao">>
+<div class="scene-title">楔子 · 異世醒轉</div>
+<p class="narr">玄霄域，凌氏祖宅廢墟，破敗小院。</p>
+<p>刺痛從四肢百骸湧來。你猛然睜眼，映入眼簾的是漏著天光的殘破屋頂。</p>
+<p>兩段記憶在腦海中轟然交疊——一段屬於地球大學生<span class="em">陳宇</span>：車禍、黑暗、墜落；另一段屬於這具身體的主人<span class="em">凌霄</span>，凌氏嫡子，因「廢靈根」被族人輕視，十六歲那年遭仇敵滅門，重傷逃亡至此。</p>
+<p class="sys">「我……活過來了？」</p>
+<p>胸口一塊溫潤玉佩貼著皮膚，傳來若有似無的脈動。你下意識握住它——剎那間，一座浩瀚書閣的虛影在識海中一閃而過。</p>
+</div>
+<div class="choices">
+	<<link "凝神感應那塊玉佩">><<goto "pendant">><</link>>
+	<<link "先查看自己的身體狀況">><<goto "intro_body">><</link>>
+</div>
+
+:: intro_body [game]
+<div class="scene">
+<p>你勉強坐起，渾身是傷，修為僅有 <span class="em">練氣一層</span>。但丹田深處彷彿有一團從未見過的混沌之氣，在緩緩流轉，溫養著破碎的經脈。</p>
+<p class="narr">這身體底子比想像中糟，卻又藏著某種說不清的不凡。</p>
+</div>
+<div class="choices">
+	<<link "凝神感應胸口的玉佩">><<goto "pendant">><</link>>
+</div>
+
+:: pendant [game]
+<div class="scene">
+<div class="scene-title">萬界藏書閣</div>
+<p>意識沉入玉佩的瞬間，你「站」在了一座無邊書閣之中。書架高聳入雲，典籍散發著淡淡靈光。</p>
+<p class="sys">【萬界藏書閣 · 已綁定宿主】</p>
+<p class="sys">閣中典籍以「靈石幣」解鎖。完成天道試煉、突破境界，皆可獲得書幣。</p>
+<p>你手中已有 <span class="em">1 枚書幣</span>，書架上靜靜躺著一本《吐納引氣訣》——它已自動為你開啟。</p>
+<p class="narr">前世身為學生的學習直覺告訴你：這，就是改命的開端。</p>
+</div>
+<div class="choices">
+	<<link "翻開《吐納引氣訣》，當場參悟">>
+		<<run setup.toast("修煉效率 +25%")>>
+		<<goto "first_cult">>
+	<</link>>
+	<<link "先逛逛藏書閣裡還有什麼">><<set $return to "pendant">><<goto "library">><</link>>
+</div>
+
+:: first_cult [game]
+<<set $return to "courtyard">>
+<div class="scene">
+<div class="scene-title">第一次修煉</div>
+<p>功法心訣如烙印般刻入腦海，瞬間明悟引氣之道。你盤膝坐於院中殘破蒲團上，依《吐納引氣訣》運轉周天。</p>
+<p>天地靈氣竟前所未有地順從，源源不絕地湧入丹田，被那團混沌之氣吞噬、煉化。</p>
+<p class="narr">「廢靈根」？不——這分明是傳說中的某種異種。但現在還不是深究的時候。</p>
+<p class="sys">提示：在「打坐修煉」中累積修為，足夠後即可「嘗試突破境界」。</p>
+</div>
+<div class="choices">
+	<<link "⟳ 開始打坐修煉">><<goto "cultivate">><</link>>
+	<<link "我已恢復些許，出門查探">><<goto "courtyard">><</link>>
+</div>
+
+:: courtyard [game]
+<<set $return to "courtyard">>
+<div class="scene">
+<div class="scene-title">廢墟中的腳步聲</div>
+<p>修煉間，院外忽然傳來雜沓腳步與粗野的笑聲。</p>
+<p class="em">「聽說凌氏那個廢物嫡子逃到這破院子了？玄冥王府懸賞五十靈石，找到屍體也算數！」</p>
+<p>你心頭一凜——是追殺原身的玄冥王府爪牙。透過破窗望去，是兩名練氣期散修，正翻找廢墟。</p>
+</div>
+<div class="choices">
+	<<link "⚔ 主動出擊，先下手為強<span class='lx-hint'>戰鬥 · 風險高獎勵高</span>">>
+		<<startBattle "scout" "courtyard_win" "courtyard_lose">>
+	<</link>>
+	<<link "🤫 屏息潛伏，伺機脫身<span class='lx-hint'>考驗氣運</span>">><<goto "courtyard_sneak">><</link>>
+	<<link "📚 戰前先進藏書閣準備<span class='lx-hint'>可解鎖劍訣 / 淬體功法</span>">><<set $return to "courtyard">><<goto "library">><</link>>
+	<<link "⟳ 先修煉鞏固修為">><<goto "cultivate">><</link>>
+</div>
+
+:: courtyard_win [game]
+<<set $p.stones += 12>>
+<<set $p.coins += 1>>
+<<set $p.flags.killedScout to true>>
+<div class="scene">
+<p>你一招將其擊倒，另一人見勢不妙轉身要逃，被你一道靈氣震飛。搜得 <span class="em">靈石 ×12</span>。</p>
+<p class="sys">【完成天道試煉：絕境自保 — 書幣 ×1】</p>
+</div>
+<div class="choices"><<link "處理現場，繼續前行">><<goto "decision">><</link>></div>
+
+:: courtyard_sneak [game]
+<<if Math.random() < (0.4 + $p.luck/300)>>
+	<<set $p.stones += 4>>
+	<div class="scene">
+	<p>你縮在陰影裡屏住呼吸。兩名散修翻找一陣，罵罵咧咧地離去，臨走還掉落了一小袋 <span class="em">靈石 ×4</span>。</p>
+	<p class="narr">天意庇護，總在險處。</p>
+	</div>
+	<div class="choices"><<link "確認安全後離開廢墟">><<goto "decision">><</link>></div>
+<<else>>
+	<div class="scene">
+	<p class="dmg">一名散修踩到枯枝，目光直射你藏身之處——「在這！」</p>
+	</div>
+	<div class="choices"><<link "只能一戰">><<startBattle "scout2" "courtyard_win" "courtyard_lose">><</link>></div>
+<</if>>
+
+:: courtyard_lose [game]
+<<if $battle.fled>>
+	<div class="scene"><p class="narr">你身形一閃，僥倖脫離了戰鬥，鑽進廢墟深處的地道。</p></div>
+	<div class="choices"><<link "沿地道離開">><<goto "decision">><</link>></div>
+<<else>>
+	<<set $p.hp to Math.floor($p.maxHp*0.4)>>
+	<div class="scene">
+	<p class="dmg">眼前一黑，你重傷倒地——</p>
+	<p class="sys">【氣運護盾】玉佩驟然發燙，一道金光自識海湧出，竟生生將你從鬼門關拉了回來。散修見此異象，駭然退走。</p>
+	</div>
+	<div class="choices"><<link "在絕境中悠悠醒轉">><<goto "decision">><</link>></div>
+<</if>>
+
+:: decision [game]
+<<set $return to "decision">>
+<div class="scene">
+<div class="scene-title">歧路 · 何去何從</div>
+<p>處理完追兵，你立於凌氏祖宅的斷碑前。仇恨與野心在胸中燃燒，但你很清楚——以現在的修為，談復仇還太早。</p>
+<p>前世的理智壓下了衝動。你需要的是 <span class="em">力量、資源，與一座能讓你成長的山門</span>。記憶中，玄霄域最高峰上的 <span class="em">凌霄劍宗</span> 正在招收外門弟子。</p>
+<p class="narr">而斷碑之後，似乎藏著原身父親留下的線索……</p>
+</div>
+<div class="choices">
+	<<link "🔍 翻查斷碑後的隱秘<span class='lx-hint'>探索 · 氣運/天眼影響收穫</span>">><<goto "explore_stele">><</link>>
+	<<link "🌿 在廢墟周圍採集靈材">><<set $return to "decision">><<goto "explore">><</link>>
+	<<link "⟳ 修煉鞏固修為">><<goto "cultivate">><</link>>
+	<<link "🏔 即刻啟程，前往凌霄劍宗<span class='lx-hint'>推進主線 · 第二卷</span>">><<goto "to_sect">><</link>>
+</div>
+
+:: explore_stele [game]
+<div class="scene">
+<div class="scene-title">斷碑遺秘</div>
+<p>你依前世的細緻心思，逐寸摸索斷碑基座。指尖觸到一道極淺的刻痕——按下，碑後石板無聲滑開。</p>
+<<if not $p.flags.fatherNote>>
+	<<set $p.flags.fatherNote to true>>
+	<<set $p.stones += 20>>
+	<<set $p.coins += 1>>
+	<<set $p.herbs.yuelan to ($p.herbs.yuelan||0)+2>>
+	<p>石室中有一只玉盒，內藏 <span class="em">靈石 ×20</span>、<span class="em">月蘭花 ×2</span> 與一張字條，是原身父親所留：</p>
+	<p class="narr">「霄兒，你的靈根非廢，乃為父亦看不透之異種。若有朝一日你看懂此字，往劍宗尋你姑母蘇氏……」</p>
+	<p class="sys">【獲得線索：劍宗中或有故人 — 書幣 ×1】</p>
+<<elseif Math.random() < 0.5>>
+	<<set $p.stones += 10>>
+	<p>你又在石室角落尋得 <span class="em">靈石 ×10</span>。</p>
+<<else>>
+	<p class="narr">石室再無餘藏，只餘塵埃。</p>
+<</if>>
+</div>
+<div class="choices">
+	<<link "↻ 再仔細搜尋">><<goto "explore_stele">><</link>>
+	<<link "⟳ 就地修煉">><<set $return to "decision">><<goto "cultivate">><</link>>
+	<<link "🏔 啟程前往凌霄劍宗">><<goto "to_sect">><</link>>
+</div>
+
+:: to_sect [game]
+<<set $p.placeName to "凌霄劍宗 · 山門">>
+<div class="scene">
+<div class="scene-title">凌霄劍宗</div>
+<p>跋涉月餘，你終於立於玄霄域第一高峰 <span class="em">凌霄峰</span> 之下。雲海翻湧，劍氣沖霄，山門巍峨如自天垂落。</p>
+<p>外門考核廣場上人頭攢動。負責考核的執事掃了你一眼，嗤笑一聲：</p>
+<p class="em">「練氣境的雜碎也敢來？測靈石在那邊，別浪費本座時間。」</p>
+<p>不遠處，一名白衣冷豔的女修負手而立，氣度卓然——旁人低語：那是劍宗當代第一天才，<span class="em">蘇羽瑤</span> 師姐。</p>
+</div>
+<div class="choices">
+	<<link "走向測靈石，接受考核<span class='lx-hint'>你的混沌靈根將如何顯現？</span>">><<goto "test_root">><</link>>
+</div>
+
+:: test_root [game]
+<<set $p.coins += 1>>
+<<set $p.flags.enteredSect to true>>
+<<if not $p.flags.sectDay>><<set $p.flags.sectDay to $p.time.day>><</if>>
+<div class="scene">
+<div class="scene-title">測靈石之變</div>
+<p>你將手按上漆黑的測靈石。起初，石面毫無反應，引來四周一片哄笑——「果然是廢根！」</p>
+<p>但下一瞬，你悄然運轉《吐納引氣訣》，丹田中那團混沌之氣被牽動。測靈石驟然爆發出 <span class="em">五色交織</span> 的奪目光芒，金木水火土五行靈光同時亮起，竟無一絲相剋！</p>
+<p class="sys">【混沌靈根·初現 — 可融合五行靈氣，修煉無相剋之憂】</p>
+<p>全場死寂。執事張大了嘴，蘇羽瑤師姐也終於轉過頭，目光第一次落在你身上，眸中閃過一絲訝異。</p>
+</div>
+<div class="choices">
+	<<link "低調收斂光芒，謙遜行禮<span class='lx-hint'>藏拙 · 氣運 +5</span>">>
+		<<set $p.luck += 5>>
+		<<goto "enter_low">>
+	<</link>>
+	<<link "坦然展露鋒芒，宣告己名<span class='lx-hint'>高調 · 結善緣亦結仇</span>">>
+		<<set $p.flags.highProfile to true>>
+		<<goto "enter_high">>
+	<</link>>
+</div>
+
+:: enter_low [game]
+<div class="scene">
+<p>你迅速收斂氣息，拱手道：「僥倖測出些許靈根，望前輩收錄。」蘇羽瑤微微頷首，對你的沉穩多了幾分認可。</p>
+<p class="sys">【你被破格錄為凌霄劍宗外門弟子】</p>
+</div>
+<div class="choices"><<link "進入宗門，開啟修行<span class='lx-hint'>自此進入時間・地點沙盒</span>">><<set $p.sandbox to true>><<enterLoc "dongfu">><<goto "dongfu">><</link>></div>
+
+:: enter_high [game]
+<div class="scene">
+<p>你朗聲道：「凌氏凌霄，特來投師。」聲震全場。有人驚嘆，也有同期弟子眼中泛起嫉恨——尤其一名錦袍青年，冷冷盯著你。</p>
+<p class="sys">【你以驚世之姿入宗，聲名鵲起，亦埋下隱患】</p>
+</div>
+<<stat "fame" 8>>
+<div class="choices"><<link "進入宗門，開啟修行<span class='lx-hint'>自此進入時間・地點沙盒</span>">><<set $p.sandbox to true>><<enterLoc "dongfu">><<goto "dongfu">><</link>></div>

@@ -1,0 +1,133 @@
+:: BeastScript [script]
+/* ════════ B6 御獸夥伴 ════════
+   靈獸資料掛 setup.beasts（靜態，不進存檔）。
+   收服寫進 $p.beasts（id 陣列）；出戰一隻存 $p.beastEquipped。
+   bonus 鍵與 recompute 的功法 eff 一致（atk/def/luck/cultMul）＋ exploreBonus（採集加成）；
+   ★ recompute 累加出戰靈獸 bonus、收服觸發點、入口連結，皆由 Manager 整合（本檔不碰 02-engine）。
+   equipBeast 已呼叫 <<recompute>>，Manager 接上加成後即自動生效。 */
+setup.beasts = {
+	lingyuan: { name: "靈猿",       tier: 1, bonus: { atk: 4, exploreBonus: 0.10 },
+		desc: "機敏靈猴，攀崖越澗如履平地，最擅在山野間覓得靈材。" },
+	chiyanque:{ name: "赤焰雀",     tier: 1, bonus: { atk: 6, luck: 5 },
+		desc: "羽翼燃著赤焰的靈禽，性烈好鬥，臨陣可助攻伐。" },
+	xuanbingjiao:{ name: "玄冰蛟",  tier: 2, bonus: { atk: 5, def: 8 },
+		desc: "蟄伏寒潭的幼蛟，鱗甲堅冰護體，禦敵如山。" },
+	yunhe:    { name: "雲鶴",       tier: 2, bonus: { cultMul: 0.15, luck: 8 },
+		desc: "棲於雲海的仙鶴，吐納間吞吐靈氣，伴修可加速修為。" },
+	jinpeng:  { name: "金翅大鵬",   tier: 3, bonus: { atk: 14, def: 6, luck: 10 },
+		desc: "上古凶禽之裔，一展翅便是九萬里，氣勢凌厲無雙。" },
+	taigu:    { name: "上古妖獸",   tier: 3, bonus: { atk: 18, cultMul: 0.10 },
+		desc: "金瞳赤血的遠古巨獸，馴服後成為踏遍仙途的最強夥伴。" },
+};
+
+/* 階位顯示 */
+setup.beastTierName = function (t) {
+	return (["", "一", "二", "三"][t] || t) + " 階";
+};
+/* bonus 文字（給 :: Beasts 顯示） */
+setup.beastBonusText = function (id) {
+	var b = setup.beasts[id]; if (!b || !b.bonus) return "";
+	var x = b.bonus, parts = [];
+	if (x.atk)          parts.push("攻 +" + x.atk);
+	if (x.def)          parts.push("防 +" + x.def);
+	if (x.luck)         parts.push("氣運 +" + x.luck);
+	if (x.cultMul)      parts.push("修煉 +" + Math.round(x.cultMul * 100) + "%");
+	if (x.exploreBonus) parts.push("採集 +" + Math.round(x.exploreBonus * 100) + "%");
+	return parts.join("　");
+};
+
+:: BeastWidgets [widget]
+
+/% 收服靈獸：寫進 $p.beasts（無則建立），去重 %/
+<<widget "gainBeast">>
+	<<set _id to _args[0]>>
+	<<if not $p.beasts>><<run State.variables.p.beasts = []>><</if>>
+	<<if $p.beasts.indexOf(_id) < 0>>
+		<<run State.variables.p.beasts.push(_id)>>
+		<<set _b to setup.beasts[_id]>>
+		<<set _msg to "收服靈獸 · " + (_b ? _b.name : _id)>>
+		<<toast _msg>>
+	<</if>>
+<</widget>>
+
+/% 出戰一隻靈獸：存 $p.beastEquipped 並 recompute（待 Manager 接 bonus 後生效） %/
+<<widget "equipBeast">>
+	<<set _id to _args[0]>>
+	<<set _newL to (setup.beasts[_id] && setup.beasts[_id].bonus.luck) || 0>>
+	<<set $p.luck += _newL - ($p.beastLuckApplied || 0)>>
+	<<set $p.beastLuckApplied to _newL>>
+	<<set $p.beastEquipped to _id>>
+	<<recompute>>
+	<<set _b to setup.beasts[_id]>>
+	<<set _msg to (_b ? _b.name : _id) + " 隨你出戰">>
+	<<toast _msg>>
+<</widget>>
+
+/% 收回靈獸 %/
+<<widget "unequipBeast">>
+	<<set $p.luck -= ($p.beastLuckApplied || 0)>>
+	<<set $p.beastLuckApplied to 0>>
+	<<set $p.beastEquipped to "">>
+	<<recompute>>
+	<<toast "已收回出戰靈獸">>
+<</widget>>
+
+:: Beasts [game]
+<<set _list to $p.beasts || []>>
+<<set _eq to $p.beastEquipped || "">>
+<<tip "beast" "習得《萬獸馴心訣》後，戰鬥中可安撫而非擊殺妖獸以收服；探索亦可能結緣。出戰一頭靈獸可獲其加成(攻/防/修煉/探索)，並在戰鬥中助戰。">>
+<div class="panel">
+<h3>🐾 御獸閣</h3>
+<p class="desc">凌氏一脈通御獸之術。收服的靈獸可擇一出戰，其資質化作你的助力。<br>已收服 <b class="gold"><<= _list.length>></b> 頭　出戰中 <b class="gold"><<if _eq && setup.beasts[_eq]>><<= setup.beasts[_eq].name>><<else>>無<</if>></b></p>
+
+<<if _list.length === 0>>
+	<p class="narr">你尚未收服任何靈獸。降伏妖獸、結下契約，方得仙途夥伴。</p>
+<<else>>
+	<<for _id range _list>>
+		<<capture _id>>
+		<<set _b to setup.beasts[_id]>>
+		<<if _b>>
+		<<set _on to _id === _eq>>
+		<<set _lv to ($p.beastLv and $p.beastLv[_id]) || 0>>
+		<div class="book <<if _on>>owned<</if>>">
+			<div class="book-info">
+				<h4><<= _b.name>><span class="tag-school"><<= setup.beastTierName(_b.tier)>><<if _lv>> · 進階 <<= _lv>><</if>></span></h4>
+				<p><<= _b.desc>></p>
+				<p class="beast-bonus"><<= setup.beastBonusText(_id)>><<if _lv>>　<span class="gold">(加成 +<<= _lv*25>>%)</span><</if>></p>
+			</div>
+			<div class="book-buy">
+				<<if _on>>
+					<span class="owned-tag">⚔ 出戰中</span>
+					<<link "收回">><<unequipBeast _id>><<goto "Beasts">><</link>>
+				<<else>>
+					<<link "出戰">><<equipBeast _id>><<goto "Beasts">><</link>>
+				<</if>>
+				<<if _lv < 3>>
+					<<set _ac to (_lv+1)*60>>
+					<<if ($p.herbs.yaodan||0) >= 1 and $p.stones >= _ac>>
+						<<link `"⬆ 血脈進階（妖丹×1 + " + _ac + "靈石）"`>>
+							<<set $p.herbs.yaodan-->><<set $p.stones -= _ac>>
+							<<if not $p.beastLv>><<set $p.beastLv to {}>><</if>>
+							<<set $p.beastLv[_id] to _lv+1>>
+							<<if _id === _eq>><<recompute>><</if>>
+							<<run setup.toast(setup.beasts[_id].name + " 血脈覺醒 · 進階 " + (_lv+1))>>
+							<<goto "Beasts">>
+						<</link>>
+					<<else>>
+						<a class="disabled">⬆ 血脈進階（妖丹×1 + <<= _ac>>靈石）</a>
+					<</if>>
+				<</if>>
+			</div>
+		</div>
+		<</if>>
+		<</capture>>
+	<</for>>
+<</if>>
+</div>
+<div class="choices">
+	<<link "← 離開御獸閣">><<goto $p.loc>><</link>>
+</div>
+
+:: BeastStylesheet [stylesheet]
+.beast-bonus { color: var(--jade-light); font-size: 11px !important; letter-spacing: .05em;
+	margin-top: 5px !important; opacity: .9; }

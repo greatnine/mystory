@@ -1,0 +1,4 @@
+:: StoryInit
+/% 全域旗標。玩家狀態 $p 於「新遊戲」時由 <<newgame>> 建立 %/
+<<set $debug to false>>
+<<set $p to {}>>

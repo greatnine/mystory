@@ -1,0 +1,147 @@
+/% 第六卷 · 飛升謎題（中央神墟・仙魔大戰真相・多重結局） %/
+
+:: shenxu_enter [game]
+<<set $p.flags.vol6started to true>>
+<div class="scene">
+<div class="scene-title">第六卷 · 中央神墟</div>
+<p>神墟之門在你面前無聲開啟。門後是一片凝固了萬年的戰場——破碎的仙台、斷裂的魔淵、彼此絞殺至今的仙威與魔氣。時間在此失去意義。</p>
+<p>你胸口的仙紋碎片與元神烙印同時灼熱起來，與這片天地共鳴。一個聲音自最深處的封印傳來，蒼老而熟悉：</p>
+<p class="em">「終於……你回來了。循著仙紋，拼起真相罷。」</p>
+</div>
+<div class="choices">
+	<<link "循指引深入神墟">><<goto $p.loc>><</link>>
+</div>
+
+:: xianwen_gather [game]
+<<set $p.flags.xianwenFull to true>>
+<<gainCult 400>><<set $p.coins += 5>><<stat "daoxin" 4>>
+<div class="scene">
+<div class="scene-title">機緣 · 仙紋拼合</div>
+<p>大戰遺址散落著數塊與你手中那塊同源的仙紋碎片。你一一收攏，當最後一塊嵌合的剎那——完整的仙紋懸於識海，化作一卷殘缺萬年的<span class="em">飛升真經</span>，與藏書閣轟然相印。</p>
+<p>無數畫面湧入：萬年前的仙魔大戰、天地撕裂、靈脈斷絕……以及一道始終守在你身側的身影。</p>
+<p class="sys">【仙紋拼合 · 飛升真經初現 — 修為 +400、書幣 ×5、道心+4】</p>
+</div>
+<div class="choices">
+	<<link "前往封印之地，看清真相">><<goto $p.loc>><</link>>
+</div>
+
+:: truth_reveal [game]
+<<set $p.flags.truthDone to true>>
+<<set _top to setup.daoLu($p)>>
+<div class="scene">
+<div class="scene-title">萬年真相</div>
+<p>封印應仙紋而開，真相傾瀉而下——</p>
+<p>萬年前，你的前世是上界的一位仙人。仙魔大戰中，魔軍勢不可擋，為封印魔淵、保住人間一線生機，你與一位<span class="em">同心道侶</span>以靈魂烙印為引，雙雙引動禁制，同歸於盡，將大戰封入中央神墟。兩道殘魂墜入輪迴——你轉生地球、再墜九洲；而她的一縷殘識，也散入了這方天地，等你尋回。</p>
+<<if _top.has>>
+	<p>烙印此刻指向的，正是<span class="em"><<= _top.name>></span>。原來這一世的相遇，是跨越萬年的重逢；你以為的初見，其實是「歸來」。</p>
+<<else>>
+	<p>那道前世道侶的殘識仍在某處飄盪，等著今生的你，再一次將她認出。</p>
+<</if>>
+<p class="narr">「斬開最後的封印，仙門便開。去罷——這一次，由你自己選擇結局。」</p>
+</div>
+<div class="choices">
+	<<link "走向封印核心">><<goto $p.loc>><</link>>
+</div>
+
+:: seal_break [game]
+<div class="scene">
+<div class="scene-title">高潮 · 破封</div>
+<p>最後一道封印崩裂處，仙魔大戰雙方的殘餘執念凝聚成形——它既非仙、也非魔，萬年來只為一件事而存在：阻止任何人開啟仙門。</p>
+<p>你以混沌之體立於門前。身後是九洲，身前是仙界。這一戰，由不得退。</p>
+</div>
+<div class="choices">
+	<<link "⚔ 斬碎仙魔殘念<span class='lx-hint'>終局之戰 · 建議元嬰之境、備妥丹藥</span>">><<startBattle "xianmoremnant" "seal_break_win" "seal_break_lose">><</link>>
+	<<link "📚 決戰前準備">><<set $return to "seal_break">><<goto "cultivate">><</link>>
+</div>
+
+:: seal_break_win [game]
+<<set $p.flags.sealBroken to true>>
+<<gainCult 500>><<set $p.coins += 6>><<stat "daoxin" 5>>
+<div class="scene">
+<div class="scene-title">封印盡碎</div>
+<p>混沌一擊貫穿仙魔殘念，萬年執念終於得以消散超脫。封印盡碎，仙門大放光明，自門縫透出的仙氣令你周身經脈震顫欲飛。</p>
+<p class="sys">【封印破除 · 仙門已開 — 修為 +500、書幣 ×6、道心+5】</p>
+<p class="narr">最後一步，就在眼前。</p>
+</div>
+<div class="choices">
+	<<link "走向仙門">><<goto $p.loc>><</link>>
+</div>
+
+:: seal_break_lose [game]
+<<if $battle.fled>>
+	<div class="scene"><p class="narr">殘念太強，你暫退神墟外圍。仙門仍在，待你更強時再來。</p></div>
+<<else>>
+	<<set $p.hp to Math.max(1, Math.floor($p.maxHp*0.4))>>
+	<div class="scene"><p class="dmg">仙魔殘念的執念如汪洋將你淹沒，你重傷退走。這最後一關，需要更深的修為與道心。</p></div>
+<</if>>
+<div class="choices">
+	<<link "⟳ 療傷再戰">><<set $return to "seal_break">><<goto "cultivate">><</link>>
+	<<link "← 暫退">><<goto $p.loc>><</link>>
+</div>
+
+:: ascension_choice [game]
+<<set _top to setup.daoLu($p)>>
+<<set _lovers to setup.lovers($p)>>
+<div class="scene">
+<div class="scene-title">🌠 飛升抉擇</div>
+<p>仙門在前，仙氣浩蕩。一步踏出，便是長生仙界、無上大道；而身後，是你以一生守護的九洲人間，與那些為你停駐的身影。</p>
+<p>前世你為大義捨身，魂墜輪迴；今生的路，這一次，全由你決定。</p>
+<<if $p.stats.xinmo >= 60>><p class="dmg">識海深處，蟄伏已久的心魔趁機低語：「何必飛升？毀去此門，奪盡這天地的氣運，你便是唯一的主宰……」</p><</if>>
+</div>
+<div class="choices">
+	<<if _top.has and $p.rel[_top.id] >= 60>>
+		<<link "攜道侶，共赴仙界<span class='lx-hint'>與 <<= _top.name>> 一同飛升</span>">><<set $p.flags.ascended to "together">><<goto "end_ascend_together">><</link>>
+	<</if>>
+	<<link "獨自飛升，追尋更高之道<span class='lx-hint'>孤高仙路</span>">><<set $p.flags.ascended to "alone">><<goto "end_ascend_alone">><</link>>
+	<<link "放棄飛升，留在人間<span class='lx-hint'>白首人間，守此一世</span>">><<set $p.flags.ascended to "stay">><<goto "end_stay">><</link>>
+	<<if $p.stats.xinmo >= 60>>
+		<<link "（順應心魔，毀門奪運）<span class='lx-hint'>墮道 · 凶險之途</span>">><<set $p.flags.ascended to "demon">><<goto "end_demon">><</link>>
+	<</if>>
+</div>
+
+:: end_ascend_together [game]
+<<set _top to setup.daoLu($p)>>
+<div class="scene end-card">
+<div class="big">✦ 結局 · 攜道侶飛升 ✦</div>
+<p>你伸出手。<span class="heart"><<= _top.name>></span> 沒有片刻猶豫，將手交付——跨越萬年的兩道靈魂，終於不再錯過。</p>
+<p>仙門大開，仙光接引。你與她並肩踏入，身後九洲眾生仰望這一幕，傳為萬世佳話。前世未竟之緣，今生圓滿。</p>
+<p class="narr">廢材轉生，混沌證道，攜道侶白日飛升——《凌霄錄》，至此圓滿。</p>
+</div>
+<<include "EndingFooter">>
+
+:: end_ascend_alone [game]
+<div class="scene end-card">
+<div class="big">✦ 結局 · 獨自飛升 ✦</div>
+<p>你回望九洲最後一眼，將牽掛輕輕放下，獨自一人踏入仙門。仙路孤高，唯道是求——這是你為自己選的路。</p>
+<p>仙光湮沒身影的剎那，你彷彿聽見前世道侶的一聲輕嘆，化作風，目送你遠去。</p>
+<p class="narr">長生路遠，後會……或許有期。《凌霄錄》第一部，完。</p>
+</div>
+<<include "EndingFooter">>
+
+:: end_stay [game]
+<<set _lovers to setup.lovers($p)>>
+<div class="scene end-card">
+<div class="big">✦ 結局 · 人間白首 ✦</div>
+<p>你抬手，將開啟的仙門輕輕合上。長生仙界固然誘人，可你放不下這片親手守護的人間，與<<if _lovers.length>>身畔的 <span class="heart"><<= _lovers.join("、")>></span><<else>>這滿目山河<</if>>。</p>
+<p>「仙界何處？」你笑了，「我的道，在這裡。」此後你以散仙之身守護九洲，與所愛之人看遍了三百年、又三百年的春秋。</p>
+<p class="narr">不羨仙，只羨人間。《凌霄錄》，圓滿落幕。</p>
+</div>
+<<include "EndingFooter">>
+
+:: end_demon [game]
+<<stat "xinmo" 30>>
+<div class="scene end-card">
+<div class="big">☠ 結局 · 心魔墮道 ☠</div>
+<p>你反手一掌，將仙門連同其中的仙氣盡數奪入體內。力量如潮水灌頂，可那一刻，識海中最後一絲清明也被吞沒。</p>
+<p>你成了比血魔尊更恐怖的存在——一個以混沌之體吞噬天地氣運的魔。九洲為之色變，曾經為你停駐的身影，含淚拔劍指向你。</p>
+<p class="narr">魔劫天成。這是混沌的另一種結局——但願只是一場夢魘。《凌霄錄》· 魔道線，終。</p>
+</div>
+<<include "EndingFooter">>
+
+:: EndingFooter [game]
+<<set $p.flags.gameCleared to true>>
+<div class="choices">
+	<<link "✦ 傳承轉生 · 開啟新周目（NG+）<span class='lx-hint'>帶著傳承重新開始</span>">><<goto "NewGamePlus">><</link>>
+	<<link "⟳ 繼續此世修行">><<goto "cultivate">><</link>>
+	<<link "返回主選單">><<goto "Start">><</link>>
+</div>
