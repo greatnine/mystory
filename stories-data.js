@@ -9,6 +9,11 @@ if (typeof window !== "undefined") {
       "cover": null
     },
     {
+      "name": "nink-test",
+      "hasIndex": true,
+      "cover": null
+    },
+    {
       "name": "twineIF",
       "hasIndex": true,
       "cover": null
