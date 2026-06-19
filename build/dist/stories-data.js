@@ -4,19 +4,9 @@ if (typeof window !== "undefined") {
     window.STORIES_MANIFEST = {
   "stories": [
     {
-      "name": "story1",
+      "name": "ink-phone",
       "hasIndex": true,
-      "cover": "stories/story1/images/cover.jpg"
-    },
-    {
-      "name": "story2",
-      "hasIndex": false,
-      "cover": "stories/story2/images/cover.jpg"
-    },
-    {
-      "name": "test3",
-      "hasIndex": false,
-      "cover": "stories/test3/images/cover.jpg"
+      "cover": null
     },
     {
       "name": "twineIF",
@@ -37,11 +27,6 @@ if (typeof window !== "undefined") {
       "name": "守护者v2",
       "hasIndex": true,
       "cover": "stories/守护者v2/images/cover.jpg"
-    },
-    {
-      "name": "守护者web版",
-      "hasIndex": true,
-      "cover": "stories/守护者web版/images/cover.jpg"
     }
   ]
 };
