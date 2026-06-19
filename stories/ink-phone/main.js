@@ -378,13 +378,16 @@
             console.debug("Couldn't load saved theme");
         }
 
-        // Check whether the OS/browser is configured for dark mode
-        var browserDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-        if (savedTheme === "dark"
-            || (savedTheme == undefined && globalTagTheme === "dark")
-            || (savedTheme == undefined && globalTagTheme == undefined && browserDark))
+        // 强制默认浅色主题，忽略之前的保存设置
+        // 只有故事明确指定深色主题时才启用深色
+        if (globalTagTheme === "dark") {
             document.body.classList.add("dark");
+        } else {
+            // 确保移除dark类，保证浅色主题
+            document.body.classList.remove("dark");
+            // 同时清除localStorage中的深色设置
+            window.localStorage.setItem('theme', "");
+        }
     }
 
     // Used to hook up the functionality for global functionality buttons

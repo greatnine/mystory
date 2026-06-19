@@ -218,11 +218,9 @@ img {
     font-size: 9pt;
     text-align: center;
     padding-bottom: 6px;
-    position: fixed;
-    right: 14px;
-    top: 4px;
     user-select: none;
-    background: white;
+    display: flex;
+    gap: 12px;
 }
 
 @media screen and (prefers-reduced-motion: no-preference) {
@@ -242,10 +240,7 @@ img {
 @media screen and (max-width: 980px) {
     #controls {
         z-index: 2;
-        padding-top: 24px;
-        top: 0;
-        left: 0;
-        right: 0;
+        padding-top: 0;
     }
 }
 
@@ -355,6 +350,7 @@ html, body {
 #story p {
     font-size: 15pt !important;
     line-height: 1.7em !important;
+    color: black !important;
 }
 
 /* 5. 选择支保持原版样式 */
@@ -375,39 +371,57 @@ html, body {
     margin: 0 auto;
 }
 
-/* 7. 固定页眉处理 - 适配iOS安全区 */
-.written-in-ink {
+/* 7. 页眉横排容器（替代原written-in-ink） */
+/* written-in-ink样式已由header-bar替代，保留以防万一 */
+
+/* 8. 控制按钮区域 */
+#controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 9. 页眉和菜单横排居中 */
+.header-bar {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    padding-top: calc(6px + env(safe-area-inset-top));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    padding: calc(6px + env(safe-area-inset-top)) 14px 6px 14px;
     z-index: 100;
+    background: white;
+    flex-wrap: wrap;
 }
 
-/* 8. 控制按钮区域适配 */
-#controls {
-    position: fixed;
-    top: env(safe-area-inset-top);
-    right: 14px;
-    z-index: 101;
+.header-bar a {
+    font-size: 9pt;
+    font-family: sans-serif;
+    font-weight: 700;
+    color: #b97c2c;
+    text-decoration: none;
 }
 
-/* 9. 深色模式支持 */
-@media (prefers-color-scheme: dark) {
-    body {
-        background: #121212;
-        color: #eee;
-    }
-    .container, .written-in-ink, #controls {
-        background: #121212;
-    }
-    a {
-        color: #cc8f1a;
-    }
+#controls a {
+    font-size: 9pt;
+    font-family: sans-serif;
+    font-weight: 700;
+    text-decoration: none;
 }
 
-/* 10. 手机端媒体查询 */
+/* 10. 暗色主题正文和页眉 */
+.dark #story p {
+    color: white !important;
+}
+
+.dark .header-bar {
+    background: black;
+}
+
+/* 11. 手机端媒体查询 */
 @media screen and (max-width: 600px) {
     #story {
         padding: 12px 14px !important;
