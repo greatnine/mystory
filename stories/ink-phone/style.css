@@ -353,27 +353,18 @@ html, body {
 
 /* 4. 段落文字优化 */
 #story p {
-    font-size: 16px !important;
-    line-height: 1.7 !important;
-    margin-bottom: 1em !important;
+    font-size: 15pt !important;
+    line-height: 1.7em !important;
 }
 
-/* 5. 选择支按钮移动端优化 */
+/* 5. 选择支保持原版样式 */
 .choice {
-    width: 100% !important;
-    margin: 10px 0 !important;
-    padding: 14px 16px !important;
+    text-align: center;
+    line-height: 1.7em;
 }
 
-.choice a {
-    font-size: 16px !important;
-    display: block;
-    width: 100%;
-    min-height: 44px;
-    line-height: 1.5;
-    padding: 12px;
-    border-radius: 8px;
-    -webkit-tap-highlight-color: transparent;
+.choice a, .choice span {
+    font-size: 15pt;
 }
 
 /* 6. 图片自适应 */
@@ -428,10 +419,5 @@ html, body {
     
     h2 {
         font-size: 12pt !important;
-    }
-    
-    .choice a {
-        font-size: 15px !important;
-        padding: 10px;
     }
 }
