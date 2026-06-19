@@ -1,0 +1,81 @@
+:: guimenguan [game]
+<<enterLoc "guimenguan">>
+<div class="scene">
+<<locheader>>
+</div>
+<<eventhere>>
+<div class="choices">
+	<<link "⟳ 潛心修煉">><<goto "cultivate">><</link>>
+	<<link "🛏 就地歇息<span class='lx-hint'>以混沌靈氣護持心神，睡至次日辰時</span>">><<sleep>><<goto "guimenguan">><</link>>
+	<<link "📚 開啟萬界藏書閣">><<goto "library">><</link>>
+	<<if $p.flags.mingzun>>
+		<<link "⋯ 回望此行 · 第四卷感言<span class='lx-hint'>幽冥禁地篇 · 完</span>">><<goto "ending_vol4">><</link>>
+	<</if>>
+	<<travelfoot>>
+</div>
+
+:: huangquan [game]
+<<enterLoc "huangquan">>
+<div class="scene">
+<<locheader>>
+</div>
+<<eventhere>>
+<div class="choices">
+	<<link "🏹 驅散沿途厲鬼<span class='lx-hint'>戰鬥 · 亂葬厲鬼</span>">><<pass 1>><<startBattle "ligui" "ghost_win" "ghost_lose">><</link>>
+	<<travelfoot>>
+</div>
+
+:: wangchuan [game]
+<<enterLoc "wangchuan">>
+<div class="scene">
+<<locheader>>
+</div>
+<<eventhere>>
+<div class="choices">
+	<<link "🕯 臨川靜思<span class='lx-hint'>耗一時辰，心魔−12、道心+3</span>">><<calmheart>><<goto "wangchuan">><</link>>
+	<<travelfoot>>
+</div>
+
+:: luanzang [game]
+<<enterLoc "luanzang">>
+<div class="scene">
+<<locheader>>
+</div>
+<<eventhere>>
+<div class="choices">
+	<<link "🌿 在屍骨間搜尋遺物<span class='lx-hint'>耗二時辰</span>">><<goto "explore">><</link>>
+	<<link "🏹 鎮壓亂葬厲鬼<span class='lx-hint'>戰鬥</span>">><<pass 1>><<startBattle "ligui" "ghost_win" "ghost_lose">><</link>>
+	<<travelfoot>>
+</div>
+
+:: youmingdian [game]
+<<enterLoc "youmingdian">>
+<div class="scene">
+<<locheader>>
+</div>
+<<eventhere>>
+<div class="choices">
+	<<link "👁 暗中查探鬼道佈防<span class='lx-hint'>耗一時辰，聲望微增（凶險）</span>">>
+		<<pass 1>><<stat "fame" 1>><<stat "xinmo" 4>>
+		<<goto "youmingdian">>
+	<</link>>
+	<<travelfoot>>
+</div>
+
+:: ghost_win [game]
+<<set $p.stones += setup.enemies.ligui.stones + setup.rnd(8)>>
+<<set $p.herbs.hanyu to ($p.herbs.hanyu||0) + 1>>
+<div class="scene">
+<p>你以混沌劍意打散厲鬼的怨念，使其消散超脫。屍堆中拾得靈石與一株<span class="em">寒玉芝</span>。</p>
+</div>
+<div class="choices"><<link "← 繼續前行">><<goto $p.loc>><</link>></div>
+
+:: ghost_lose [game]
+<<if $battle.fled>>
+	<div class="scene"><p class="narr">陰煞之氣太重，你暫且退開。</p></div>
+<<else>>
+	<<set $p.hp to Math.max(1, Math.floor($p.maxHp*0.4))>>
+	<<stat "xinmo" 6>>
+	<div class="scene"><p class="dmg">厲鬼的怨念侵入識海，你受創退走，心魔暗漲。</p></div>
+<</if>>
+<div class="choices"><<link "← 返回">><<goto $p.loc>><</link>></div>

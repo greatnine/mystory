@@ -1,0 +1,58 @@
+/% A3 · 拓展支線（各女主後期深化） %/
+
+:: sy_sword_tomb [game]
+<<set $p.flags.syQuest to true>>
+<<gainCult 200>><<stat "daoxin" 3>>
+<div class="scene">
+<<portrait "suyuyao">>
+<div class="scene-title">⚜ 祖傳劍冢</div>
+<p>蘇羽瑤第一次帶你回到她家族的劍冢。萬劍封塵，是她滅門那夜倖存的全部。她一柄柄拂過，聲音很輕：</p>
+<p class="em">「我一直以為，是仇家滅了蘇氏。直到在這裡，我讀到了真正的真相。」</p>
+<p>劍冢深處的石刻揭開了塵封的因果——當年的滅門，牽連著一樁與正道高層有關的舊案。她沒有崩潰，只是握緊了你的手：「這次，我不是一個人面對了。」</p>
+<p class="sys">【共擔傷痛 · 劍意大進 — 修為 +200、道心+3】</p>
+<<rel "suyuyao" 10>>
+</div>
+<div class="choices"><<link "陪她把每一柄劍重新擦亮">><<rel "suyuyao" 3>><<goto $p.loc>><</link>><<link "← 離開劍冢">><<goto $p.loc>><</link>></div>
+
+:: ql_lifespan [game]
+<<set $p.flags.qlQuest to true>>
+<<stat "daoxin" 4>>
+<div class="scene">
+<<portrait "qingling">>
+<div class="scene-title">⚜ 壽命難題</div>
+<p>靈泉邊，青玲兒終於說出了那個一直纏著她的恐懼：九尾狐族不老不死，而你是人族。</p>
+<p class="em">「三百年後、五百年後……我還是這個樣子，你卻早就不在了。」她別過臉，尾巴垂著，「我才不要那樣。」</p>
+<p>你沒有給空泛的安慰，而是指向更高的境界——元嬰兩千歲、化神五千歲，渡劫則無限。「那我就修上去。修到能陪你看完那些三百年。」</p>
+<p>她怔怔看你，金色的眼睛慢慢亮起來：「……說話算話。你敢半路偷懶，我咬你。」</p>
+<p class="sys">【正視壽命之別 · 道心更堅 — 道心+4】</p>
+<<rel "qingling" 10>>
+</div>
+<div class="choices"><<link "「一言為定。」勾住她的小指">><<rel "qingling" 3>><<goto $p.loc>><</link>><<link "← 返回">><<goto $p.loc>><</link>></div>
+
+:: dx_unseal [game]
+<<set $p.flags.dxQuest to true>>
+<<stat "daoxin" 3>>
+<div class="scene">
+<<portrait "dongxue">>
+<div class="scene-title">⚜ 冰心解封</div>
+<p>絕情冰體破除後，裴冬雪正一點一點學會「感受完整的情緒」。這天她忽然站到你面前，深吸一口氣，像是要完成一項極艱難的實驗：</p>
+<p class="em">「我練習了很多次。所以……請、請聽好，我只說一次。」她耳尖泛紅，一字一句，笨拙而鄭重，「我喜歡你。這不是數據，是結論。」</p>
+<p>說完她立刻別開臉，呼吸明顯亂了。可那雙曾經感受不到溫度的眼睛裡，此刻盛滿了她終於學會的、滾燙的東西。</p>
+<p class="sys">【冰心徹底解封 · 以情入道 — 道心+3】</p>
+<<rel "dongxue" 12>>
+</div>
+<div class="choices"><<link "「我也是。這也是結論。」">><<rel "dongxue" 3>><<goto $p.loc>><</link>><<link "輕輕擁住還在發抖的她">><<rel "dongxue" 4>><<goto $p.loc>><</link>></div>
+
+:: yl_repay [game]
+<<set $p.flags.ylQuest to true>>
+<<gainCult 180>>
+<div class="scene">
+<<portrait "yinli">>
+<div class="scene-title">⚜ 以魂報恩</div>
+<p>幽冥殘黨的一次伏擊中，你陷入絕境。千鈞一髮，陰離動用了禁忌的魂術——以自身魂魄為引，硬生生為你擋下致命一擊，自己卻幾乎魂飛魄散。</p>
+<p>你不顧一切將神識探入她潰散的靈魂，一縷一縷，把她拉了回來——一如當年她第一次被你從魂繫術中解救。</p>
+<p>她悠悠轉醒，虛弱地笑：「我說過……這個帳，我一輩子還不完。所以你別想趕我走。」</p>
+<p class="sys">【生死相托 · 靈魂的羈絆更深 — 修為 +180】</p>
+<<rel "yinli" 12>>
+</div>
+<div class="choices"><<link "「誰要趕你。給我好好活著。」">><<rel "yinli" 3>><<goto $p.loc>><</link>><<link "守在她身邊直到她復原">><<rel "yinli" 3>><<goto $p.loc>><</link>></div>

@@ -1,0 +1,142 @@
+:: AlchemyMacro [script]
+/* 火候控制小遊戲：移動的指針 + 理想火候區間，按「定火」定格 */
+Macro.add("heatgame", {
+	handler: function () {
+		const recipeId = this.args[0];
+		const recipe = setup.recipes[recipeId];
+		const sv = State.variables;
+		const bonus = (setup.has(sv.p, "eye") ? (setup.books.eye.eff.alchemyBonus || 0) : 0)
+			+ setup.profOf(sv.p, "alchemy") * 0.004; // 天眼 + 丹道熟練放寬容差
+		const tol = recipe.tol + Math.round(recipe.tol * bonus);
+
+		const wrap = document.createElement("div");
+		wrap.className = "heat-wrap";
+
+		const track = document.createElement("div");
+		track.className = "heat-track";
+
+		const zone = document.createElement("div");
+		zone.className = "heat-zone";
+		zone.style.left = (recipe.ideal - tol) + "%";
+		zone.style.width = (tol * 2) + "%";
+		track.appendChild(zone);
+
+		const needle = document.createElement("div");
+		needle.className = "heat-needle";
+		track.appendChild(needle);
+
+		const btn = document.createElement("button");
+		btn.className = "lx-btn heat-btn";
+		btn.textContent = "🔥 定火";
+
+		const tip = document.createElement("div");
+		tip.className = "lx-hint";
+		tip.style.textAlign = "center";
+		tip.textContent = "金色區間為理想火候，按「定火」於正確時機定格";
+
+		wrap.appendChild(tip);
+		wrap.appendChild(track);
+		wrap.appendChild(btn);
+		this.output.appendChild(wrap);
+
+		// 指針來回擺動
+		let pos = 0, dir = 1, raf = 0;
+		const speed = 1.15 + recipe.tol * 0.02; // 容差小者略快、較難
+		let last = null;
+		function step(ts) {
+			if (!document.body.contains(track)) return; // 段落已離開
+			if (last == null) last = ts;
+			const dt = ts - last; last = ts;
+			pos += dir * speed * (dt / 16);
+			if (pos >= 100) { pos = 100; dir = -1; }
+			if (pos <= 0)   { pos = 0;   dir = 1; }
+			needle.style.left = pos + "%";
+			raf = requestAnimationFrame(step);
+		}
+		raf = requestAnimationFrame(step);
+
+		btn.addEventListener("click", function () {
+			cancelAnimationFrame(raf);
+			btn.disabled = true;
+			const dist = Math.abs(pos - recipe.ideal);
+			const perfect = dist <= tol * 0.4;
+			const ok = dist <= tol;
+			// 扣材料
+			Object.keys(recipe.mat).forEach(function (h) {
+				sv.p.herbs[h] = (sv.p.herbs[h] || 0) - recipe.mat[h];
+			});
+			let msg, cls;
+			if (ok) {
+				const qty = perfect ? 2 : 1;
+				setup.addProf(sv.p, "alchemy", perfect ? 3 : 2);
+				sv.p.pills[recipeId] = (sv.p.pills[recipeId] || 0) + qty;
+				msg = (perfect ? "火候<b>完美</b>！丹成 " : "火候掌控得宜，丹成 ") + recipe.name + " ×" + qty + "。";
+				cls = "sys";
+				setup.toast("煉成 " + recipe.name + " ×" + qty);
+			} else if (dist <= tol * 2) {
+				msg = "火候稍有偏差，丹藥品相不佳，僅煉得 " + recipe.name + " ×1。";
+				sv.p.pills[recipeId] = (sv.p.pills[recipeId] || 0) + 1;
+				cls = "narr";
+			} else {
+				msg = "火候失控，丹爐騰起一陣青煙——藥材盡毀。";
+				cls = "dmg";
+			}
+			sv.alchemyResult = { msg: msg, cls: cls };
+			Engine.play("alchemyResult");
+		});
+	}
+});
+
+:: alchemy [game]
+<div class="panel">
+<h3>🔥 丹房 · 九轉玄火爐</h3>
+<p class="desc">以現代化學邏輯掌控火候。選擇丹方後，於理想火候時機定火。<br>靈石 <b class="gold"><<= $p.stones>></b></p>
+<<set _ownedAny to false>>
+<<for _id range Object.keys(setup.recipes)>>
+	<<capture _id>>
+	<<set _r to setup.recipes[_id]>>
+	<<set _known to $p.recipes.includes(_id)>>
+	<<set _matText to []>>
+	<<set _enough to true>>
+	<<run Object.keys(_r.mat).forEach(function(h){ _matText.push(setup.herbs[h].name+" ×"+_r.mat[h]+"（有 "+($p.herbs[h]||0)+"）"); if(($p.herbs[h]||0) < _r.mat[h]) _enough=false; })>>
+	<<if _known>>
+		<<set _ownedAny to true>>
+		<div class="book">
+			<div class="book-info">
+				<h4><<= _r.name>>　<span class="tag-school">持有 <<= $p.pills[_id]||0>></span></h4>
+				<p><<= _r.desc>>　材料：<<= _matText.join("、")>></p>
+			</div>
+			<div class="book-buy">
+				<<if _enough>>
+					<<link "煉製">><<set $p.cooking to _id>><<goto "cooking">><</link>>
+				<<else>>
+					<a class="disabled">材料不足</a>
+				<</if>>
+			</div>
+		</div>
+	<</if>>
+	<</capture>>
+<</for>>
+<<if not _ownedAny>><p class="narr">尚未習得任何丹方。</p><</if>>
+</div>
+<div class="choices">
+	<<link "← 離開丹房">><<goto $return>><</link>>
+</div>
+
+:: cooking [game]
+<<pass 1>>
+<div class="scene">
+<div class="scene-title">煉丹 · <<= setup.recipes[$p.cooking].name>></div>
+<p class="narr">藥材入爐，靈火升騰。凝神，掌控火候——</p>
+<<heatgame $p.cooking>>
+</div>
+
+:: alchemyResult [game]
+<div class="scene">
+<div class="scene-title">出爐</div>
+<p class="<<= $alchemyResult.cls>>"><<= $alchemyResult.msg>></p>
+</div>
+<div class="choices">
+	<<link "↻ 再煉一爐">><<goto "alchemy">><</link>>
+	<<link "← 離開丹房">><<goto $return>><</link>>
+</div>

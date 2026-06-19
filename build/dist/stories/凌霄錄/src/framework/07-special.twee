@@ -1,0 +1,5 @@
+:: PassageReady
+/% 進入任一段落時：把背景星空容器補上一次 %/
+<<run if(!document.getElementById("lx-stars")){var s=document.createElement("div");s.id="lx-stars";document.body.insertBefore(s,document.body.firstChild);}>>
+/% 舊存檔遷移：統一交給 setup.migrate（版本化，補齊所有後加欄位） %/
+<<if $p and $p.maxHp>><<run setup.migrate($p)>><</if>>

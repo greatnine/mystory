@@ -1,0 +1,75 @@
+:: harem_jealousy [game]
+/% 後宮張力事件：≥2 位女主緣分≥55 時於洞府觸發一次。
+   提供「坦誠／迴避／當下抉擇」三種處理，各有代價，呼應「後宮非無代價」。 %/
+<<set _hi to setup.highLovers($p, 55)>>
+<<set _names to _hi.map(function(k){ return setup.heroNames[k]; })>>
+<div class="scene">
+<div class="scene-title">♡ 微妙的空氣</div>
+<p>不知是巧合還是默契，這一日，<span class="heart"><<= _names.join("、")>></span> 竟前後腳到了你的洞府。</p>
+<p>幾句寒暄之後，空氣裡浮起一層誰都沒點破的張力。她們彼此客氣得過了頭，目光卻時不時掠過你——又迅速錯開。</p>
+<p class="narr">你忽然意識到：有些事，逃避不了多久了。</p>
+</div>
+<div class="choices">
+	<<link "坦誠：我此刻無法給任何人一個交代，但我不會敷衍誰">>
+		<<set $p.flags.haremJealousy to true>>
+		<<stat "daoxin" 4>>
+		<<for _k range _hi>><<set $p.rel[_k] to Math.max(0, $p.rel[_k]-3)>><</for>>
+		<<goto "harem_honest">>
+	<</link>>
+	<<link "迴避：打個哈哈，把話題岔開">>
+		<<set $p.flags.haremJealousy to true>>
+		<<stat "xinmo" 8>>
+		<<goto "harem_dodge">>
+	<</link>>
+	<<link "當下就做了斷：認定其中一人為此生道侶">>
+		<<goto "harem_commit">>
+	<</link>>
+</div>
+
+:: harem_honest [game]
+<div class="scene">
+<p>你沒有迴避，把話說開了：你珍惜每一份相遇，但修途未竟、心意未定，不願以虛言搪塞任何人。</p>
+<p>一陣沉默後，她們神色各異，卻都沒有發作——坦白雖讓人受傷，卻也讓人安心。這份磊落，反而沉澱了你的道心。</p>
+<p class="sys">【道心 +4；在場女主緣分各 −3（誠實的代價）】</p>
+</div>
+<div class="choices"><<link "← 各自散去">><<goto "dongfu">><</link>></div>
+
+:: harem_dodge [game]
+<div class="scene">
+<p>你打了個哈哈，把話題引向修煉與瑣事。張力被你暫時糊弄了過去，可那層沒說破的東西，並未消失，只是沉到了更深處。</p>
+<p class="narr">夜深人靜時，你自己心裡那點說不清的虧欠，悄悄化作了一絲心魔。</p>
+<p class="sys">【心魔 +8（迴避的代價）】</p>
+</div>
+<div class="choices"><<link "← 散了吧">><<goto "dongfu">><</link>></div>
+
+:: harem_commit [game]
+<<set _hi to setup.highLovers($p, 55)>>
+<div class="scene">
+<div class="scene-title">此生道侶</div>
+<p>你深吸一口氣，決定不再拖延。心之所向，當下言明——</p>
+</div>
+<div class="choices">
+	<<for _k range _hi>>
+		<<capture _k>>
+		<<link `"認定 · " + setup.heroNames[_k] + "（緣分 " + $p.rel[_k] + "）"`>>
+			<<set $p.flags.haremJealousy to true>>
+			<<set $p.flags.daoLu to _k>>
+			<<set $p.rel[_k] += 8>>
+			<<for _o range setup.highLovers($p, 55)>>
+				<<if _o !== _k>><<set $p.rel[_o] to Math.max(0, $p.rel[_o]-5)>><</if>>
+			<</for>>
+			<<goto "harem_commit_done">>
+		<</link>>
+		<</capture>>
+	<</for>>
+	<<link "← 還是再想想（返回）">><<goto "dongfu">><</link>>
+</div>
+
+:: harem_commit_done [game]
+<<set _dl to setup.daoLu($p)>>
+<div class="scene">
+<p>你走向 <span class="heart"><<= _dl.name>></span>，當著眾人的面，把心意說得清清楚楚。</p>
+<p>那一刻，有人歡喜，有人黯然轉身。你知道自己虧欠了誰，但至少——你給了她一個明確的答案，也給了自己一條不再游移的路。</p>
+<p class="sys">【<<= _dl.name>> 緣分 +8；其餘在場女主緣分 −5。此生道侶已定：<<= _dl.name>>】</p>
+</div>
+<div class="choices"><<link "← 塵埃落定">><<goto "dongfu">><</link>></div>

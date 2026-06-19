@@ -1,0 +1,100 @@
+:: NPCScript [script]
+/* NPC 尋訪敘話的情境文字（首次/再次） */
+setup.npcVisitText = function (id, p, first) {
+	const tod = setup.timeOfDay(p.time.tick);
+	const T = {
+		suyuyao: {
+			first: "你尋到蘇羽瑤時，她正獨自演劍。見你來，劍勢一頓，神色淡淡卻沒有趕你走——這對她而言已是難得的容許。你們並肩說了會兒劍道。",
+			again: "她瞥你一眼，沒多言，只默許你在一旁看她練劍。沉默之中自有一種熟稔。",
+		},
+		qingling: {
+			first: "青玲兒老遠就嗅到你的氣息，狐尾一掃便撲了過來，拉著你嘰嘰喳喳說個不停，把今日的趣事一股腦兒倒給你聽。",
+			again: "她正趴著打盹，聽見你來，懶懶睜眼，拍拍身邊的位置示意你坐下，尾巴卻誠實地纏上了你的手腕。",
+		},
+		dongxue: {
+			first: "裴冬雪正記錄著體內寒冰的數據。你的暖陽靈氣一近，她筆尖微頓，抬眼看你——那雙無波的眼底，似乎有什麼悄然解凍了一分。",
+			again: "她默默挪了挪，留出半邊位置。你坐下，兩人都沒說話，可她筆下的數據，比平時多寫了一行。",
+		},
+		yinli: {
+			first: "陰離正低頭收集著山花。見你來，她把最好看的一朵遞給你，極輕地彎了彎唇——那是她重新學會的、屬於『她自己』的笑。",
+			again: "她安靜地坐在原處等你，掌心攤開，是攢了一路的小花。她不說話，只是把它們，一朵朵放進你手裡。",
+		},
+	};
+	const t = T[id] || { first: "你尋到了她。", again: "你又來陪了她一會兒。" };
+	let s = "<p>" + (first ? t.first : t.again) + "</p>";
+	s += '<p class="narr">' + setup.tickNames[p.time.tick] + "時的" + (setup.locations[p.loc] ? setup.locations[p.loc].name : "此地") + "，" + (tod === "夜" ? "夜色正深。" : "光景正好。") + "</p>";
+	return s;
+};
+
+
+:: NPCVisit [game]
+<<set _id to $p.visitWho>>
+<<set _s to setup.npcSchedule[_id]>>
+<<set _first to ($p.visited[_id] !== $p.time.day)>>
+<<pass 1>>
+<<if _first>><<set $p.visited[_id] to $p.time.day>><</if>>
+<div class="scene">
+<<portrait `_id`>>
+<div class="scene-title">敘話 · <<= _s.name>></div>
+<<= setup.npcVisitText(_id, $p, _first)>>
+<<if _first>>
+	<<rel `_id` 2>>
+<<else>>
+	<p class="sys">（今日已敘過話，這次只是靜靜相伴。）</p>
+<</if>>
+</div>
+<div class="choices">
+	<<link "← 道別">><<goto $p.loc>><</link>>
+</div>
+
+
+:: Whereabouts [game]
+<div class="panel">
+<h3>💞 紅顏行蹤</h3>
+<p class="desc">已結識之人此刻的去向（依其作息推算）。在對的時辰前往對的地點，便能尋訪敘話。</p>
+<<set _any to false>>
+<<for _id range Object.keys(setup.npcSchedule)>>
+	<<capture _id>>
+	<<set _s to setup.npcSchedule[_id]>>
+	<<if $p.flags[_s.met]>>
+		<<set _any to true>>
+		<<set _loc to setup.npcLocNow(_id, $p)>>
+		<<set _ln to (_loc and setup.locations[_loc]) ? setup.locations[_loc].name : "行蹤難覓">>
+		<<set _sameReg to ($p.region === _s.region)>>
+		<div class="frep-row">
+			<div class="frep-head">
+				<span class="frep-name">❤ <<= _s.name>></span>
+				<span class="<<if _sameReg>>gold<<else>>cap-rel-t<</if>>"><<= setup.regions[_s.region].name>> · <<= _ln>></span>
+			</div>
+			<div class="frep-desc"><<if _loc and _sameReg>>此刻可前往 <span class="em"><<= _ln>></span> 尋訪。<<elseif _loc>>需先抵達 <<= setup.regions[_s.region].name>>。<<else>>此時不在固定之處。<</if></div>
+		</div>
+	<</if>>
+	<</capture>>
+<</for>>
+<<if not _any>>
+	<p class="narr">你尚未與任何人結下足夠的緣分。</p>
+<</if>>
+</div>
+<div class="choices"><<link "← 返回">><<goto $return>><</link>></div>
+
+
+:: Proficiency [game]
+<div class="panel">
+<h3>📜 技藝熟練</h3>
+<p class="desc">勤而行之，技進於道。各項技藝隨對應修行增長，反過來增益你的實力。</p>
+<<for _k range Object.keys(setup.profDefs)>>
+	<<capture _k>>
+	<<set _v to setup.profOf($p, _k)>>
+	<<set _t to setup.profTier(_v)>>
+	<<set _d to setup.profDefs[_k]>>
+	<div class="frep-row">
+		<div class="frep-head">
+			<span class="frep-name"><<= _d.name>></span>
+			<span class="gstat <<= _t.cls>>"><<= _t.label>> <<= _v>></span>
+		</div>
+		<div class="frep-desc"><<= _d.desc>></div>
+	</div>
+	<</capture>>
+<</for>>
+</div>
+<div class="choices"><<link "← 返回">><<goto $return>><</link>></div>

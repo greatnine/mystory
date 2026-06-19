@@ -1,0 +1,60 @@
+:: ArtsScript [script]
+/* ════════ 符籙 / 陣法 系統 ════════
+   符籙：戰鬥一次性消耗品，存 $p.talismans[key] 計數。
+   陣法：一次性習得(存 $p.formations 陣列)，戰鬥中耗靈力佈下，整場生效(存 $battle.formation)。
+   皆於坊市購得；效果由 useTalisman / deployFormation widget 處理。 */
+setup.talismans = {
+	liteyan:  { name: "烈炎符", price: 30, desc: "爆發烈焰重擊，並使敵灼燒兩回合。" },
+	jinglei:  { name: "驚雷符", price: 35, desc: "雷霆轟擊，造成傷害並麻痺敵人兩回合。" },
+	huichun:  { name: "回春符", price: 40, desc: "立即回復大量氣血與少許靈力。" },
+	jinzhong: { name: "金鐘符", price: 48, desc: "金鐘罩體，數回合內所受傷害大減。" },
+};
+setup.formations = {
+	gong:   { name: "赤陽攻陣", mp: 18, stones: 0,  desc: "佈陣後攻擊增益 +20（整場）。" },
+	shou:   { name: "玄龜守陣", mp: 18, stones: 0,  desc: "佈陣後所受傷害減 25%（整場）。" },
+	juling: { name: "聚靈陣",   mp: 0,  stones: 15, desc: "佈陣後每回合回復靈力與少量氣血（整場）。" },
+	kun:    { name: "困龍陣",   mp: 24, stones: 0,  desc: "佈陣瞬間鎮壓敵人，使其麻痺兩回合。" },
+};
+setup.hasFormation = function (p, k) { return (p.formations || []).indexOf(k) >= 0; };
+
+
+:: ArtsWidgets [widget]
+/% 使用符籙：<<useTalisman "liteyan">>（在戰鬥中） %/
+<<widget "useTalisman">>
+	<<set _k to _args[0]>>
+	<<set $p.talismans[_k]-->>
+	<<set _e to setup.enemies[$battle.foeId]>>
+	<<if _k === "liteyan">>
+		<<set _d to Math.max(1, Math.round($p.atk*1.3 + 30 - _e.def))>>
+		<<set $battle.foeBurn to Math.max($battle.foeBurn, 2)>>
+		<<set _m to "<span class='sys'>烈炎符</span>爆出烈焰，造成 <span class='em'>" + _d + "</span> 點傷害，並引燃灼燒！">>
+		<<hitFoe _d _m>>
+	<<elseif _k === "jinglei">>
+		<<set _d to Math.max(1, Math.round($p.atk*1.1 + 20 - _e.def))>>
+		<<set $battle.foeStun to Math.max($battle.foeStun, 2)>>
+		<<set _m to "<span class='sys'>驚雷符</span>炸響，造成 <span class='em'>" + _d + "</span> 點傷害，敵陷麻痺！">>
+		<<hitFoe _d _m>>
+	<<elseif _k === "huichun">>
+		<<set $battle.lastDmg to 0>><<set $battle.foePrevHp to $battle.foeHp>>
+		<<heal 80 20>>
+		<<set $battle.msg to "<span class='sys'>回春符</span>化作生機湧入經脈，氣血回復。">>
+		<<enemyStrike>>
+	<<else>>
+		<<set $battle.lastDmg to 0>><<set $battle.foePrevHp to $battle.foeHp>>
+		<<set $battle.pShieldT to 4>>
+		<<set $battle.msg to "<span class='sys'>金鐘符</span>罩體生輝，數回合內傷害大減。">>
+		<<enemyStrike>>
+	<</if>>
+<</widget>>
+
+/% 佈陣：<<deployFormation "gong">>（資源已於連結處扣除） %/
+<<widget "deployFormation">>
+	<<set _k to _args[0]>>
+	<<set _f to setup.formations[_k]>>
+	<<set $battle.formation to _k>>
+	<<if _k === "gong">><<set $battle.pAtkBuff to ($battle.pAtkBuff||0) + 20>><<set $battle.pAtkBuffT to 99>><</if>>
+	<<if _k === "kun">><<set $battle.foeStun to Math.max($battle.foeStun, 2)>><</if>>
+	<<set $battle.lastDmg to 0>><<set $battle.foePrevHp to $battle.foeHp>>
+	<<set $battle.msg to "你掐訣佈下 <span class='sys'>" + _f.name + "</span>，靈光浮動。">>
+	<<enemyStrike>>
+<</widget>>

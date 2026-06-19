@@ -1,0 +1,67 @@
+:: binggate [game]
+<<enterLoc "binggate">>
+<div class="scene">
+<<locheader>>
+</div>
+<<eventhere>>
+<div class="choices">
+	<<link "⟳ 潛心修煉">><<goto "cultivate">><</link>>
+	<<link "🛏 在客舍歇息<span class='lx-hint'>睡至次日辰時，疲勞全消、回滿氣血靈力</span>">><<sleep>><<goto "binggate">><</link>>
+	<<link "📚 開啟萬界藏書閣">><<goto "library">><</link>>
+	<<travelfoot>>
+</div>
+
+:: hantan [game]
+<<enterLoc "hantan">>
+<div class="scene">
+<<locheader>>
+</div>
+<<eventhere>>
+<div class="choices">
+	<<link "🕯 臨潭靜思<span class='lx-hint'>耗一時辰，心魔−12、道心+3</span>">><<calmheart>><<goto "hantan">><</link>>
+	<<link "🧊 潭底採寒材<span class='lx-hint'>耗二時辰，採得寒屬靈材</span>">><<goto "explore">><</link>>
+	<<travelfoot>>
+</div>
+
+:: shengnv [game]
+<<enterLoc "shengnv">>
+<div class="scene">
+<<locheader>>
+</div>
+<<eventhere>>
+<div class="choices">
+	<<if $p.flags.metDongxue>>
+		<<link "📓 與她並坐，看她記錄數據<span class='lx-hint'>耗一時辰，緣分微增</span>">>
+			<<pass 1>><<rel "dongxue" 1>><<goto "shengnv">>
+		<</link>>
+	<</if>>
+	<<travelfoot>>
+</div>
+
+:: bingyu [game]
+<<enterLoc "bingyu">>
+<div class="scene">
+<<locheader>>
+</div>
+<<eventhere>>
+<div class="choices">
+	<<link "💎 採集寒玉與雪蓮<span class='lx-hint'>耗二時辰，稀有寒材</span>">><<goto "explore">><</link>>
+	<<travelfoot>>
+</div>
+
+:: bingfeng [game]
+<<enterLoc "bingfeng">>
+<div class="scene">
+<<locheader>>
+</div>
+<<eventhere>>
+<div class="choices">
+	<<link "🗻 風雪中觀道<span class='lx-hint'>耗二時辰，修為與道心俱增</span>">>
+		<<pass 2>>
+		<<set _g to 38 + setup.rnd(22) + $p.realm*18>>
+		<<train _g>>
+		<<stat "daoxin" 2>>
+		<<goto "bingfeng">>
+	<</link>>
+	<<travelfoot>>
+</div>

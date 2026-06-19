@@ -1,0 +1,431 @@
+:: CombatFoeArt [script]
+/* C1 戰鬥視覺：敵方「印璽卡」SVG（自製簡易，純視覺，不新增任何機制）。
+   依敵名關鍵字選配色，取名首字為大字符；單一戰鬥畫面僅一張卡，固定 gradient id 即可。 */
+setup.foeSigil = function (e) {
+	var name = (e && e.name) || "";
+	var ch = name.charAt(0) || "敵";
+	var t;
+	if (/血|魔/.test(name))                t = { a: "#c0392b", g: "#f0897e", bg: "#1a0707" };
+	else if (/鬼|厲|幽|魂|冥/.test(name))   t = { a: "#7d5bbe", g: "#c4b6ec", bg: "#0d0a1a" };
+	else if (/妖|獸|狼|狐/.test(name))      t = { a: "#bb8a2c", g: "#f2cc70", bg: "#150f06" };
+	else if (/冰|寒/.test(name))            t = { a: "#4a90b8", g: "#a6d6ec", bg: "#06121c" };
+	else                                    t = { a: "#c0392b", g: "#e8736a", bg: "#160a09" };
+	return '' +
+'<svg viewBox="0 0 200 200" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
+  '<defs>' +
+    '<radialGradient id="foeglow" cx="0.5" cy="0.46" r="0.62">' +
+      '<stop offset="0" stop-color="' + t.a + '" stop-opacity="0.5"/>' +
+      '<stop offset="1" stop-color="' + t.a + '" stop-opacity="0"/>' +
+    '</radialGradient>' +
+  '</defs>' +
+  '<rect width="200" height="200" rx="8" fill="' + t.bg + '"/>' +
+  '<circle cx="100" cy="94" r="98" fill="url(#foeglow)"/>' +
+  '<circle cx="100" cy="100" r="72" fill="none" stroke="' + t.a + '" stroke-opacity="0.35" stroke-width="1.5"/>' +
+  '<path d="M30 44 L74 30 M170 156 L126 170" stroke="' + t.a + '" stroke-opacity="0.4" stroke-width="2" stroke-linecap="round"/>' +
+  '<text x="100" y="138" font-size="116" text-anchor="middle" fill="' + t.g + '" fill-opacity="0.92" font-family="\'Noto Serif TC\',serif" font-weight="900">' + ch + '</text>' +
+'</svg>';
+};
+/* 敵方圖：印璽卡墊底 + 真圖覆蓋（缺檔/失敗 onerror 移除，露出印璽卡） */
+setup.foeArt = function (e) {
+	var svg = setup.foeSigil(e);
+	if (e && e.img) return svg + '<img class="art-img" src="' + e.img + '" alt="" onerror="this.remove()">';
+	return svg;
+};
+
+
+:: CombatScript [script]
+/* ════════ 戰鬥深化（C-deep） ════════
+   全部狀態存於 $battle（隨戰鬥消滅），不污染長期存檔。
+   ── 玩家可選五行出招屬性、附帶狀態（灼燒/中毒/麻痺/凍緩）
+   ── 敵方技能、BOSS 二階段、道侶/靈獸援護 ── */
+
+/* 五行相剋：key 剋 value 陣列（含對冰之剋） */
+setup.elemBeats = { "金":["木"], "木":["土"], "水":["火"], "火":["金","冰"], "土":["水","冰"], "雷":["金","水"] };
+setup.elemDesc = { "金":"凌厲剛猛", "木":"生生不息·易令敵中毒", "水":"寒滯遲緩", "火":"灼炎焚身", "土":"沉重鎮壓", "雷":"麻痺破金水" };
+
+/* 玩家可選出招屬性（混沌靈根可化五行；習得五雷天罡決加雷） */
+setup.playerElems = function (p) {
+	var arr = ["金", "木", "水", "火", "土"];
+	if (setup.has(p, "storm")) arr.push("雷");
+	return arr;
+};
+/* 出招屬性 vs 敵屬性 → 傷害倍率與標籤（妖/鬼/魔 不受五行剋制） */
+setup.playerElemMult = function (chosen, foeElem) {
+	if (!foeElem || !setup.elemCounterable[foeElem]) return { mult: 1, label: "" };
+	if ((setup.elemBeats[chosen] || []).indexOf(foeElem) >= 0)
+		return { mult: 1.3, label: "<span class='sys'>✦ " + chosen + "剋" + foeElem + "！</span> " };
+	if ((setup.elemBeats[foeElem] || []).indexOf(chosen) >= 0)
+		return { mult: 0.72, label: "<span class='dmg'>" + foeElem + "剋" + chosen + "，威力受挫 </span>" };
+	return { mult: 1, label: "" };
+};
+/* 出招屬性命中時附帶狀態（機率觸發） → {key, turns, label} 或 null */
+setup.elemStatus = function (chosen) {
+	var r = Math.random();
+	if (chosen === "火" && r < 0.32) return { key: "foeBurn",   turns: 2, label: "<span class='sys'>【灼燒】烈炎附體，每回合灼傷。</span>" };
+	if (chosen === "木" && r < 0.32) return { key: "foePoison", turns: 3, label: "<span class='sys'>【中毒】木靈蝕體，持續流失氣血。</span>" };
+	if (chosen === "雷" && r < 0.26) return { key: "foeStun",   turns: 1, label: "<span class='sys'>【麻痺】雷霆貫體，敵下回合無法行動！</span>" };
+	if (chosen === "水" && r < 0.30) return { key: "foeWeak",   turns: 2, label: "<span class='sys'>【凍緩】寒氣鎖經，敵攻勢遲滯。</span>" };
+	if (chosen === "土" && r < 0.26) return { key: "foeWeak",   turns: 2, label: "<span class='sys'>【鎮壓】土勢沉壓，敵攻勢遲滯。</span>" };
+	return null;
+};
+
+/* 敵方技能（type 於 enemyStrike 處理） */
+setup.enemySkills = {
+	qinxiang:      { name: "華山九劍",   chance: 0.30, type: "heavy" },
+	foxrebel:      { name: "妖風蝕骨",   chance: 0.30, type: "poison" },
+	guidao:        { name: "攝魂陰風",   chance: 0.32, type: "weaken" },
+	ligui:         { name: "厲鬼索命",   chance: 0.26, type: "heavy" },
+	yinli:         { name: "無意識斬殺", chance: 0.28, type: "heavy" },
+	binglao:       { name: "玄冰封脈",   chance: 0.30, type: "weaken" },
+	moqian:        { name: "血煞噬氣",   chance: 0.30, type: "lifesteal" },
+	bloodlord:     { name: "血海噬魂",   chance: 0.40, type: "lifesteal" },
+	xianmoremnant: { name: "仙魔湮滅",   chance: 0.42, type: "heavy" },
+};
+/* BOSS 二階段：氣血低於門檻首次觸發（狂暴：永久加攻、可自我回血） */
+setup.bossPhase = {
+	bloodlord:     { at: 0.5, atkUp: 14, heal: 0.16, msg: "血魔尊周身血氣暴漲，魔焰沖天——牠動了真火！" },
+	xianmoremnant: { at: 0.5, atkUp: 18, heal: 0.12, msg: "仙魔殘念裂而復合，仙輝與魔暗同時炸裂——封印之力盡數傾瀉！" },
+};
+/* 道侶援護：戰鬥開場，若有緣分≥門檻的道侶 → 給玩家攻擊增益 */
+setup.loverAssist = function (p) {
+	var t = setup.topLove(p);
+	if (t.has && t.val >= 55) return { name: t.name, atk: 12, turns: 99 };
+	return null;
+};
+/* 狀態徽章列（顯示用） */
+setup.foeStatusHtml = function (b) {
+	var s = [];
+	if (b.foeBurn > 0)   s.push('<span class="cstat burn">灼燒 ' + b.foeBurn + '</span>');
+	if (b.foePoison > 0) s.push('<span class="cstat poison">中毒 ' + b.foePoison + '</span>');
+	if (b.foeStun > 0)   s.push('<span class="cstat stun">麻痺 ' + b.foeStun + '</span>');
+	if (b.foeWeak > 0)   s.push('<span class="cstat weak">遲滯 ' + b.foeWeak + '</span>');
+	return s.length ? '<div class="cstat-row">' + s.join("") + '</div>' : '';
+};
+setup.meStatusHtml = function (b) {
+	var s = [];
+	if (b.pAtkBuffT > 0) s.push('<span class="cstat buff">攻勢 +' + b.pAtkBuff + '（' + b.pAtkBuffT + '）</span>');
+	if (b.pShieldT > 0)  s.push('<span class="cstat buff">護體 ' + b.pShieldT + '</span>');
+	if (b.pWeakT > 0)    s.push('<span class="cstat weak">氣滯 ' + b.pWeakT + '</span>');
+	if (b.pPoison > 0)   s.push('<span class="cstat poison">中毒 ' + b.pPoison + '</span>');
+	return s.length ? '<div class="cstat-row">' + s.join("") + '</div>' : '';
+};
+
+
+:: CombatWidgets [widget]
+
+/% 開戰：_args = foeId, 勝利段落, 失敗段落 %/
+<<widget "startBattle">>
+	<<set _e to setup.enemies[_args[0]]>>
+	<<if $p.seen>><<set $p.seen.foe[_args[0]] to true>><</if>>
+	<<set $battle to setup.newBattle(_args[0], _args[1], _args[2])>>
+	<<goto "Combat">>
+<</widget>>
+
+/% 玩家本回合攻擊出招屬性切換（不耗回合） %/
+<<widget "setElem">>
+	<<set $battle.elem to _args[0]>>
+	<<goto "Combat">>
+<</widget>>
+
+/% 對敵造成傷害並結算（記錄前一刻氣血與本次傷害供動畫；附帶屬性狀態） %/
+<<widget "hitFoe">>
+	<<run setup.audio.playSfx("hit")>>
+	<<set $battle.foePrevHp to $battle.foeHp>>
+	<<set $battle.lastDmg to _args[0]>>
+	<<set $battle.foeHp -= _args[0]>>
+	<<set $battle.msg to _args[1]>>
+	/% 命中附帶屬性狀態（_args[2] 為 true 時嘗試，普通攻擊用） %/
+	<<if _args[2] and $battle.foeHp > 0>>
+		<<set _st to setup.elemStatus($battle.elem)>>
+		<<if _st>>
+			<<set $battle[_st.key] to Math.max($battle[_st.key], _st.turns)>>
+			<<set $battle.msg to $battle.msg + " " + _st.label>>
+		<</if>>
+	<</if>>
+	<<if $battle.foeHp <= 0>>
+		<<set $battle.foeHp to 0>>
+		<<set $battle.emsg to "">>
+		<<goto $battle.win>>
+	<<else>>
+		<<enemyStrike>>
+	<</if>>
+<</widget>>
+
+/% 敵方階段：DoT 結算 → BOSS 二階段 → 麻痺/技能/普攻 → 玩家中毒 → 狀態遞減 %/
+<<widget "enemyStrike">>
+	<<set _e to setup.enemies[$battle.foeId]>>
+	<<set $battle.turn++>>
+	<<set _log to "">>
+
+	/% 1. 敵方持續傷害（灼燒 / 中毒） %/
+	<<if $battle.foeBurn > 0 or $battle.foePoison > 0>>
+		<<set _dot to 0>>
+		<<if $battle.foeBurn > 0>><<set _dot += Math.round($battle.foeMax*0.05) + 4>><</if>>
+		<<if $battle.foePoison > 0>><<set _dot += Math.round($battle.foeMax*0.04) + 3>><</if>>
+		<<set $battle.foePrevHp to $battle.foeHp>>
+		<<set $battle.foeHp to Math.max(0, $battle.foeHp - _dot)>>
+		<<set _log to _log + "<span class='sys'>" + _e.name + " 受 灼燒/毒 侵蝕，流失 " + _dot + " 氣血。</span> ">>
+		<<if $battle.foeHp <= 0>>
+			<<set $battle.emsg to _log + "牠在持續傷害中力竭倒下！">>
+			<<set $battle.lastDmg to _dot>>
+			<<goto $battle.win>>
+		<</if>>
+	<</if>>
+
+	/% 2. BOSS 二階段觸發 %/
+	<<if setup.bossPhase[$battle.foeId] and not $battle.phase2 and ($battle.foeHp/$battle.foeMax) <= setup.bossPhase[$battle.foeId].at>>
+		<<set _bp to setup.bossPhase[$battle.foeId]>>
+		<<set $battle.phase2 to true>>
+		<<set $battle.foeAtkUp to ($battle.foeAtkUp||0) + _bp.atkUp>>
+		<<set $battle.foeHp to Math.min($battle.foeMax, $battle.foeHp + Math.round($battle.foeMax*_bp.heal))>>
+		<<set $battle.foeBurn to 0, $battle.foePoison to 0, $battle.foeStun to 0, $battle.foeWeak to 0>>
+		<<set _log to _log + "<span class='dmg em'>⚠ " + _bp.msg + "</span> ">>
+	<</if>>
+
+	/% 3. 敵方行動：麻痺則跳過 %/
+	<<set _eatk to _e.atk + ($battle.foeAtkUp||0)>>
+	<<if $battle.foeWeak > 0>><<set _eatk to Math.round(_eatk*0.7)>><</if>>
+	<<if $battle.foeStun > 0>>
+		<<set $battle.foeStun-->>
+		<<set $battle.emsg to _log + "<span class='sys'>" + _e.name + " 仍處麻痺，無法行動！</span>">>
+	<<else>>
+		<<set _sk to setup.enemySkills[$battle.foeId]>>
+		<<set _edmg to Math.max(1, _eatk + setup.rnd(6) - setup.rnd(4) - $p.def)>>
+		<<set _skmsg to "">>
+		<<set _heal to 0>>
+		<<if _sk and Math.random() < _sk.chance>>
+			<<if _sk.type === "heavy">>
+				<<set _edmg to Math.round(_edmg*1.7)>>
+				<<set _skmsg to "<span class='dmg em'>【" + _sk.name + "】</span> ">>
+			<<elseif _sk.type === "lifesteal">>
+				<<set _heal to Math.round(_edmg*0.6)>>
+				<<set _skmsg to "<span class='dmg em'>【" + _sk.name + "】</span>（噬血回復） ">>
+			<<elseif _sk.type === "weaken">>
+				<<set $battle.pWeakT to Math.max($battle.pWeakT, 2)>>
+				<<set _skmsg to "<span class='dmg em'>【" + _sk.name + "】</span>（你氣機凝滯，攻擊下降） ">>
+			<<elseif _sk.type === "poison">>
+				<<set $battle.pPoison to Math.max($battle.pPoison, 3)>>
+				<<set _skmsg to "<span class='dmg em'>【" + _sk.name + "】</span>（毒入經脈） ">>
+			<</if>>
+		<</if>>
+		/% 玄龜守陣：整場減傷 25% %/
+		<<if $battle.formation === "shou">><<set _edmg to Math.round(_edmg*0.75)>><</if>>
+		/% 護體減傷 %/
+		<<if $battle.pShieldT > 0>><<set _edmg to Math.round(_edmg*0.5)>><</if>>
+		/% 氣運護盾（每戰一次，致命時觸發） %/
+		<<set _shield to "">>
+		<<if ($p.hp - _edmg) <= 0 and not $battle.shieldUsed and Math.random() < (0.16 + $p.luck/700)>>
+			<<set _edmg to 0>>
+			<<set $battle.shieldUsed to true>>
+			<<set _shield to "<span class='sys'>【氣運護盾】天意庇護，此擊被金光化解！（每戰僅此一次）</span> ">>
+		<</if>>
+		<<set $p.hp to $p.hp - _edmg>>
+		<<if _heal > 0>><<set $battle.foeHp to Math.min($battle.foeMax, $battle.foeHp + _heal)>><</if>>
+		<<set $battle.emsg to _log + _shield + _skmsg + _e.name + " 出手，你受到 <span class='dmg'>" + _edmg + "</span> 點傷害。">>
+	<</if>>
+
+	/% 聚靈陣：每回合回靈與少量氣血 %/
+	<<if $battle.formation === "juling" and $p.hp > 0>>
+		<<set $p.mp to Math.min($p.maxMp, $p.mp + 12)>>
+		<<set $p.hp to Math.min($p.maxHp, $p.hp + Math.round($p.maxHp*0.04))>>
+	<</if>>
+
+	/% 4. 玩家中毒持續傷害 %/
+	<<if $battle.pPoison > 0 and $p.hp > 0>>
+		<<set _pd to Math.round($p.maxHp*0.04) + 3>>
+		<<set $p.hp to $p.hp - _pd>>
+		<<set $battle.emsg to $battle.emsg + " <span class='dmg'>毒發，你再失 " + _pd + " 氣血。</span>">>
+	<</if>>
+
+	/% 5. 狀態遞減 %/
+	<<if $battle.foeBurn > 0>><<set $battle.foeBurn-->><</if>>
+	<<if $battle.foePoison > 0>><<set $battle.foePoison-->><</if>>
+	<<if $battle.foeWeak > 0>><<set $battle.foeWeak-->><</if>>
+	<<if $battle.pWeakT > 0>><<set $battle.pWeakT-->><</if>>
+	<<if $battle.pPoison > 0>><<set $battle.pPoison-->><</if>>
+	<<if $battle.pShieldT > 0>><<set $battle.pShieldT-->><</if>>
+	<<if $battle.pAtkBuffT > 0 and $battle.pAtkBuffT < 99>><<set $battle.pAtkBuffT-->><<if $battle.pAtkBuffT <= 0>><<set $battle.pAtkBuff to 0>><</if>><</if>>
+
+	<<if $p.hp <= 0>>
+		<<set $p.hp to 0>>
+		<<goto $battle.lose>>
+	<<else>>
+		<<goto "Combat">>
+	<</if>>
+<</widget>>
+
+:: Combat [game]
+<<set _e to setup.enemies[$battle.foeId]>>
+<<set _foeElem to setup.enemyElem[$battle.foeId]>>
+/% 開場：道侶援護（一次性） %/
+<<if not $battle.assisted>>
+	<<set $battle.assisted to true>>
+	<<set _la to setup.loverAssist($p)>>
+	<<if _la>>
+		<<set $battle.pAtkBuff to _la.atk, $battle.pAtkBuffT to 99>>
+		<<set $battle.assistName to _la.name>>
+	<</if>>
+<</if>>
+<<set _cur to Math.max(0, Math.round(100 * $battle.foeHp / $battle.foeMax))>>
+<<set _prev to ($battle.foePrevHp != null) ? Math.max(0, Math.round(100 * $battle.foePrevHp / $battle.foeMax)) : _cur>>
+<<set _foelow to ($battle.foeHp / $battle.foeMax) < 0.3>>
+<<set _ld to $battle.lastDmg || 0>>
+<<set _ppct to Math.max(0, Math.round(100 * $p.hp / $p.maxHp))>>
+<<set _plow to ($p.hp / $p.maxHp) < 0.3>>
+<div class="combat-foe <<if _foelow>>foe-low<</if>>">
+	<div class="foe-card"><div class="foe-art"><<= setup.foeArt(_e)>></div></div>
+	<div class="foe-meta">
+		<div class="foe-row">
+			<span class="foe-name em"><<= _e.name>><<if _foeElem>> <span class="foe-elem" style="color:<<= setup.elemColor[_foeElem]>>">〔<<= _foeElem>><<if $battle.phase2>>·狂暴<</if>>〕</span><</if>></span>
+			<span class="foe-atk">攻擊 <<= _e.atk + ($battle.foeAtkUp||0)>></span>
+		</div>
+		<div class="foe-hp-label">氣血 <<= $battle.foeHp>> / <<= $battle.foeMax>></div>
+		<div class="foe-bar-bg">
+			<div class="foe-bar-ghost" style="width:<<= _cur>>%; --from:<<= _prev>>%;"></div>
+			<div class="foe-bar" style="width:<<= _cur>>%; --from:<<= _prev>>%;"></div>
+		</div>
+		<<= setup.foeStatusHtml($battle)>>
+	</div>
+	<<if _ld > 0>><div class="dmg-float">-<<= _ld>></div><</if>>
+</div>
+<div class="scene">
+<<if not $battle.started>>
+	<<tip "elem" "御使混沌可化五行出招（金木水火土，習得雷法後加雷）：剋制敵屬性傷害大增、被剋則減弱。火灼燒、木中毒、雷麻痺、水土使敵遲滯。妖鬼魔屬性不受五行剋制，需正面硬撼。善用「御氣護體」與丹藥度過 BOSS 的猛攻。">>
+	<p class="narr"><<= _e.intro>></p>
+	<<if $battle.assistName>><p class="sys">【道侶援護 · <<= $battle.assistName>> 與你並肩，攻勢大振！】</p><</if>>
+	<<set $battle.started to true>>
+<</if>>
+<<if $battle.msg>><p><<= $battle.msg>></p><</if>>
+<<if $battle.emsg>><p><<= $battle.emsg>></p><</if>>
+</div>
+<div class="combat-me <<if _plow>>danger<</if>>">
+	<span class="me-label">道體 氣血</span>
+	<div class="me-bar-bg"><div class="me-bar" style="width:<<= _ppct>>%;"></div></div>
+	<span class="me-val"><<= $p.hp>> / <<= $p.maxHp>></span>
+	<<if _plow>><span class="me-warn">⚠ 氣血垂危</span><</if>>
+</div>
+<<= setup.meStatusHtml($battle)>>
+<div class="elem-row">
+	<span class="elem-label">御使混沌 · 出招屬性</span>
+	<<for _el range setup.playerElems($p)>>
+		<<capture _el>>
+			<<if $battle.elem === _el>>
+				<span class="elem-pick on" style="border-color:<<= setup.elemColor[_el]>>;color:<<= setup.elemColor[_el]>>"><<= _el>></span>
+			<<else>>
+				<<link _el>><<setElem _el>><</link>>
+			<</if>>
+		<</capture>>
+	<</for>>
+	<span class="elem-hint"><<= setup.elemDesc[$battle.elem]>><<if _foeElem and setup.elemCounterable[_foeElem]>>　vs 敵〔<<= _foeElem>>〕<</if>></span>
+</div>
+<div class="turn-banner"><span>⟡ 你的回合（第 <<= $battle.turn + 1>> 回合）⟡</span></div>
+<div class="choices">
+	<<link "⚔ 全力攻擊<span class='lx-hint'>以當前屬性出手，可能附帶狀態</span>">>
+		<<set _base to $p.atk + $battle.pAtkBuff - (($battle.pWeakT>0)?Math.round($p.atk*0.25):0)>>
+		<<set _dmg to _base + setup.rnd(8) - setup.rnd(4) - _e.def>>
+		<<set _flavor to "">>
+		<<if Math.random() < $p.crit>><<set _dmg to Math.round(_dmg*1.7)>><<set _flavor to "<span class='em'>暴擊！</span> ">><</if>>
+		<<if $p.combo > 0 and Math.random() < $p.combo>><<set _dmg to Math.round(_dmg*1.5)>><<set _flavor to _flavor + "<span class='em'>劍訣連擊！</span> ">><</if>>
+		/% 玩家可選屬性相剋 %/
+		<<set _pe to setup.playerElemMult($battle.elem, _foeElem)>>
+		<<if _pe.mult !== 1>><<set _dmg to Math.round(_dmg * _pe.mult)>><<set _flavor to _flavor + _pe.label>><</if>>
+		/% 混沌覺醒自動相剋（疊加） %/
+		<<set _cc to setup.chaosCounter($p, $battle.foeId)>>
+		<<if _cc.mult > 1>><<set _dmg to Math.round(_dmg * _cc.mult)>><<set _flavor to _flavor + _cc.label>><</if>>
+		/% 靈獸助戰 %/
+		<<if $p.beastEquipped and setup.beasts and setup.beasts[$p.beastEquipped]>>
+			<<set _dmg to Math.round(_dmg*1.08)>><<set _flavor to _flavor + "<span class='sys'>靈獸助戰 </span>">>
+		<</if>>
+		<<set _dmg to Math.max(1, _dmg)>>
+		<<set _msg to _flavor + "你以<span class='em'>" + $battle.elem + "</span>之力出手，造成 <span class='em'>" + _dmg + "</span> 點傷害。">>
+		<<hitFoe _dmg _msg true>>
+	<</link>>
+	<<if setup.has($p,"storm")>>
+		<<link "⚡ 五雷天罡決<span class='lx-hint'>耗 12 靈力，強力一擊・必附麻痺機會</span>">>
+			<<if $p.mp < 12>>
+				<<set $battle.lastDmg to 0>><<set $battle.foePrevHp to $battle.foeHp>>
+				<<set $battle.msg to "<span class='sys'>靈力不足，無法施展五雷天罡決。</span>">>
+				<<goto "Combat">>
+			<<else>>
+				<<set $p.mp -= 12>>
+				<<set $battle.elem to "雷">>
+				<<set _tv to setup.thunderVs($battle.foeId)>>
+				<<set _dmg to Math.max(1, Math.round(($p.atk + 22 + setup.rnd(15) - _e.def) * 1.3 * _tv))>>
+				<<set _msg to (_tv > 1 ? "<span class='sys'>✦ 雷剋金水！</span> " : "") + "<span class='sys'>五雷天罡決</span>轟下，造成 <span class='em'>" + _dmg + "</span> 點傷害！">>
+				<<hitFoe _dmg _msg true>>
+			<</if>>
+		<</link>>
+	<</if>>
+	<<link "🛡 御氣護體<span class='lx-hint'>凝聚靈力，未來 2 回合受傷減半</span>">>
+		<<set $battle.lastDmg to 0>><<set $battle.foePrevHp to $battle.foeHp>>
+		<<set $battle.pShieldT to 3>>
+		<<set $battle.msg to "你周身靈力凝成護罩，硬撼之勢稍歛。">>
+		<<enemyStrike>>
+	<</link>>
+	<<if ($p.pills.huiyuan||0) > 0>>
+		<<link "丹 服用回元丹<span class='lx-hint'>回復氣血靈力（剩 <<= $p.pills.huiyuan>> 顆）</span>">>
+			<<set $battle.lastDmg to 0>><<set $battle.foePrevHp to $battle.foeHp>>
+			<<set $p.pills.huiyuan-->>
+			<<heal 60 30>>
+			<<set $battle.msg to "你服下回元丹，氣血靈力回復。">>
+			<<enemyStrike>>
+		<</link>>
+	<</if>>
+	/% 符籙（持有才顯示） %/
+	<<for _tk range Object.keys(setup.talismans)>>
+		<<capture _tk>>
+			<<if ($p.talismans and $p.talismans[_tk]) > 0>>
+				<<set _tn to setup.talismans[_tk].name>>
+				<<link `"🔣 " + _tn + "<span class='lx-hint'>" + setup.talismans[_tk].desc + "（剩 " + $p.talismans[_tk] + "）</span>"`>>
+					<<useTalisman _tk>>
+				<</link>>
+			<</if>>
+		<</capture>>
+	<</for>>
+	/% 陣法（已習得、本場未佈、資源足才顯示） %/
+	<<if not $battle.formation>>
+		<<for _fk range Object.keys(setup.formations)>>
+			<<capture _fk>>
+				<<if setup.hasFormation($p, _fk)>>
+					<<set _f to setup.formations[_fk]>>
+					<<if $p.mp >= _f.mp and $p.stones >= _f.stones>>
+						<<link `"📿 佈下 " + _f.name + "<span class='lx-hint'>" + _f.desc + "　耗 " + (_f.mp?_f.mp+"靈力":"") + (_f.stones?_f.stones+"靈石":"") + "</span>"`>>
+							<<if _f.mp>><<set $p.mp -= _f.mp>><</if>>
+							<<if _f.stones>><<set $p.stones -= _f.stones>><</if>>
+							<<deployFormation _fk>>
+						<</link>>
+					<</if>>
+				<</if>>
+			<</capture>>
+		<</for>>
+	<</if>>
+	<<if setup.enemies[$battle.foeId].tameable and setup.has($p,"beast")>>
+		<<link "🐾 施展萬獸馴心訣<span class='lx-hint'>嘗試安撫而非擊殺</span>">>
+			<<if $battle.foeHp < $battle.foeMax*(0.5 + setup.profOf($p,"beast")*0.002)>>
+				<<set $battle.tamed to true>>
+				<<prof "beast" 3>>
+				<<goto $battle.win>>
+			<<else>>
+				<<set $battle.lastDmg to 0>><<set $battle.foePrevHp to $battle.foeHp>>
+				<<set $battle.msg to "<span class='sys'>妖獸傷勢未重，戒心仍盛，馴心訣未能奏效。</span>">>
+				<<enemyStrike>>
+			<</if>>
+		<</link>>
+	<</if>>
+	<<set _isBoss to setup.bossPhase[$battle.foeId] != null>>
+	<<set _fleeRate to _isBoss ? (0.12 + $p.luck/700) : (0.32 + $p.luck/400)>>
+	<<link "🏃 嘗試脫離<span class='lx-hint'><<if _isBoss>>大敵當前，極難脫身<<else>>氣運越高越易成功・代價：狼狽失財、心魔暗生<</if></span>">>
+		<<if Math.random() < _fleeRate>>
+			/% 脫離有代價：心魔+、靈石折損、修為略損 %/
+			<<stat "xinmo" 6>>
+			<<set $p.stones to Math.max(0, $p.stones - (5 + setup.rnd(10)))>>
+			<<set $p.cult to Math.max(0, $p.cult - Math.round(setup.cultNeed($p)*0.06))>>
+			<<set $battle.fled to true>>
+			<<goto $battle.lose>>
+		<<else>>
+			<<set $battle.lastDmg to 0>><<set $battle.foePrevHp to $battle.foeHp>>
+			<<set $battle.msg to "你未能脫身，反被纏住！<span class='sys'>（脫離失敗）</span>">>
+			<<enemyStrike>>
+		<</if>>
+	<</link>>
+</div>

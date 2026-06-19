@@ -1,0 +1,81 @@
+:: Widgets [widget]
+
+/% 新遊戲 %/
+<<widget "newgame">>
+	<<set $p to setup.newPlayer()>>
+<</widget>>
+
+/% 重算屬性 %/
+<<widget "recompute">>
+	<<run setup.recompute($p)>>
+<</widget>>
+
+/% 修為增益（功法加成 + 疲勞懲罰） %/
+<<widget "gainCult">>
+	<<set _amt to _args[0] * ($p.cultMul || 1)>>
+	<<if $p.stats.fatigue >= 75>><<set _amt to _amt * 0.55>><</if>>
+	<<set _amt to Math.round(_amt)>>
+	<<set $p.cult += _amt>>
+	<<set _t to "修為 +" + _amt + ($p.stats.fatigue >= 75 ? "（力竭·減半）" : "")>>
+	<<toast _t>>
+<</widget>>
+
+/% 回復 %/
+<<widget "heal">>
+	<<set $p.hp to Math.min($p.maxHp, $p.hp + (_args[0]||0))>>
+	<<set $p.mp to Math.min($p.maxMp, $p.mp + (_args[1]||0))>>
+<</widget>>
+
+/% 好感度（增減 + 顯示一行） %/
+<<widget "rel">>
+	<<set _who to _args[0]>>
+	<<set $p.rel[_who] += _args[1]>>
+	<<set _nm to ({ suyuyao:"蘇羽瑤", qingling:"青玲兒", dongxue:"裴冬雪", yinli:"陰離" })[_who] || _who>>
+	@@.heart;[ _nm 緣分 +<<= _args[1]>> ]@@
+<</widget>>
+
+/% 數值增減 %/
+<<widget "stat">>
+	<<run setup.addStat($p, _args[0], _args[1])>>
+<</widget>>
+
+/% 技藝熟練度增長（劍術/悟道即時 recompute 反映加成） %/
+<<widget "prof">>
+	<<run setup.addProf($p, _args[0], _args[1])>>
+	<<if _args[0] === "sword" or _args[0] === "dao">><<recompute>><</if>>
+<</widget>>
+
+/% 勢力聲望增減（mutate + 顯示一次） %/
+<<widget "frep">>
+	<<if not $p.faction>><<set $p.faction to { zhengdao:0, yaozu:0, youming:0, mozong:0 }>><</if>>
+	<<set $p.faction[_args[0]] to ($p.faction[_args[0]]||0) + _args[1]>>
+	<<set _fm to setup.factions[_args[0]].name + " 聲望 " + (_args[1]>=0?"+":"") + _args[1]>>
+	<<run setup.toast(_fm)>>
+<</widget>>
+
+/% 主動修煉：每日遞減（防無限刷）＋ 累積心魔（需打坐定心/凝神丹清，睡眠不清）。
+   事件型修為仍用 <<gainCult>>（不受此限）。 %/
+<<widget "train">>
+	<<if $p.cultDay !== $p.time.day>><<set $p.cultDay to $p.time.day>><<set $p.cultCount to 0>><</if>>
+	<<set _n to _args[0]>>
+	<<set $p.cultCount++>>
+	<<if $p.cultCount > 3>>
+		<<set _n to Math.round(_n * 0.5)>>
+		<<stat "xinmo" 3>>
+		<<run setup.toast("心緒浮躁，修煉漸入瓶頸（過度·心魔+3）")>>
+	<<else>>
+		<<stat "xinmo" 1>>
+	<</if>>
+	/% 靈氣潮汐（每 7 日）：修煉效率 +30% %/
+	<<if $p.time.day % 7 === 0>>
+		<<set _n to Math.round(_n * 1.3)>>
+	<</if>>
+	/% 天氣：雷雨且習雷法 → 修煉 +10% %/
+	<<set _n to Math.round(_n * setup.weatherCultMul($p))>>
+	<<gainCult _n>>
+<</widget>>
+
+/% Toast 浮動提示 %/
+<<widget "toast">>
+	<<run setup.toast(_args[0])>>
+<</widget>>

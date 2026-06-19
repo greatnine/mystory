@@ -1,0 +1,46 @@
+:: TimeWidgets [widget]
+
+/% 推進 N 個時辰，並累積疲勞；跨日時觸發天時節律 %/
+<<widget "pass">>
+	<<set _n to (_args[0] !== undefined) ? _args[0] : 1>>
+	<<run setup.passTime($p, _n)>>
+	<<run setup.addStat($p, "fatigue", _n * 7)>>
+	<<dayTick>>
+<</widget>>
+
+/% 歇息至隔日辰時：疲勞歸零、回滿氣血靈力 %/
+<<widget "sleep">>
+	<<set _tk to $p.time.tick>>
+	<<if _tk < 4>>
+		<<run setup.passTime($p, 4 - _tk)>>
+	<<else>>
+		<<run setup.passTime($p, (12 - _tk) + 4)>>
+	<</if>>
+	<<run setup.addStat($p, "fatigue", -100)>>
+	<<set $p.hp to $p.maxHp, $p.mp to $p.maxMp>>
+	<<run setup.toast("一夜安眠，神清氣爽")>>
+	<<dayTick>>
+<</widget>>
+
+/% 打坐定心：消一個時辰，降心魔、升道心少許 %/
+<<widget "calmheart">>
+	<<run setup.passTime($p, 1)>>
+	<<run setup.addStat($p, "fatigue", 4)>>
+	<<run setup.addStat($p, "xinmo", -12)>>
+	<<run setup.addStat($p, "daoxin", 3)>>
+	<<run setup.addProf($p, "dao", 1)>>
+	<<dayTick>>
+<</widget>>
+
+/% 跨日節律：魔氣潮加心魔、靈氣潮提示（每日僅施加一次，以 $p.pulseDay 防重複） %/
+<<widget "dayTick">>
+	<<if $p.pulseDay !== $p.time.day>>
+		<<set $p.pulseDay to $p.time.day>>
+		<<if $p.time.day % 9 === 0>>
+			<<run setup.addStat($p, "xinmo", 6)>>
+			<<run setup.toast("🩸 魔氣潮湧動，心神受擾（心魔 +6）")>>
+		<<elseif $p.time.day % 7 === 0>>
+			<<run setup.toast("🌊 靈氣潮汐將至，今日修煉事半功倍")>>
+		<</if>>
+	<</if>>
+<</widget>>

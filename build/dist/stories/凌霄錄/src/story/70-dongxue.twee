@@ -1,0 +1,136 @@
+/% 裴冬雪 · 冰心宗聖女線（並行線，大比後北上冰嶺） %/
+
+:: dongxue_first [game]
+<div class="scene">
+<<portrait "dongxue">>
+<div class="scene-title">初遇 · 第一次感知「溫暖」</div>
+<p>寒潭邊立著一道冬藍長髮的身影，肌膚白皙近乎透明，靜止時宛如冰雕——她是冰心宗聖女<span class="em">裴冬雪</span>。「絕情冰體」使她自幼感知不到大多數情緒，她理解「喜怒哀樂」的概念，卻無法體驗。</p>
+<p>你交涉互市路過，靈氣偶然與她相觸。剎那間，她被冰體封鎖的情感感知短暫地、極其微弱地恢復了——她感受到了一種典籍裡讀過、卻從未真正體會的東西：<span class="em">溫暖</span>。</p>
+<p>她怔住，淺灰色的眼眸第一次聚焦在一個「人」身上，而非一份觀測對象。</p>
+<p class="em">「你的靈氣……很奇怪。它讓我的『絕情冰體』，出現了無法以現有理論解釋的現象。」</p>
+</div>
+<div class="choices">
+	<<link "「那或許不是現象，是『感覺』。」">>
+		<<set $p.flags.metDongxue to true>>
+		<<rel "dongxue" 8>>
+		<<goto $p.loc>>
+	<</link>>
+	<<link "沉默地，又運起一縷靈氣靠近她些許">>
+		<<set $p.flags.metDongxue to true>>
+		<<rel "dongxue" 10>>
+		<<goto $p.loc>>
+	<</link>>
+</div>
+
+:: dongxue_record [game]
+<div class="scene">
+<<portrait "dongxue">>
+<div class="scene-title">異常數據</div>
+<p>聖女居的几案上，攤著她的修煉日誌。你瞥見最新一頁，是極其理性、卻又透著反常的字跡：</p>
+<p class="narr">「第十七次接觸。感知到一種令呼吸頻率加快的未知感受，持續三十八秒，伴隨胸腔輕微悶熱。初步判斷——與典籍描述的『心動』相符。需要更多樣本以排除偶然。」</p>
+<p>她抬眼看你，神情平靜得近乎認真：「為了研究的嚴謹，我需要增加接觸的次數與時長。這在學理上是合理的。」她頓了頓，極輕地補了一句，「……你不要誤會。」</p>
+</div>
+<div class="choices">
+	<<link "「為了研究，我配合。」<span class='lx-hint'>順著她的理性</span>">>
+		<<set $p.flags.dxRecord to true>>
+		<<rel "dongxue" 10>>
+		<<goto $p.loc>>
+	<</link>>
+	<<link "「冬雪，那不叫樣本，叫想見一個人。」<span class='lx-hint'>戳破她</span>">>
+		<<set $p.flags.dxRecord to true>>
+		<<rel "dongxue" 12>>
+		<<goto $p.loc>>
+	<</link>>
+</div>
+
+:: dongxue_frost [game]
+<div class="scene">
+<<portrait "dongxue">>
+<div class="scene-title">關鍵 · 寒冰失控</div>
+<p>寒玉洞中警鐘驟響——裴冬雪體內的絕情寒冰暴走，冰晶自她經脈炸裂蔓延，再不壓制，經脈俱毀。冰心宗的功法皆屬寒道，越壓越烈，無人能解。</p>
+<p>你衝進去，跪在她身後：「告訴我怎麼做。」<br>「……雙掌，抵住我後背。輸入你的靈氣。」她氣息微弱，「會很久。你會累。」<br>「坐過來。」</p>
+</div>
+<div class="choices">
+	<<link "雙掌抵背，輸入混沌靈氣<span class='lx-hint'>【核心選擇】</span>">><<goto "dongxue_frost_do">><</link>>
+</div>
+
+:: dongxue_frost_do [game]
+<<set $p.flags.dxFrost to true>>
+<<set _bonus to 250 + $p.realm*120>>
+<<gainCult _bonus>>
+<<stat "fatigue" 20>>
+<div class="scene">
+<<portrait "dongxue">>
+<div class="scene-title">三個時辰</div>
+<p>溫熱的混沌靈氣流進來，沿著她寒冰的靈脈一條條鋪開。暴走的寒冰不是被壓制——是被你的靈氣<span class="em">一點一點接住、化開</span>。</p>
+<p>三個時辰，雪在洞外無聲地下。她努力記住這感覺的每個細節——溫的、微悶的，呼吸不受控地緩慢兩拍。對一個感受不到情緒的人而言，這是她二十一年來，最接近「活著」的時刻。</p>
+<p class="em">「典籍上說，溫暖，是一種令人想要靠近的感知。」她闔著眼，極輕地說，「……現在我明白了。」</p>
+<p class="sys">【寒冰壓制 · 三個時辰 — 修為 +<<= _bonus>>】</p>
+<<rel "dongxue" 12>>
+</div>
+<div class="choices"><<link "守著她，直到天明">><<goto $p.loc>><</link>></div>
+
+:: dongxue_door [game]
+<div class="scene">
+<<portrait "dongxue">>
+<div class="scene-title">深夜的叩門</div>
+<p>夜深，聖女居的門被輕輕叩響。你開門，是裴冬雪——她從不曾在戒律之外的時辰離開清修之所。</p>
+<p>她站在雪光裡，神情是慣常的平靜，話卻不平靜：</p>
+<p class="em">「我想要……再次感知那種感受。」她的指尖微微蜷起，「我知道這不合理。冰心宗的聖女不該有『想要』。但我做不到不來。」</p>
+<p class="narr">這是絕情冰體封鎖了二十一年的東西，第一次，主動破冰而出。</p>
+</div>
+<div class="choices">
+	<<link "「進來。不合理的事，我陪你一起不合理。」">>
+		<<set $p.flags.dxDoor to true>>
+		<<rel "dongxue" 12>>
+		<<goto $p.loc>>
+	<</link>>
+	<<link "伸手，覆上她微涼而微顫的指尖">>
+		<<set $p.flags.dxDoor to true>>
+		<<rel "dongxue" 14>>
+		<<goto $p.loc>>
+	<</link>>
+</div>
+
+:: qingqing_threat [game]
+<div class="scene">
+<<portrait "dongxue">>
+<div class="scene-title">高潮 · 清情大典的鐘聲</div>
+<p>冰心宗察覺聖女情感鬆動，視為動搖根基之大患，決意施行<span class="em">清情大典</span>——以秘法抹除裴冬雪與「異常」相關的全部記憶，連同你。</p>
+<p>大典鐘聲已響。執法長老周身寒霜凝結，攔在冰殿之前：「凌霄，清情大典乃宗門根本。你與她的那些『數據』，本就不該存在。」</p>
+<p class="narr">殿內，裴冬雪被冰封於法陣中央。你若不在記憶被抹去前闖入——她將忘記溫暖，忘記心動，忘記你。</p>
+</div>
+<div class="choices">
+	<<link "⚔ 闖大典，奪人">><<startBattle "binglao" "qingqing_win" "qingqing_lose">><</link>>
+	<<link "📚 先穩固狀態">><<set $return to "qingqing_threat">><<goto "cultivate">><</link>>
+</div>
+
+:: qingqing_win [game]
+<<set $p.flags.dxBreak to true>>
+<<set _bonus to 350>>
+<<gainCult _bonus>>
+<<set $p.coins += 3>>
+<<stat "fame" 12>>
+<div class="scene">
+<<portrait "dongxue">>
+<div class="scene-title">情非寒道之敵</div>
+<p>你殺穿寒霜法陣，一把將她自冰封中拔出。就在記憶將被抹去的最後一瞬，她睜開眼——淺灰色的眼眸裡，第一次盛滿了清晰的、屬於「她自己」的東西。</p>
+<p>她忽然笑了，那是冰雕第一次有了表情。也是在那一刻，她頓悟了困住她二十一年的桎梏：</p>
+<p class="em">「情，不是寒道之敵……」冰晶在她周身綻成漫天雪蓮，「是寒道之<span class="em">眼</span>。」</p>
+<p>絕情冰體應聲而碎，她以情入道，寒道境界一舉突破。執法長老駭然退避。</p>
+<p class="sys">【破清情大典 · 裴冬雪以情入道突破 — 修為 +<<= _bonus>>、書幣 ×3】</p>
+<<rel "dongxue" 15>>
+</div>
+<div class="choices"><<link "帶她離開冰殿">><<goto $p.loc>><</link>></div>
+
+:: qingqing_lose [game]
+<<if $battle.fled>>
+	<div class="scene"><p class="narr">你寡不敵眾，被逼退出冰殿。大典未成——你還有一線時間，但必須更強。</p></div>
+<<else>>
+	<<set $p.hp to Math.max(1, Math.floor($p.maxHp*0.45))>>
+	<div class="scene"><p class="dmg">執法長老的寒道修為遠勝於你，你重傷敗退。所幸大典繁複，尚未竟功。</p></div>
+<</if>>
+<div class="choices">
+	<<link "⟳ 療傷再闖">><<set $return to "qingqing_threat">><<goto "cultivate">><</link>>
+	<<link "← 暫退">><<goto $p.loc>><</link>>
+</div>

@@ -1,0 +1,28 @@
+:: Reputation [game]
+<div class="panel">
+<h3>🏯 勢力聲望</h3>
+<p class="desc">你在九洲各方勢力中的立場。聲望影響坊市折扣、對話態度與部分機緣；行事所為，各方都看在眼裡。</p>
+<<for _fid range Object.keys(setup.factions)>>
+	<<capture _fid>>
+	<<set _v to ($p.faction and $p.faction[_fid]) || 0>>
+	<<set _t to setup.factionTier(_v)>>
+	<div class="frep-row">
+		<div class="frep-head">
+			<span class="frep-name"><<= setup.factions[_fid].name>></span>
+			<span class="gstat <<= _t.cls>>"><<= _t.label>> <<= _v>></span>
+		</div>
+		<div class="frep-desc"><<= setup.factions[_fid].desc>></div>
+	</div>
+	<</capture>>
+<</for>>
+</div>
+<div class="choices">
+	<<link "← 返回">><<goto $return>><</link>>
+</div>
+
+:: FactionStylesheet [stylesheet]
+.frep-row { margin: 0 0 12px; padding: 8px 10px; background: rgba(255,255,255,.03);
+	border: 1px solid rgba(255,255,255,.07); border-radius: 6px; }
+.frep-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.frep-name { font-size: 15px; color: var(--gold-light); }
+.frep-desc { font-size: 12px; color: rgba(245,240,232,.62); margin-top: 3px; }

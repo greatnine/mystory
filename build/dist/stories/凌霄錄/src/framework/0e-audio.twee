@@ -1,0 +1,116 @@
+:: AudioScript [script]
+/* ════════════════════════════════════════════════════════════
+   音訊系統骨架（資源待補）
+   ── 以 HTML5 Audio 實作，檔案缺失時「靜默降級」，絕不報錯／不卡 init。
+   ── 音檔放在與 HTML 同層的 audio/ 目錄（build.sh 會把 凌霄錄/audio/* 複製進 build/）。
+   ── 開關／音量存於 SugarCube settings（localStorage，與存檔無關）。
+   ── BGM 依情境(標題/區域/戰鬥/BOSS)自動切換；SFX 供 <<sfx>> 一次性播放。
+   使用者補上對應 .mp3/.ogg 後即自動生效，無須改碼。
+   ════════════════════════════════════════════════════════════ */
+setup.audio = {
+	bgmEl: null,
+	curKey: null,
+	/* 邏輯鍵 → 檔案路徑（相對 HTML）。缺檔則該情境靜音。 */
+	tracks: {
+		title:    "audio/bgm_title.mp3",
+		lingxiao: "audio/bgm_lingxiao.mp3",
+		nanjiang: "audio/bgm_nanjiang.mp3",
+		youming:  "audio/bgm_youming.mp3",
+		bingling: "audio/bgm_bingling.mp3",
+		shenxu:   "audio/bgm_shenxu.mp3",
+		combat:   "audio/bgm_combat.mp3",
+		boss:     "audio/bgm_boss.mp3",
+	},
+	sfxMap: {
+		hit:   "audio/sfx_hit.mp3",
+		win:   "audio/sfx_win.mp3",
+		break: "audio/sfx_break.mp3",
+		click: "audio/sfx_click.mp3",
+	},
+	_vol: function () {
+		var v = (typeof settings !== "undefined" && typeof settings.lxVol === "number") ? settings.lxVol : 50;
+		return Math.max(0, Math.min(1, v / 100));
+	},
+	_bgmOn: function () { return (typeof settings === "undefined") || settings.lxBgm !== false; },
+	_sfxOn: function () { return (typeof settings === "undefined") || settings.lxSfx !== false; },
+	playBgm: function (key) {
+		if (!this._bgmOn()) { this.stopBgm(); return; }
+		var src = this.tracks[key];
+		if (!src) return;
+		if (this.curKey === key && this.bgmEl && !this.bgmEl.paused) return;   // 同曲續播，不重啟
+		this.stopBgm();
+		try {
+			var a = new Audio(src);
+			a.loop = true; a.volume = this._vol();
+			var pr = a.play();
+			if (pr && pr.catch) pr.catch(function () {});   // 自動播放封鎖／404 → 靜默
+			this.bgmEl = a; this.curKey = key;
+		} catch (e) { /* 靜默降級 */ }
+	},
+	stopBgm: function () {
+		try { if (this.bgmEl) { this.bgmEl.pause(); } } catch (e) {}
+		this.bgmEl = null; this.curKey = null;
+	},
+	applyVol: function () { try { if (this.bgmEl) this.bgmEl.volume = this._vol(); } catch (e) {} },
+	playSfx: function (key) {
+		if (!this._sfxOn()) return;
+		var src = this.sfxMap[key];
+		if (!src) return;
+		try {
+			var a = new Audio(src);
+			a.volume = this._vol();
+			var pr = a.play();
+			if (pr && pr.catch) pr.catch(function () {});
+		} catch (e) {}
+	},
+	/* 依當前段落／玩家狀態自動選 BGM 情境 */
+	autoBgm: function () {
+		try {
+			var pn = (typeof passage === "function") ? passage() : "";
+			if (pn === "Combat") {
+				var b = State.variables.battle;
+				var boss = b && setup.bossPhase && setup.bossPhase[b.foeId];
+				this.playBgm(boss ? "boss" : "combat");
+				return;
+			}
+			if (pn === "Start" || pn === "About" || /title/i.test(pn)) { this.playBgm("title"); return; }
+			var p = State.variables.p;
+			if (p && p.region && this.tracks[p.region]) { this.playBgm(p.region); }
+		} catch (e) {}
+	},
+};
+
+if (typeof $ !== "undefined") {
+	$(document).on(":passagedisplay", function () { setup.audio.autoBgm(); });
+}
+
+/* ── 設定項（音樂／音效／音量） ── */
+if (typeof Setting !== "undefined") {
+	Setting.addHeader("音訊設定", "音樂與音效。音檔若未提供則自動靜音，不影響遊戲。");
+	Setting.addToggle("lxBgm", {
+		label: "背景音樂",
+		default: true,
+		onChange: function () { setup.audio.autoBgm(); if (settings.lxBgm === false) setup.audio.stopBgm(); }
+	});
+	Setting.addToggle("lxSfx", {
+		label: "音效",
+		default: true
+	});
+	Setting.addRange("lxVol", {
+		label: "音量",
+		min: 0, max: 100, step: 5, default: 50,
+		onChange: function () { setup.audio.applyVol(); }
+	});
+}
+
+
+:: AudioWidgets [widget]
+/% 播放一次性音效：<<sfx "hit">> %/
+<<widget "sfx">>
+	<<run setup.audio.playSfx(_args[0])>>
+<</widget>>
+
+/% 手動指定 BGM 情境：<<bgm "boss">>（一般無須手動，autoBgm 會處理） %/
+<<widget "bgm">>
+	<<run setup.audio.playBgm(_args[0])>>
+<</widget>>

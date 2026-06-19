@@ -1,0 +1,133 @@
+:: AchievementsScript [script]
+/* ════════════════════════════════════════════════════════════
+   C3 成就系統
+   - 靜態定義掛 setup.achievements（不進存檔）
+   - 達成紀錄寫進 $p.ach（進存檔；首次達成時於 :passagedisplay 偵測）
+   - 入口連結由 Manager 整合時加（本檔不碰 caption / 共用檔）
+   ════════════════════════════════════════════════════════════ */
+
+/* 成就定義：id 唯一、name 顯示名、desc 描述、cond(p) 回傳真值即達成。
+   cond 以旗標／境界判定，皆為「一旦成立永遠成立」，配合 $p.ach 去重只通知一次。 */
+setup.achievements = [
+	{ id: "enterSect",  name: "初入劍宗",
+	  desc: "踏入凌霄劍宗山門，自此仙途始於足下。",
+	  cond: function (p) { return !!p.flags.enteredSect; } },
+
+	{ id: "firstBreak", name: "初次破境",
+	  desc: "首度突破修為瓶頸，邁出登仙路上的第一步。",
+	  cond: function (p) { return p.realm > 0 || p.layer > 1; } },
+
+	{ id: "firstPill",  name: "初成一爐丹",
+	  desc: "九轉玄火爐前掌控火候，煉成生平第一爐丹藥。",
+	  cond: function (p) {
+		var pills = p.pills || {};
+		return Object.keys(pills).some(function (k) { return pills[k] > 0; });
+	  } },
+
+	{ id: "jindan",     name: "金丹大成",
+	  desc: "凝練金丹、壽元大增，躋身修士中的中堅。",
+	  cond: function (p) { return !!p.flags.jindan || p.realm >= 2; } },
+
+	{ id: "yuanying",   name: "元嬰成形",
+	  desc: "元嬰初成，一念之間山河易色。",
+	  cond: function (p) { return !!p.flags.yuanying || p.realm >= 3; } },
+
+	/* ── 四女主感情線里程碑 ── */
+	{ id: "suyuyao",    name: "劍宗道侶 · 蘇羽瑤",
+	  desc: "與蘇羽瑤靈脈貫通、陰陽合道，結為雙修道侶。",
+	  cond: function (p) { return !!p.flags.dualSuyuyao; } },
+
+	{ id: "qingling",   name: "南疆山盟 · 青玲兒",
+	  desc: "狐族聖女青玲兒情根深種，一吻定下山盟。",
+	  cond: function (p) { return !!p.flags.qingKiss; } },
+
+	{ id: "dongxue",    name: "寒潭破冰 · 裴冬雪",
+	  desc: "助冰心聖女裴冬雪破開心防與道境的桎梏。",
+	  cond: function (p) { return !!p.flags.dxBreak; } },
+
+	{ id: "yinli",      name: "解咒之恩 · 陰離",
+	  desc: "解開幽冥女鬼使陰離身上的攝魂禁制，還她自由。",
+	  cond: function (p) { return !!p.flags.yinliUnbind; } },
+
+	/* ── 劇情高潮 ── */
+	{ id: "bloodlord",  name: "血魔尊隕落",
+	  desc: "親手終結為禍六千年的血魔尊，正魔之爭落幕。",
+	  cond: function (p) { return !!p.flags.bloodlord; } }
+];
+
+/* 偵測並記錄達成。直接 mutate 當前 moment 的 $p（與 addStat 同模式，會進存檔）。
+   多項同時達成時合併為一則 toast；以 p.ach[id] 去重，永不重複通知。 */
+setup.achCheck = function () {
+	if (typeof State === "undefined" || !State.variables || !State.variables.p) return;
+	var p = State.variables.p;
+	if (!p.ach) p.ach = {};
+	var unlocked = [];
+	setup.achievements.forEach(function (a) {
+		if (p.ach[a.id]) return;
+		var ok = false;
+		try { ok = !!a.cond(p); } catch (e) { ok = false; }
+		if (ok) {
+			p.ach[a.id] = (p.time && p.time.day) || true;
+			unlocked.push(a.name);
+		}
+	});
+	if (unlocked.length && typeof setup.toast === "function") {
+		setup.toast("🏆 達成成就：<b>" + unlocked.join("、") + "</b>");
+	}
+};
+
+/* 每段顯示後檢查（晚於 02-engine 的 hotkey badge 註冊，互不干擾） */
+$(document).on(":passagedisplay", setup.achCheck);
+
+
+:: Achievements [game]
+<<run setup.achCheck()>>
+<<set _total to setup.achievements.length>>
+<<set _done to 0>>
+<<for _a range setup.achievements>><<if $p.ach and $p.ach[_a.id]>><<set _done to _done + 1>><</if>><</for>>
+<div class="panel">
+<h3>🏆 成就</h3>
+<p class="desc">已達成 <<= _done>> / <<= _total>> —— 仙途點滴，皆成印記。</p>
+</div>
+<div class="ach-list">
+<<for _a range setup.achievements>>
+	<<set _got to ($p.ach and $p.ach[_a.id])>>
+	<div class="ach-item <<if _got>>got<<else>>locked<</if>>">
+		<div class="ach-badge"><<if _got>>🏆<<else>>🔒<</if>></div>
+		<div class="ach-info">
+			<<if _got>>
+				<h4><<= _a.name>></h4>
+				<p><<= _a.desc>></p>
+			<<else>>
+				<h4>？？？</h4>
+				<p class="narr">尚未達成的仙途印記。</p>
+			<</if>>
+		</div>
+	</div>
+<</for>>
+</div>
+<div class="choices">
+	<<link "← 返回">><<goto $p.loc>><</link>>
+</div>
+
+
+:: AchievementsStylesheet [stylesheet]
+/* C3 成就清單樣式（獨立檔，不動 06-styles） */
+.ach-list { display:flex; flex-direction:column; gap:8px; margin:4px 0 10px; }
+.ach-item {
+	display:flex; align-items:center; gap:12px;
+	padding:10px 14px; border-radius:6px;
+	border:1px solid rgba(201,149,42,.25);
+	background: rgba(20,14,9,.45);
+}
+.ach-item.got {
+	border-color: var(--gold);
+	background: rgba(40,28,12,.55);
+	box-shadow: 0 0 14px rgba(201,149,42,.18);
+}
+.ach-item.locked { opacity:.6; }
+.ach-badge { font-size:24px; line-height:1; flex:0 0 auto; width:32px; text-align:center; }
+.ach-info { flex:1 1 auto; min-width:0; }
+.ach-info h4 { margin:0 0 2px; font-size:15px; color: var(--gold-light); }
+.ach-item.locked .ach-info h4 { color: inherit; letter-spacing:.15em; }
+.ach-info p { margin:0; font-size:13px; }

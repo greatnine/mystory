@@ -1,0 +1,167 @@
+:: EstateScript [script]
+/* ════════ 洞府經營（放置感）+ 宗門貢獻 ════════
+   洞府：升級增修煉效率(recompute 已掛 dongfuLv)、靈石礦被動產出、靈田種藥。
+   宗門：任務堂接委託換貢獻點、職位晉升、貢獻兌換資源。皆以 day 計時。 */
+setup.estate = {
+	mineRate: function (p) { return 5 + (p.dongfuLv || 1) * 3; },
+	minePending: function (p) {
+		const d = Math.max(0, p.time.day - (typeof p.mineDay === "number" ? p.mineDay : p.time.day));
+		return Math.min(30, d) * setup.estate.mineRate(p);   // 上限 30 日，避免久置爆量
+	},
+	upgradeCost: function (p) { return (p.dongfuLv || 1) * 120; },
+	fieldGrow: 3,
+	seeds: [
+		{ key: "lingcao", price: 6 }, { key: "huoxin", price: 12 },
+		{ key: "hanyu", price: 12 }, { key: "yuelan", price: 14 },
+	],
+	fieldReady: function (p) { return p.field && p.field.crop && (p.time.day - p.field.plantDay) >= setup.estate.fieldGrow; },
+	fieldLeft: function (p) { return Math.max(0, setup.estate.fieldGrow - (p.time.day - p.field.plantDay)); },
+	fieldYield: function (p) { return 3 + (p.dongfuLv || 1); },
+};
+setup.sectRanks = ["雜役", "記名弟子", "外門弟子", "內門弟子", "核心弟子", "真傳長老"];
+setup.sectRankAt = function (merit) {
+	const t = [0, 30, 80, 160, 300, 500];
+	let r = 0; for (let i = 0; i < t.length; i++) if (merit >= t[i]) r = i;
+	return r;
+};
+setup.sectErrands = [
+	{ name: "巡視山門", ticks: 2, merit: 6, stones: 5, frep: 2 },
+	{ name: "抄錄典籍", ticks: 2, merit: 7, coins: 1, frep: 1 },
+	{ name: "採辦藥材", ticks: 3, merit: 10, stones: 10, frep: 2 },
+];
+setup.sectShop = [
+	{ kind: "pill", key: "juqi", name: "聚氣丹", cost: 16 },
+	{ kind: "pill", key: "huiyuan", name: "回元丹", cost: 22 },
+	{ kind: "coins", amt: 1, name: "書幣 ×1", cost: 28 },
+	{ kind: "pill", key: "pojing", name: "破境丹", cost: 60 },
+];
+
+
+:: EstateWidgets [widget]
+<<widget "sectErrand">>
+	<<set _e to setup.sectErrands[_args[0]]>>
+	<<pass _e.ticks>>
+	<<set $p.sectMerit += _e.merit>>
+	<<if _e.stones>><<set $p.stones += _e.stones>><</if>>
+	<<if _e.coins>><<set $p.coins += _e.coins>><</if>>
+	<<if _e.frep>><<frep "zhengdao" _e.frep>><</if>>
+	<<set _nr to setup.sectRankAt($p.sectMerit)>>
+	<<if _nr > $p.sectRank>><<set $p.sectRank to _nr>><<run setup.toast("✦ 晉升 · " + setup.sectRanks[_nr])>><</if>>
+<</widget>>
+
+
+:: Estate [game]
+<<set _up to setup.estate.upgradeCost($p)>>
+<<set _mine to setup.estate.minePending($p)>>
+<div class="panel">
+<h3>🏡 洞府經營</h3>
+<p class="desc">你的清修洞府。升級可增修煉效率，靈石礦被動產出，靈田可種植靈藥。<br>靈石 <b class="gold"><<= $p.stones>></b>　洞府 <b class="gold">Lv <<= $p.dongfuLv>></b>（修煉 +<<= (($p.dongfuLv-1)*5)>>%）</p>
+
+<h4 class="shop-sec">— 洞府升級 —</h4>
+<div class="book">
+	<div class="book-info"><h4>聚靈洞府 Lv <<= $p.dongfuLv>> → Lv <<= $p.dongfuLv+1>></h4>
+	<p>提升修煉效率 +5%、靈石礦產出、靈田收成。</p></div>
+	<div class="book-buy">
+		<<if $p.stones >= _up>>
+			<<link "升級 · <<= _up>> 靈石">>
+				<<set $p.stones -= _up>><<set $p.dongfuLv++>><<recompute>>
+				<<run setup.toast("洞府升至 Lv " + $p.dongfuLv)>><<goto "Estate">>
+			<</link>>
+		<<else>>
+			<a class="disabled">升級 · <<= _up>> 靈石</a>
+		<</if>>
+	</div>
+</div>
+
+<h4 class="shop-sec">— 靈石礦（被動產出） —</h4>
+<div class="book">
+	<div class="book-info"><h4>靈石礦脈</h4><p>每日約產 <<= setup.estate.mineRate($p)>> 靈石（積存上限 30 日）。目前可收 <b class="gold"><<= _mine>></b>。</p></div>
+	<div class="book-buy">
+		<<if _mine > 0>>
+			<<link "收取 · <<= _mine>> 靈石">>
+				<<set $p.stones += _mine>><<set $p.mineDay to $p.time.day>>
+				<<run setup.toast("自礦脈收得 " + _mine + " 靈石")>><<goto "Estate">>
+			<</link>>
+		<<else>>
+			<a class="disabled">暫無積存</a>
+		<</if>>
+	</div>
+</div>
+
+<h4 class="shop-sec">— 靈田 —</h4>
+<<if not $p.field.crop>>
+	<p class="narr">靈田空置，可播下一味靈藥種子（成熟需 <<= setup.estate.fieldGrow>> 日）。</p>
+	<<for _s range setup.estate.seeds>>
+		<<capture _s>>
+		<div class="book">
+			<div class="book-info"><h4><<= setup.herbs[_s.key].name>> 種子</h4><p><<= setup.herbs[_s.key].desc>></p></div>
+			<div class="book-buy">
+				<<if $p.stones >= _s.price>>
+					<<link "播種 · <<= _s.price>> 靈石">>
+						<<set $p.stones -= _s.price>><<set $p.field.crop to _s.key>><<set $p.field.plantDay to $p.time.day>>
+						<<run setup.toast("已播下 " + setup.herbs[_s.key].name)>><<goto "Estate">>
+					<</link>>
+				<<else>>
+					<a class="disabled">播種 · <<= _s.price>> 靈石</a>
+				<</if>>
+			</div>
+		</div>
+		<</capture>>
+	<</for>>
+<<elseif setup.estate.fieldReady($p)>>
+	<<set _y to setup.estate.fieldYield($p)>>
+	<div class="book">
+		<div class="book-info"><h4><<= setup.herbs[$p.field.crop].name>> · 已成熟</h4><p>可收成 <<= _y>> 株。</p></div>
+		<div class="book-buy">
+			<<link "收成 · <<= _y>> 株">>
+				<<set $p.herbs[$p.field.crop] to ($p.herbs[$p.field.crop]||0)+_y>>
+				<<run setup.toast("收成 " + setup.herbs[$p.field.crop].name + " ×" + _y)>>
+				<<set $p.field.crop to null>><<goto "Estate">>
+			<</link>>
+		</div>
+	</div>
+<<else>>
+	<p class="narr">靈田裡的 <span class="em"><<= setup.herbs[$p.field.crop].name>></span> 正在生長，還需 <span class="em"><<= setup.estate.fieldLeft($p)>></span> 日成熟。</p>
+<</if>>
+</div>
+<div class="choices"><<link "← 返回">><<goto $return>><</link>></div>
+
+
+:: SectHall [game]
+<<set _rank to setup.sectRanks[$p.sectRank]>>
+<div class="panel">
+<h3>📜 宗門任務堂</h3>
+<p class="desc">接取宗門委託以積累貢獻，晉升職位、兌換資源。<br>職位 <b class="gold"><<= _rank>></b>　貢獻點 <b class="gold"><<= $p.sectMerit>></b></p>
+
+<h4 class="shop-sec">— 委託（耗時） —</h4>
+<<for _i, _e range setup.sectErrands>>
+	<<capture _i, _e>>
+	<div class="book">
+		<div class="book-info"><h4><<= _e.name>></h4><p>耗 <<= _e.ticks>> 時辰。報酬：貢獻 +<<= _e.merit>><<if _e.stones>>、靈石 +<<= _e.stones>><</if>><<if _e.coins>>、書幣 +<<= _e.coins>><</if>>、正道聲望 +<<= _e.frep>>。</p></div>
+		<div class="book-buy"><<link "接取">><<sectErrand _i>><<goto "SectHall">><</link>></div>
+	</div>
+	<</capture>>
+<</for>>
+
+<h4 class="shop-sec">— 貢獻兌換 —</h4>
+<<for _r range setup.sectShop>>
+	<<capture _r>>
+	<div class="book">
+		<div class="book-info"><h4><<= _r.name>></h4><p>以貢獻點兌換。</p></div>
+		<div class="book-buy">
+			<<if $p.sectMerit >= _r.cost>>
+				<<link "兌換 · <<= _r.cost>> 貢獻">>
+					<<set $p.sectMerit -= _r.cost>>
+					<<if _r.kind === "pill">><<set $p.pills[_r.key] to ($p.pills[_r.key]||0)+1>>
+					<<elseif _r.kind === "coins">><<set $p.coins += _r.amt>><</if>>
+					<<run setup.toast("兌換 " + _r.name)>><<goto "SectHall">>
+				<</link>>
+			<<else>>
+				<a class="disabled">兌換 · <<= _r.cost>> 貢獻</a>
+			<</if>>
+		</div>
+	</div>
+	<</capture>>
+<</for>>
+</div>
+<div class="choices"><<link "← 返回">><<goto $return>><</link>></div>

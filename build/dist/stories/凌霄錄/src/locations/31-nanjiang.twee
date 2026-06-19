@@ -1,0 +1,87 @@
+:: shanzhai [game]
+<<enterLoc "shanzhai">>
+<div class="scene">
+<<locheader>>
+</div>
+<<eventhere>>
+<div class="choices">
+	<<link "⟳ 潛心修煉">><<goto "cultivate">><</link>>
+	<<link "🛏 歇息一晚<span class='lx-hint'>睡至次日辰時，疲勞全消、回滿氣血靈力</span>">><<sleep>><<goto "shanzhai">><</link>>
+	<<link "📚 開啟萬界藏書閣">><<goto "library">><</link>>
+	<<if $p.flags.qingHeat>>
+		<<link "⋯ 回望此行 · 前三卷感言<span class='lx-hint'>結尾</span>">><<goto "ending">><</link>>
+	<</if>>
+	<<travelfoot>>
+</div>
+
+:: lingquan [game]
+<<enterLoc "lingquan">>
+<div class="scene">
+<<locheader>>
+</div>
+<<eventhere>>
+<div class="choices">
+	<<link "💧 臨泉小憩<span class='lx-hint'>耗一時辰，疲勞略減</span>">>
+		<<pass 1>>
+		<<stat "fatigue" -20>>
+		<<heal 15 10>>
+		<<goto "lingquan">>
+	<</link>>
+	<<travelfoot>>
+</div>
+
+:: milin [game]
+<<enterLoc "milin">>
+<div class="scene">
+<<locheader>>
+</div>
+<<eventhere>>
+<div class="choices">
+	<<link "🌿 採集靈材<span class='lx-hint'>耗二時辰</span>">><<goto "explore">><</link>>
+	<<link "🏹 狩獵妖獸<span class='lx-hint'>戰鬥 · 妖狼，得靈石與妖丹碎屑</span>">><<pass 1>><<startBattle "wildbeast" "hunt_win" "hunt_lose">><</link>>
+	<<travelfoot>>
+</div>
+
+:: hunt_win [game]
+<<set $p.stones += setup.enemies.wildbeast.stones + setup.rnd(6)>>
+<<set $p.herbs.yaodan to ($p.herbs.yaodan||0) + 1>>
+<<set $p.herbs.huoxin to ($p.herbs.huoxin||0) + 1>>
+<div class="scene">
+<p>你斬殺了妖狼，自牠身上取得靈石與一片<span class="em">妖丹碎屑</span>、一枚<span class="em">火心果</span>。</p>
+</div>
+<div class="choices"><<link "← 繼續探索密林">><<goto "milin">><</link>></div>
+
+:: hunt_lose [game]
+<<if $battle.fled>>
+	<div class="scene"><p class="narr">你避開了妖狼的鋒芒，退回林緣。</p></div>
+<<else>>
+	<<set $p.hp to Math.max(1, Math.floor($p.maxHp*0.4))>>
+	<div class="scene"><p class="dmg">妖狼凶猛，你負傷退走。</p></div>
+<</if>>
+<div class="choices"><<link "← 返回密林">><<goto "milin">><</link>></div>
+
+:: yishitang [game]
+<<enterLoc "yishitang">>
+<div class="scene">
+<<locheader>>
+</div>
+<<eventhere>>
+<div class="choices">
+	<<link "🏛 旁聽族務<span class='lx-hint'>耗一時辰，了解狐族局勢，聲望微增</span>">>
+		<<pass 1>>
+		<<stat "fame" 2>>
+		<<goto "yishitang">>
+	<</link>>
+	<<travelfoot>>
+</div>
+
+:: mijing [game]
+<<enterLoc "mijing">>
+<div class="scene">
+<<locheader>>
+</div>
+<<eventhere>>
+<div class="choices">
+	<<link "🌀 深入探索秘境<span class='lx-hint'>耗二時辰，靈材豐厚但暗藏凶險</span>">><<goto "explore">><</link>>
+	<<travelfoot>>
+</div>

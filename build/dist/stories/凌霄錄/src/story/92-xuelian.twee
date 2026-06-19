@@ -1,0 +1,28 @@
+/% A4 · 反派單向迷戀悲劇 · 血蓮 %/
+
+:: xuelian_fate [game]
+<div class="scene">
+<div class="scene-title">⚜ 血蓮的執念</div>
+<p>後山幽谷，一道血色身影攔住你。血煞魔宗女修<span class="em">血蓮</span>——血魔尊隕落後潰散的餘黨之一。她周身血氣森然，眼神卻不是殺意，而是某種更扭曲、更灼人的東西。</p>
+<p class="em">「還記得嗎？很多年前，亂葬的戰場上，你放走了一個重傷的魔修。」她輕聲，「所有人都殺紅了眼，只有你停了手。從那一刻起……我就再也忘不掉你了。」</p>
+<p class="narr">她追隨血煞魔宗一路修羅至今，只為了能與你站在同一個高度——以一種你從未想要的方式。</p>
+</div>
+<div class="choices">
+	<<link "「你大可不必走這條路。」——試著勸她">><<goto "xuelian_end">><</link>>
+	<<link "「我不會殺你。放下吧。」——拒絕拔劍">><<goto "xuelian_end">><</link>>
+</div>
+
+:: xuelian_end [game]
+<<set $p.flags.xuelian to true>>
+<<stat "daoxin" 2>><<stat "xinmo" 6>>
+<<set $p.herbs.xuelian to ($p.herbs.xuelian||0)+1>>
+<div class="scene">
+<div class="scene-title">血蓮凋零</div>
+<p>她笑了，笑得很輕，也很疲憊：「你看，連現在，你都不肯傷我。」</p>
+<p>追兵的劍氣自身後襲來——那是血煞魔宗清算叛徒的追殺。她沒有躲。在你來不及阻止的瞬間，她反手格開了射向你的那一擊，自己卻迎上了致命的劍光。</p>
+<p>血色身影緩緩倒下，她仰頭看你，眼神第一次清澈下來：</p>
+<p class="em">「我從來都……不擅長喜歡人。」</p>
+<p class="narr">血氣散盡，谷中只餘一株她臨終前自掌心生出的、血紅色的雪蓮。你默然將它收起——有些執念，至死都沒能學會如何安放。</p>
+<p class="sys">【血蓮殞落 · 道心+2、心魔+6（悲憫與不忍）。拾得 百年雪蓮 ×1】</p>
+</div>
+<div class="choices"><<link "為她立一方無字的碑">><<stat "daoxin" 1>><<goto $p.loc>><</link>><<link "← 默然離去">><<goto $p.loc>><</link>></div>

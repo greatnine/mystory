@@ -1,0 +1,86 @@
+:: Codex [game]
+<div class="panel">
+<h3>📜 圖鑑</h3>
+<p class="desc">記錄旅途中所見的人、所習的功法、所歷的地與所戰的敵。</p>
+</div>
+<div class="choices">
+	<<link "👤 人物誌">><<goto "CodexChars">><</link>>
+	<<link "📖 功法錄">><<goto "CodexBooks">><</link>>
+	<<link "🗺 地誌">><<goto "CodexLocs">><</link>>
+	<<link "⚔ 妖魔譜">><<goto "CodexFoes">><</link>>
+	<<link "← 返回">><<goto $p.loc>><</link>>
+</div>
+
+:: CodexChars [game]
+<div class="panel">
+<h3>👤 人物誌</h3>
+<<for _i, _id range setup.portraitOrder>>
+	<<set _c to setup.portraits[_id]>>
+	<<set _known to (_c.metFlag === null) or $p.flags[_c.metFlag]>>
+	<<if _known>>
+		<div class="codex-char">
+			<div class="codex-portrait"><<= setup.portraitSVG(_c, "cx"+_id)>></div>
+			<div class="codex-info">
+				<h4><<= _c.name>>　<span class="tag-school"><<= _c.title>></span></h4>
+				<<if $p.rel[_id] !== undefined and $p.rel[_id] > 0>><p class="heart">緣分 <<= $p.rel[_id]>>　<<= setup.relText(_id, $p.rel[_id])>></p><</if>>
+				<p><<= _c.bio>></p>
+			</div>
+		</div>
+	<<else>>
+		<div class="codex-char locked"><div class="codex-info"><h4>？？？</h4><p class="narr">尚未相遇。</p></div></div>
+	<</if>>
+<</for>>
+</div>
+<div class="choices"><<link "← 返回圖鑑">><<goto "Codex">><</link>></div>
+
+:: CodexBooks [game]
+<div class="panel">
+<h3>📖 功法錄</h3>
+<<for _id range Object.keys(setup.books)>>
+	<<set _b to setup.books[_id]>>
+	<<set _own to setup.has($p, _id)>>
+	<div class="book <<if _own>>owned<</if>>">
+		<div class="book-info">
+			<h4><<= _b.name>><span class="tag-school"><<= _b.school>></span></h4>
+			<p><<if _own>><<= _b.desc>><<else>><span class="narr">未習得（解鎖需 <<= _b.cost>> 書幣）</span><</if>></p>
+		</div>
+		<div class="book-buy"><<if _own>><span class="owned-tag">✓ 已習得</span><</if>></div>
+	</div>
+<</for>>
+</div>
+<div class="choices"><<link "← 返回圖鑑">><<goto "Codex">><</link>></div>
+
+:: CodexLocs [game]
+<div class="panel">
+<h3>🗺 地誌</h3>
+<<for _rid range Object.keys(setup.regions)>>
+	<<set _reg to setup.regions[_rid]>>
+	<<set _anySeen to false>>
+	<<for _i, _lid range _reg.locs>><<if $p.seen.loc[_lid]>><<set _anySeen to true>><</if>><</for>>
+	<<if _anySeen>>
+		<p class="map-region-tab"><<= _reg.name>></p>
+		<<for _j, _lid range _reg.locs>>
+			<<set _L to setup.locations[_lid]>>
+			<<if $p.seen.loc[_lid]>>
+				<div class="book"><div class="book-info"><h4><<= _L.icon>> <<= _L.name>></h4><p><<= _L.desc>></p></div></div>
+			<</if>>
+		<</for>>
+	<</if>>
+<</for>>
+</div>
+<div class="choices"><<link "← 返回圖鑑">><<goto "Codex">><</link>></div>
+
+:: CodexFoes [game]
+<div class="panel">
+<h3>⚔ 妖魔譜</h3>
+<<set _anyFoe to false>>
+<<for _id range Object.keys(setup.enemies)>>
+	<<if $p.seen.foe[_id]>>
+		<<set _anyFoe to true>>
+		<<set _e to setup.enemies[_id]>>
+		<div class="book"><div class="book-info"><h4><<= _e.name>></h4><p>氣血 <<= _e.hp>>　攻擊 <<= _e.atk>>　防禦 <<= _e.def>></p></div></div>
+	<</if>>
+<</for>>
+<<if not _anyFoe>><p class="narr">尚未與任何敵手交鋒。</p><</if>>
+</div>
+<div class="choices"><<link "← 返回圖鑑">><<goto "Codex">><</link>></div>

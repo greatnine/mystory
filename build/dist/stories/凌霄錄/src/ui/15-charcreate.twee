@@ -1,0 +1,101 @@
+:: DestinySetup [script]
+/* ⑨ 命格（角色創建變化）
+ * 開局選一道「命格」，套用到 $p（各有持久加成與小代價），並記於 $p.destiny。
+ * 「開始新遊戲」→ CharCreate 的接線由 Manager 處理（title/ newgame 不在本檔）。
+ *
+ * 設計鐵則：recompute() 每次都會由 base+功法eff+境界 重算 atk/maxHp/def/maxMp/cultMul，
+ *   故命格只動「穿得過 recompute」的欄位：
+ *     stones/coins/luck/books(eff)/recipes/herbs/pills/stats/flags、以及 recompute 認得的 ngCultMul。
+ *   ─ 戰鬥型 → 贈起始功法（recompute 自動永久套 eff）
+ *   ─ 修煉型 → ngCultMul（加法疊加，與多周目傳承相容）
+ *   ─ 切勿直接 p.atk/p.maxHp += N（會被 recompute 洗掉）。
+ * apply(p) 只做數值 mutate；recompute 與補血由 CharCreate 段落統一收尾。
+ */
+setup.destinies = {
+	jiangu: {
+		name: "劍骨", icon: "🗡", tag: "天生劍胎，為戰而生。",
+		fx: "起始得《凌霄基礎劍訣》（攻擊 +6・偶發連擊）、道心 +5",
+		cost: "氣運 −15（劍走偏鋒，機緣較疏）",
+		apply: function (p) {
+			if (!p.books.includes("sword")) p.books.push("sword");
+			setup.addStat(p, "daoxin", 5);
+			p.luck = Math.max(1, (p.luck || 88) - 15);
+		}
+	},
+	shangu: {
+		name: "商賈", icon: "💰", tag: "豪富之後，財帛開道。",
+		fx: "靈石 +120、書幣 +3、靈草 +3",
+		cost: "道心 −8（重利之心，初時難定）",
+		apply: function (p) {
+			p.stones += 120;
+			p.coins += 3;
+			p.herbs.lingcao = (p.herbs.lingcao || 0) + 3;
+			setup.addStat(p, "daoxin", -8);
+		}
+	},
+	gusha: {
+		name: "孤煞", icon: "🌑", tag: "孤煞之命，煞氣護身，獨行天地。",
+		fx: "氣運 +25、道心 +3（標記孤煞之身，供日後際遇）",
+		cost: "心魔 +12、書幣 −1",
+		apply: function (p) {
+			p.luck = (p.luck || 88) + 25;
+			setup.addStat(p, "daoxin", 3);
+			setup.addStat(p, "xinmo", 12);
+			p.coins = Math.max(0, p.coins - 1);
+			p.flags.gusha = true;
+		}
+	},
+	tianling: {
+		name: "天靈根", icon: "✨", tag: "萬中無一的修煉奇才，靈氣親之。",
+		fx: "修煉效率 +30%、道心 +5",
+		cost: "體質孱弱：起始疲勞 +25、氣運 −10",
+		apply: function (p) {
+			p.ngCultMul = (p.ngCultMul || 0) + 0.30;
+			setup.addStat(p, "daoxin", 5);
+			setup.addStat(p, "fatigue", 25);
+			p.luck = Math.max(1, (p.luck || 88) - 10);
+		}
+	},
+	caogen: {
+		name: "草根", icon: "🌱", tag: "凡軀濁骨，唯志可恃——平凡卻無短板。",
+		fx: "靈石 +40、靈草 +2、道心 +2",
+		cost: "無明顯代價（穩健開局）",
+		apply: function (p) {
+			p.stones += 40;
+			p.herbs.lingcao = (p.herbs.lingcao || 0) + 2;
+			setup.addStat(p, "daoxin", 2);
+		}
+	}
+};
+
+
+:: CharCreate [game]
+/% 進入前理應已由 <<newgame>> 建好 $p；保險起見若無則自建（不依賴接線方式）。 %/
+<<if not $p or not $p.stats>><<newgame>><</if>>
+<div class="panel">
+<h3>✦ 擇定命格</h3>
+<p class="desc">轉生之初，命數已悄然分野。選一道命格，它將伴你走過整條仙途——加成與代價，皆是你的道。</p>
+
+<<for _id range Object.keys(setup.destinies)>>
+	<<capture _id>>
+	<<set _d to setup.destinies[_id]>>
+	<div class="book">
+		<div class="book-info">
+			<h4><<= _d.icon>> <<= _d.name>>　<span class="tag-school">命格</span></h4>
+			<p class="narr" style="margin:2px 0 6px !important;"><<= _d.tag>></p>
+			<p><span class="sys">得</span> <<= _d.fx>><br><span class="dmg">代價</span> <<= _d.cost>></p>
+		</div>
+		<div class="book-buy">
+			<<link "擇定">>
+				<<run setup.destinies[_id].apply($p)>>
+				<<set $p.destiny to _id>>
+				<<recompute>>
+				<<set $p.hp to $p.maxHp, $p.mp to $p.maxMp>>
+				<<run setup.toast("命格已定 · " + setup.destinies[_id].name)>>
+				<<goto "intro">>
+			<</link>>
+		</div>
+	</div>
+	<</capture>>
+<</for>>
+</div>

@@ -1,0 +1,128 @@
+:: qingling_first [game]
+<div class="scene">
+<<portrait "qingling">>
+<div class="scene-title">初遇 · 九尾狐族公主</div>
+<p>你第一次見到她，是在山寨的靈泉邊。小麥色肌膚的少女正赤足踩在水中，九條尾巴慵懶地舒展——察覺你來，尾巴「唰」地全部收起，她回頭，眼尾的淡金紋路在日光下流轉。</p>
+<p>她是九尾狐族公主 <span class="em">青玲兒</span>。狐族天生「情感嗅覺」，她下意識嗅了嗅——然後愣住了。</p>
+<p class="em">「奇怪……你身上，怎麼一點貪婪的味道都沒有？」</p>
+<p class="narr">對一個從小被覬覦著長大的妖族公主而言，「被當作普通人看待」，反而成了最稀奇的事。</p>
+</div>
+<div class="choices">
+	<<link "「公主這話，我聽不懂。」<span class='lx-hint'>裝傻</span>">>
+		<<set $p.flags.metQing to true>>
+		<<set $p.rel.qingling += 4>>
+		<<run setup.toast("青玲兒 緣分 +4")>>
+		<<goto "qingling_first_after">>
+	<</link>>
+	<<link "坦然回看她，不卑不亢<span class='lx-hint'>她更好奇了</span>">>
+		<<set $p.flags.metQing to true>>
+		<<set $p.rel.qingling += 6>>
+		<<run setup.toast("青玲兒 緣分 +6")>>
+		<<goto "qingling_first_after">>
+	<</link>>
+</div>
+
+:: qingling_first_after [game]
+<div class="scene">
+<p>她繞著你轉了一圈，狐耳不自覺地冒了出來，又被她慌忙按下去。「哼，算你有點意思。」她叉腰宣布，「本公主決定，准許你待在我身邊——當然，是為了方便監視你這個人族奸細！」</p>
+<p class="narr">你看著她那條怎麼也藏不住、輕輕搖晃的尾巴尖，沒有揭穿。</p>
+</div>
+<div class="choices"><<link "← 返回山寨">><<goto $p.loc>><</link>></div>
+
+:: qingling_tail [game]
+<div class="scene">
+<<portrait "qingling">>
+<div class="scene-title">狐尾纏腕</div>
+<p>連日相處，青玲兒總愛黏著你，一會兒要你嚐她偷摘的靈果，一會兒拉你看她新學的幻術。這日她趴在你身旁打盹，迷迷糊糊間，一條毛茸茸的尾巴繞上了你的手腕，輕輕收緊。</p>
+<p>你正不知如何是好，她猛地驚醒，看清自己的尾巴在做什麼，「噌」地彈起來，臉紅到耳根：</p>
+<p class="em">「你、你別亂想！尾巴自己動的，跟我沒關係！」</p>
+<p class="narr">——你後來才從族人口中得知，狐族讓人纏上尾巴，意思是「此人歸我」。</p>
+</div>
+<div class="choices">
+	<<link "「嗯，我什麼都沒看見。」<span class='lx-hint'>給她台階</span>">>
+		<<set $p.flags.qingTail to true>>
+		<<run setup.toast("青玲兒 緣分 +8")>>
+		<<goto "qingling_tail_after">>
+	<</link>>
+	<<link "「狐族的尾巴，似乎很誠實。」<span class='lx-hint'>戳穿她</span>">>
+		<<set $p.flags.qingTail to true>>
+		<<run setup.toast("青玲兒 緣分 +10")>>
+		<<goto "qingling_tail_tease">>
+	<</link>>
+</div>
+
+:: qingling_tail_after [game]
+<div class="scene">
+<p>她狐疑地盯著你看了半天，見你當真一臉無辜，這才悻悻坐回來，只是離你近的那一側，尾巴又悄悄探了過來。</p>
+<<rel "qingling" 8>>
+</div>
+<div class="choices"><<link "← 返回山寨">><<goto $p.loc>><</link>></div>
+
+:: qingling_tail_tease [game]
+<div class="scene">
+<p>「誰、誰誠實了！」她炸毛似地跳起來，九條尾巴全冒了出來，偏偏每一條都直直指向你。她看著自己的尾巴，氣得跺腳，最後乾脆化作一團金光跳上屋樑，居高臨下瞪你——耳朵卻紅得發燙。</p>
+<<rel "qingling" 10>>
+</div>
+<div class="choices"><<link "← 返回山寨">><<goto $p.loc>><</link>></div>
+
+:: qingling_kiss [game]
+<div class="scene">
+<<portrait "qingling">>
+<div class="scene-title">偷來的吻</div>
+<p>那夜你修煉至倦極，倚著窗欞睡去。朦朧間，一個溫熱的、帶著靈果香氣的軟物極輕地觸了一下你的唇，又飛快地離開。</p>
+<p>你睜開眼，正對上青玲兒近在咫尺、瞳孔豎成一線的臉。三秒的對視，空氣凝固——</p>
+<p class="em">「啊啊啊你怎麼醒了！！」</p>
+<p>她整張臉爆紅，下一瞬化作一隻小狐狸，叼著自己的尾巴從窗口竄了出去。</p>
+<p class="narr">——之後整整三天，山寨裡都找不到那隻狐狸的影子。</p>
+</div>
+<div class="choices">
+	<<link "三天後，若無其事地遞給她一顆靈果<span class='lx-hint'>不點破，給她安全感</span>">>
+		<<set $p.flags.qingKiss to true>>
+		<<run setup.toast("青玲兒 緣分 +12")>>
+		<<goto "qingling_kiss_after">>
+	<</link>>
+</div>
+
+:: qingling_kiss_after [game]
+<div class="scene">
+<p>第四天，她終於灰溜溜地現身。你什麼都沒提，只把那顆她最愛的靈果塞進她手裡。她愣了愣，飛快地瞥你一眼，小聲「哼」了一聲，卻沒有再逃。</p>
+<p>她咬著靈果，尾巴一下一下地、輕輕掃著你的腳邊。半晌，幾不可聞地嘟囔：「……難吃死了。」可她吃得比誰都認真。</p>
+<<rel "qingling" 12>>
+</div>
+<div class="choices"><<link "← 返回山寨">><<goto $p.loc>><</link>></div>
+
+:: qingling_heat [game]
+<div class="scene">
+<<portrait "qingling">>
+<div class="scene-title">重大事件 · 靈慾潮期危機</div>
+<p>三百年一遇的「靈慾潮期」毫無預兆地提前降臨。未及閉關的青玲兒躲進了秘境最深處的山洞，九尾炸開，妖族費洛蒙泛濫——那是足以牽動任何人類本能的洶湧潮汐。</p>
+<p>你尋進洞中，她蜷在最深處，金瞳渙散，渾身發顫，看見你卻露出驚恐：「別過來……我控制不住……你會……」</p>
+<p>可你的神色，沒有任何變化。</p>
+<p class="em">「你的靈氣有點亂，像在抗拒什麼。」你在她面前蹲下，「讓我試試？」</p>
+</div>
+<div class="choices">
+	<<link "伸出手，以混沌靈氣承接她的洶湧<span class='lx-hint'>【核心選擇】</span>">>
+		<<goto "qingling_heat_resolve">>
+	<</link>>
+	<<link "「你信我嗎？」——先問她">>
+		<<set $p.rel.qingling += 3>>
+		<<goto "qingling_heat_resolve">>
+	<</link>>
+</div>
+
+:: qingling_heat_resolve [game]
+<<set $p.flags.qingHeat to true>>
+<<set _bonus to 350 + $p.realm*120>>
+<<gainCult _bonus>>
+<div class="scene">
+<div class="scene-title">被好好地接住</div>
+<p>她知道不該讓你碰，卻還是顫抖著，把手放進了你的掌心。</p>
+<p>混沌靈氣流進來，像一片廣闊的靜水，承接住她所有的洶湧。狂暴的費洛蒙與紊亂的妖力，不是被壓制——是被<span class="em">好好地接住了</span>。她緊繃的身體一寸寸鬆下來，呼吸漸漸平穩。</p>
+<p>九條尾巴一根根垂落，自發地、溫柔地纏上了你。她把臉埋進你頸窩，聲音悶悶的，帶著哭腔：</p>
+<p class="em">「你知不知道……妖族讓人纏上尾巴，是什麼意思。」</p>
+<p>「不知道，」你輕聲說，「你告訴我。」</p>
+<p class="narr">——她告訴了你。在那個只有靈氣靜靜流動的山洞裡，她把那個藏了很久的意思，一字一句，告訴了你。</p>
+<p class="sys">【靈慾潮期危機化解 · 兩人關係質變 — 修為 +<<= _bonus>>】</p>
+<<rel "qingling" 20>>
+</div>
+<div class="choices"><<link "天明，扶她走出秘境">><<goto $p.loc>><</link>></div>

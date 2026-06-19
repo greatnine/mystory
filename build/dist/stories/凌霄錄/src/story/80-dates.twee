@@ -1,0 +1,100 @@
+/% 中段約會 / 感情深化事件（一次性） %/
+
+:: sy_date_spar [game]
+<<set $p.flags.syD1 to true>>
+<div class="scene">
+<<portrait "suyuyao">>
+<div class="scene-title">♡ 劍崖切磋</div>
+<p>你約蘇羽瑤上劍崖拆招。她起初只當是尋常指點，可拆到後來，兩柄劍越來越快，劍意交纏，竟有種說不出的酣暢。</p>
+<p>收劍時，雲海正染上夕色。她難得地、極淡地勾了下唇角：「你的劍，比上次又利了些。」</p>
+<p class="narr">她沒說的是——能與她拆到這個地步、又不讓著她的人，這些年只有你一個。</p>
+<<gainCult 40>><<stat "daoxin" 1>>
+<<rel "suyuyao" 6>>
+</div>
+<div class="choices"><<link "「因為對手是師姐。」">><<rel "suyuyao" 2>><<goto $p.loc>><</link>><<link "← 收劍下崖">><<goto $p.loc>><</link>></div>
+
+:: sy_date_herb [game]
+<<set $p.flags.syD2 to true>>
+<div class="scene">
+<<portrait "suyuyao">>
+<div class="scene-title">♡ 同採靈藥</div>
+<p>後山藥圃，你與她並肩採藥。她蹲在靈草旁，銀白的髮垂落，難得卸下了平日的鋒銳。</p>
+<p>「我幼年滅門後，」她忽然開口，聲音很輕，「就用『宗門第一』把自己填滿。沒空想別的，也不敢想。」她頓了頓，「你是第一個，讓我覺得不用一直贏下去，也可以的人。」</p>
+<<set $p.herbs.lingcao to ($p.herbs.lingcao||0)+2>>
+<<rel "suyuyao" 8>>
+</div>
+<div class="choices"><<link "「那就偶爾輸給我也無妨。」">><<rel "suyuyao" 2>><<goto $p.loc>><</link>><<link "靜靜陪她採完這一畦">><<goto $p.loc>><</link>></div>
+
+:: ql_date_firefly [game]
+<<set $p.flags.qlD1 to true>>
+<div class="scene">
+<<portrait "qingling">>
+<div class="scene-title">♡ 螢蟲海</div>
+<p>青玲兒興沖沖拉你穿過密林，眼前豁然開朗——成千上萬的螢火漫天浮動，像把整片星空潑灑在了林間。</p>
+<p>她仰著臉，金色的眼睛比螢火還亮。半晌，忽然小聲說：「人族的壽命……好短啊。」隨即像怕你聽見似的，飛快地扯開話題，「哼、我才不是擔心你！」</p>
+<<stat "fatigue" -10>>
+<<rel "qingling" 7>>
+</div>
+<div class="choices"><<link "「那我就修到能陪你很久很久。」">><<rel "qingling" 3>><<goto $p.loc>><</link>><<link "陪她看到螢火散盡">><<goto $p.loc>><</link>></div>
+
+:: ql_date_huaxing [game]
+<<set $p.flags.qlD2 to true>>
+<div class="scene">
+<<portrait "qingling">>
+<div class="scene-title">♡ 化形大典的邀約</div>
+<p>狐族三百年一度的化形大典將至。青玲兒扭扭捏捏地塞給你一張燙金請帖——在妖族，邀人出席化形大典，等同向全族公開「這人是我的」。</p>
+<p>「就、就是缺個人撐場面！」她尾巴尖都豎起來了，「你別多想啊！……不來的話，本公主也不是非你不可。」</p>
+<<rel "qingling" 8>>
+</div>
+<div class="choices">
+	<<link "「我去。站你身邊那種。」">><<rel "qingling" 4>><<goto $p.loc>><</link>>
+	<<link "「全族都會知道喔？」逗她">><<rel "qingling" 2>><<goto $p.loc>><</link>>
+</div>
+
+:: yl_date_flowers [game]
+<<set $p.flags.ylD1 to true>>
+<div class="scene">
+<<portrait "yinli">>
+<div class="scene-title">♡ 收集山花</div>
+<p>你帶陰離出幽冥澤，去看忘川彼岸僅存的一小片野花。她蹲下身，生疏地、極輕地摘下一朵，捧在掌心端詳了很久。</p>
+<p class="em">「解縛之後，我夢見過這個。」她聲音很輕，「一個小女孩在採花。後來我才知道……那是壓制之前的我。」</p>
+<p>她把那朵花別到髮間，動作笨拙，卻認真得像在完成一件失落了百年的事。</p>
+<<stat "xinmo" -6>>
+<<rel "yinli" 8>>
+</div>
+<div class="choices"><<link "「那個女孩，一直都在。」">><<rel "yinli" 3>><<goto $p.loc>><</link>><<link "替她把花別正">><<rel "yinli" 4>><<goto $p.loc>><</link>></div>
+
+:: yl_date_snow [game]
+<<set $p.flags.ylD2 to true>>
+<div class="scene">
+<<portrait "yinli">>
+<div class="scene-title">♡ 雪中的小狐狸</div>
+<p>幽冥澤難得飄雪。陰離怔怔望著雪，忽然想起一段更深的記憶：壓制之前，她曾在大雪裡，把一隻受傷的小狐狸揣進懷裡取暖。</p>
+<p class="em">「我以前……好像是個很愛多管閒事的人。」她極淡地笑了，眼白裡再無黑紋，「現在也是。比如——我大概，會管你一輩子。」</p>
+<<rel "yinli" 9>>
+</div>
+<div class="choices"><<link "「那就麻煩你管著了。」">><<rel "yinli" 3>><<goto $p.loc>><</link>><<link "與她並肩看雪落忘川">><<goto $p.loc>><</link>></div>
+
+:: dx_date_tea [game]
+<<set $p.flags.dxD1 to true>>
+<div class="scene">
+<<portrait "dongxue">>
+<div class="scene-title">♡ 一壺溫茶</div>
+<p>裴冬雪在寒潭邊架起小爐，鄭重其事地煮了一壺茶。「茶溫四十度時飲下，」她一邊記錄一邊說，「我能感知到喉間的暖意持續約十二秒。這是可重複的『舒適』。」</p>
+<p>她遞給你一杯，淺灰眼眸裡有一絲極淡的、近乎期待的東西：「你也試試。然後告訴我，你的『舒適』持續多久。我想……比對一下。」</p>
+<<heal 10 10>>
+<<rel "dongxue" 8>>
+</div>
+<div class="choices"><<link "「和你一起喝，就不會結束。」">><<rel "dongxue" 3>><<goto $p.loc>><</link>><<link "認真陪她記錄數據">><<rel "dongxue" 2>><<goto $p.loc>><</link>></div>
+
+:: dx_date_peak [game]
+<<set $p.flags.dxD2 to true>>
+<div class="scene">
+<<portrait "dongxue">>
+<div class="scene-title">♡ 絕頂風雪</div>
+<p>你帶裴冬雪登上冰嶺絕頂。風雪呼嘯，天地一色。她伸手接住一片雪花，看著它在掌心緩緩化去。</p>
+<p class="em">「以前我看雪，只覺得是『水的固態』。」她輕聲說，「現在我覺得……它很美。我不知道『美』是不是一種情緒，但我想，這應該就是了。」她側頭看你，「謝謝你，讓我看見的世界，多了顏色。」</p>
+<<gainCult 50>><<stat "daoxin" 2>>
+<<rel "dongxue" 9>>
+</div>
+<div class="choices"><<link "「以後的雪，我陪你一起看。」">><<rel "dongxue" 3>><<goto $p.loc>><</link>><<link "為她擋住風雪">><<rel "dongxue" 2>><<goto $p.loc>><</link>></div>

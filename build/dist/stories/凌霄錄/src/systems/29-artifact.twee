@@ -1,0 +1,118 @@
+:: ArtifactScript [script]
+/* ════════ 法寶 / 裝備系統 ════════
+   法寶資料掛 setup.artifacts（靜態，不進存檔）。
+   取得寫進 $p.artifacts（id 陣列）；祭煉一件存 $p.artiEquipped。
+   bonus 鍵與 recompute 的功法 eff 一致（atk/def/maxHp/luck/cultMul/crit）；
+   ★ recompute 累加祭煉法寶 bonus、取得觸發點、入口連結，皆由 Manager 整合（本檔不碰 02-engine）。
+   luck 為獨立累加器（recompute 只算 luckBase），故由 widget 以 $p.artiLuckApplied 即時增減；
+   equipArtifact 已呼叫 <<recompute>>，Manager 接上其餘加成後即自動生效。 */
+setup.artifacts = {
+	qingfeng:  { name: "青鋒劍",   tier: 1, bonus: { atk: 8 },
+		desc: "削鐵如泥的入門飛劍，劍意凌厲，伴主開疆。" },
+	xuangui:   { name: "玄龜甲",   tier: 1, bonus: { def: 6, maxHp: 30 },
+		desc: "上古玄龜遺甲所煉，護體禦傷，氣血更固。" },
+	julingzhu: { name: "聚靈珠",   tier: 2, bonus: { cultMul: 0.15, luck: 6 },
+		desc: "晝夜吞吐天地靈氣的寶珠，置於丹田旁助修不輟。" },
+	liuguang:  { name: "流光披風", tier: 2, bonus: { def: 5, crit: 0.05, luck: 5 },
+		desc: "織入流光符紋的輕氅，身形飄忽，伺機而動破綻致命。" },
+	fentianlu: { name: "焚天爐",   tier: 3, bonus: { atk: 16, crit: 0.08 },
+		desc: "煉器宗門鎮派重寶，爐火焚天，一擊之威撼動山岳。" },
+	taixujing: { name: "太虛鏡",   tier: 3, bonus: { maxHp: 80, def: 10, cultMul: 0.10 },
+		desc: "映照虛實的古鏡，護身、養氣、助修，三才皆備。" },
+};
+
+/* 階位顯示 */
+setup.artiTierName = function (t) {
+	return (["", "一", "二", "三"][t] || t) + " 階";
+};
+/* bonus 文字（給 :: Artifacts 顯示） */
+setup.artiBonusText = function (id) {
+	var a = setup.artifacts[id]; if (!a || !a.bonus) return "";
+	var x = a.bonus, parts = [];
+	if (x.atk)     parts.push("攻 +" + x.atk);
+	if (x.def)     parts.push("防 +" + x.def);
+	if (x.maxHp)   parts.push("氣血 +" + x.maxHp);
+	if (x.luck)    parts.push("氣運 +" + x.luck);
+	if (x.cultMul) parts.push("修煉 +" + Math.round(x.cultMul * 100) + "%");
+	if (x.crit)    parts.push("暴擊 +" + Math.round(x.crit * 100) + "%");
+	return parts.join("　");
+};
+
+:: ArtifactWidgets [widget]
+
+/% 取得法寶：寫進 $p.artifacts（無則建立），去重 %/
+<<widget "gainArtifact">>
+	<<set _id to _args[0]>>
+	<<if not $p.artifacts>><<run State.variables.p.artifacts = []>><</if>>
+	<<if $p.artifacts.indexOf(_id) < 0>>
+		<<run State.variables.p.artifacts.push(_id)>>
+		<<set _a to setup.artifacts[_id]>>
+		<<set _msg to "獲得法寶 · " + (_a ? _a.name : _id)>>
+		<<toast _msg>>
+	<</if>>
+<</widget>>
+
+/% 祭煉一件法寶：存 $p.artiEquipped 並 recompute（luck 即時增減；其餘待 Manager 接 bonus 後生效） %/
+<<widget "equipArtifact">>
+	<<set _id to _args[0]>>
+	<<set _newL to (setup.artifacts[_id] && setup.artifacts[_id].bonus.luck) || 0>>
+	<<set $p.luck += _newL - ($p.artiLuckApplied || 0)>>
+	<<set $p.artiLuckApplied to _newL>>
+	<<set $p.artiEquipped to _id>>
+	<<recompute>>
+	<<set _a to setup.artifacts[_id]>>
+	<<set _msg to (_a ? _a.name : _id) + " 祭煉加身">>
+	<<toast _msg>>
+<</widget>>
+
+/% 收起法寶 %/
+<<widget "unequipArtifact">>
+	<<set $p.luck -= ($p.artiLuckApplied || 0)>>
+	<<set $p.artiLuckApplied to 0>>
+	<<set $p.artiEquipped to "">>
+	<<recompute>>
+	<<toast "已收起法寶">>
+<</widget>>
+
+:: Artifacts [game]
+<<set _list to $p.artifacts || []>>
+<<set _eq to $p.artiEquipped || "">>
+<div class="panel">
+<h3>⚜ 法寶閣</h3>
+<p class="desc">煉器祭寶，一脈相承。所得法寶可祭煉一件加身，其威能化作你的戰力。<br>已得 <b class="gold"><<= _list.length>></b> 件　祭煉中 <b class="gold"><<if _eq && setup.artifacts[_eq]>><<= setup.artifacts[_eq].name>><<else>>無<</if>></b></p>
+
+<<if _list.length === 0>>
+	<p class="narr">你尚未得到任何法寶。降妖除魔、探尋秘境，自有重寶相贈。</p>
+<<else>>
+	<<for _id range _list>>
+		<<capture _id>>
+		<<set _a to setup.artifacts[_id]>>
+		<<if _a>>
+		<<set _on to _id === _eq>>
+		<div class="book <<if _on>>owned<</if>>">
+			<div class="book-info">
+				<h4><<= _a.name>><span class="tag-school"><<= setup.artiTierName(_a.tier)>></span></h4>
+				<p><<= _a.desc>></p>
+				<p class="arti-bonus"><<= setup.artiBonusText(_id)>></p>
+			</div>
+			<div class="book-buy">
+				<<if _on>>
+					<span class="owned-tag">⚜ 祭煉中</span>
+					<<link "收起">><<unequipArtifact _id>><<goto "Artifacts">><</link>>
+				<<else>>
+					<<link "祭煉">><<equipArtifact _id>><<goto "Artifacts">><</link>>
+				<</if>>
+			</div>
+		</div>
+		<</if>>
+		<</capture>>
+	<</for>>
+<</if>>
+</div>
+<div class="choices">
+	<<link "← 離開法寶閣">><<goto $p.loc>><</link>>
+</div>
+
+:: ArtifactStylesheet [stylesheet]
+.arti-bonus { color: var(--jade-light); font-size: 11px !important; letter-spacing: .05em;
+	margin-top: 5px !important; opacity: .9; }

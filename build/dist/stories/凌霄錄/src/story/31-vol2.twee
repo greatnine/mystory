@@ -1,0 +1,84 @@
+/% 第二卷 · 凌霄劍宗事件（由 演武場 等地點觸發） %/
+
+:: qinxiang_challenge [game]
+<div class="scene">
+<div class="scene-title">衝突 · 天驕挑釁</div>
+<p>演武場上，那名錦袍青年攔住你的去路。他是內門天驕 <span class="em">秦驤</span>，金丹有望的種子弟子。</p>
+<p class="em">「一個測靈石僥倖發光的廢物，也敢被人稱作天才？凌霄，比試臺上見真章。輸了，就滾出凌霄劍宗。」</p>
+<p class="narr">四下弟子圍攏，等著看一場羞辱。你知道，這一戰避不開——而且，蘇師姐也在人群之外靜靜看著。</p>
+</div>
+<div class="choices">
+	<<link "⚔ 應戰，藏拙險勝<span class='lx-hint'>強敵，建議先備好功法與丹藥</span>">>
+		<<startBattle "qinxiang" "qinxiang_win" "qinxiang_lose">>
+	<</link>>
+	<<link "📚 先開萬界藏書閣準備">><<set $return to "qinxiang_challenge">><<goto "library">><</link>>
+	<<link "⟳ 先修煉提升境界">><<set $return to "qinxiang_challenge">><<goto "cultivate">><</link>>
+	<<link "← 暫且按下，離開演武場">><<goto $p.loc>><</link>>
+</div>
+
+:: qinxiang_win [game]
+<<set $p.flags.qinxiangBeaten to true>>
+<<set $p.coins += 2>>
+<<stat "fame" 12>>
+<div class="scene">
+<p>你刻意收著力道，卻在最後一招以混沌靈氣化解了秦驤的全力一劍，反手將劍尖抵上他咽喉。全場死寂。</p>
+<p>秦驤臉色由紅轉白，踉蹌後退。你收劍拱手：「承讓。」沒有趕盡殺絕，也沒有張揚。</p>
+<p class="sys">【天驕挑釁化解 — 書幣 ×2、聲望大漲】</p>
+<p>人群之外，蘇羽瑤的目光在你身上停留了很久。她看的不是你贏了，而是你贏得的<span class="em">方式</span>。</p>
+<<rel "suyuyao" 4>>
+</div>
+<div class="choices"><<link "← 返回演武場">><<goto $p.loc>><</link>></div>
+
+:: qinxiang_lose [game]
+<<if $battle.fled>>
+	<div class="scene"><p class="narr">你自知不敵，尋隙退出比試臺。秦驤冷笑，卻也沒能留下你。此仇，來日再算。</p></div>
+<<else>>
+	<<set $p.hp to Math.floor($p.maxHp*0.5)>>
+	<div class="scene">
+	<p class="dmg">你終究差了一籌，被秦驤一劍震退，跌坐臺上。</p>
+	<p>他倨傲地收劍：「廢物就是廢物。」轉身離去。你抹去嘴角的血，眼神卻沒有絲毫熄滅——<span class="narr">差距，是用來追上的。</span></p>
+	</div>
+<</if>>
+<div class="choices">
+	<<link "⟳ 回去苦修，再來尋他">><<set $return to "qinxiang_challenge">><<goto "cultivate">><</link>>
+	<<link "← 返回演武場">><<goto $p.loc>><</link>>
+</div>
+
+:: tournament_intro [game]
+<div class="scene">
+<div class="scene-title">重大事件 · 宗門大比</div>
+<p>五年一度的宗門大比如期而至。你自外門一路殺入內門，竟與當代第一天才 <span class="em">蘇羽瑤</span> 分在同組，需合力闖過最終的「雙劍試煉之陣」。</p>
+<p>陣法兇險，唯有兩人靈識協同、劍意相和，方能破陣。蘇羽瑤側頭看你，平靜開口：「我引，你應。靈識交給你了——別讓我失望。」</p>
+<p class="narr">這是你第一次，被她主動敞開靈識的一角。</p>
+</div>
+<div class="choices">
+	<<link "凝神，與她合修「雙劍陣」">><<goto "twin_sword_array">><</link>>
+</div>
+
+:: twin_sword_array [game]
+<<set $p.flags.tournament to true>>
+<<set $p.coins += 3>>
+<<gainCult 200>>
+<<stat "fame" 20>>
+<div class="scene">
+<div class="scene-title">雙劍陣 · 靈識初觸</div>
+<p>陣法啟動，殺機如潮。你依她的劍意流轉而動，靈識試探著向她靠近——</p>
+<p>就在兩道靈識相觸的剎那，你<span class="em">看見</span>了她識海深處的一隅：一座焚毀的家族祠堂，一個跪在灰燼中的少女，和一種與你前世如出一轍的、深到骨子裡的孤獨。</p>
+<p>她顯然也察覺到了什麼，劍勢微微一滯，隨即更深地與你相和。兩柄劍意交織成一道璀璨的光，將陣法轟然破開。</p>
+<p class="sys">【宗門大比奪魁 — 書幣 ×3、修為 +200、聲名鵲起】</p>
+<p>陣破之後，她久久沒有收回靈識。良久，極輕地說了一句：「你也……是一個人走過來的。」</p>
+<<rel "suyuyao" 8>>
+</div>
+<div class="choices">
+	<<link "「現在不是了。」">><<rel "suyuyao" 4>><<goto "tournament_after">><</link>>
+	<<link "沉默地，與她並肩而立">><<rel "suyuyao" 2>><<goto "tournament_after">><</link>>
+</div>
+
+:: tournament_after [game]
+<div class="scene">
+<p class="narr">大比之後，「凌霄」之名傳遍劍宗內外。長老們開始正視這個廢材逆襲的外門弟子，而你與蘇師姐之間，某種無需言說的東西已經生根。</p>
+<p class="sys">【主線推進：南疆萬妖山盟發來協助平亂的請求。此後可由「🗺 前往他處」的地圖<span class="em">南下萬妖山</span>，開啟第三卷。】</p>
+</div>
+<div class="choices">
+	<<link "← 返回演武場">><<goto $p.loc>><</link>>
+</div>
