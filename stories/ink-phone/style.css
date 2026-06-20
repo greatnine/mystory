@@ -234,7 +234,7 @@ img {
 }
 
 #controls>*:not(:last-child):after {
-    content: " | ";
+    content: " |";
 }
 
 @media screen and (max-width: 980px) {

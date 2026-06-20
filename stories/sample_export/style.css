@@ -1,0 +1,697 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:300,700|Quattrocento:700');
+
+body {
+    font-family: "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Microsoft YaHei", "WenQuanYi Micro Hei";
+    font-weight: normal;
+    background: white;
+    overflow: hidden;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+    body.switched {
+        transition: color 0.6s, background-color 0.6s;
+    }
+}
+
+h1,
+h2 {
+    text-align: center;
+    font-family: "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Microsoft YaHei", "WenQuanYi Micro Hei";
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    font-size: 30pt;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 14pt;
+    font-style: italic;
+    font-family: "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Microsoft YaHei", "WenQuanYi Micro Hei";
+    font-weight: lighter;
+    color: #BBB;
+}
+
+.header {
+    padding-top: 3em;
+    padding-bottom: 3em;
+}
+
+/*
+  Built-in class:
+    # author: Name
+*/
+.byline {
+    font-style: italic;
+}
+
+.written-in-ink {
+    z-index: 3;
+    font-size: 9pt;
+    font-family: "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Microsoft YaHei", "WenQuanYi Micro Hei";
+    text-align: center;
+    font-weight: 700;
+    position: fixed;
+    display: block;
+    width: 100%;
+    background: white;
+    margin: 0;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    height: 14px;
+    top: 0;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+    .written-in-ink {
+        transition: color 0.6s, background 0.6s;
+    }
+}
+
+/* 
+  Enables <iframe> support work on itch.io when using mobile iOS
+*/
+.outerContainer {
+    position: absolute;
+    display: block;
+    margin: 0;
+    padding: 0;
+    -webkit-overflow-scrolling: touch;
+    overflow: scroll;
+    overflow-x: hidden;
+    height: 95%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    margin-top: 24px;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+@media screen and (max-width: 980px) {
+    .outerContainer {
+        margin-top: 44px;
+        background-size: cover;
+        background-repeat: no-repeat;
+    }
+}
+
+.container {
+    display: block;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    padding-top: 4em;
+    /* background: white; */
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+    .switched .container {
+        transition: background-color 0.6s;
+    }
+}
+
+p {
+    font-size: 13pt;
+    color: #888;
+    line-height: 1.7em;
+    font-weight: normal;
+}
+
+a {
+    font-weight: 700;
+    color: #b97c2c;
+    font-family: "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Microsoft YaHei", "WenQuanYi Micro Hei";
+    text-decoration: none;
+}
+
+.unclickable {
+    font-weight: 700;
+    color: #4f3411;
+    font-family: "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Microsoft YaHei", "WenQuanYi Micro Hei";
+    text-decoration: none;
+    cursor: not-allowed;
+}
+
+a:hover {
+    color: black;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+    a {
+        transition: color 0.6s;
+    }
+
+    a:hover {
+        transition: color 0.1s;
+    }
+}
+
+strong {
+    color: black;
+    font-weight: bold;
+}
+
+img {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+}
+
+.container .hide {
+    opacity: 0.0;
+}
+
+.container .invisible {
+    display: none;
+}
+
+.container>* {
+    opacity: 1.0;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+    .container>* {
+        transition: opacity 1.0s;
+    }
+}
+
+/*
+  Class applied to all choices
+  (Will always appear inside <p> element by default.)
+*/
+.choice {
+    text-align: center;
+    line-height: 1.7em;
+}
+
+/* 
+  Class applied to first choice
+*/
+:not(.choice)+.choice {
+    padding-top: 1em;
+}
+
+/*
+  Class applied to choice links
+*/
+.choice a, .choice span {
+    font-size: 15pt;
+}
+
+/* 
+  Built-in class:
+    The End # CLASS: end
+*/
+.end {
+    text-align: center;
+    font-weight: bold;
+    color: black;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+#controls {
+    z-index: 4;
+    font-size: 9pt;
+    text-align: center;
+    padding-bottom: 6px;
+    position: fixed;
+    right: 14px;
+    top: 4px;
+    -webkit-user-select: none;
+    user-select: none;
+    background: white;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+    #controls {
+        transition: color 0.6s, background 0.6s;
+    }
+}
+
+#controls [disabled] {
+    color: #ccc;
+}
+
+#controls>*:not(:last-child):after {
+    content: " | ";
+}
+
+@media screen and (max-width: 980px) {
+    #controls {
+        z-index: 2;
+        padding-top: 24px;
+        top: 0;
+        left: 0;
+        right: 0;
+    }
+}
+
+/* 
+  Dark Theme (Added in Inky 0.10.0)
+    # theme: dark
+*/
+
+body.dark {
+    background: black;
+    color: white;
+}
+
+.dark h2 {
+    color: #666;
+}
+
+.dark .container {
+    background: black;
+}
+
+.dark .written-in-ink {
+    background: black;
+}
+
+.dark a {
+    color: #cc8f1a;
+}
+.dark .unclickable{
+    color: #c4af87;
+    cursor:not-allowed;
+}
+
+.dark a:hover {
+    color: white;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+    .dark a {
+        transition: color 0.6s;
+    }
+}
+
+.dark strong {
+    color: white;
+}
+
+.dark #controls [disabled] {
+    color: #444;
+}
+
+.dark .end {
+    color: white;
+}
+
+.dark #controls {
+    background: black;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 1;
+    transition: opacity 0.2s ease-in;
+}
+
+.modal-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-container {
+    background-color: white;
+    width: 80%;
+    max-width: 800px;
+    max-height: 80vh;
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(0);
+    transition: transform 0.2s ease-out;
+}
+
+.dark .modal-container {
+    background-color: #222;
+    color: white;
+}
+
+.modal-overlay.hidden .modal-container {
+    transform: translateY(20px);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    margin: 0;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0 8px;
+    color: #666;
+    transition: color 0.2s ease;
+}
+
+.close-button:hover {
+    color: #000;
+}
+
+.dark .close-button {
+    color: #999;
+}
+
+.dark .close-button:hover {
+    color: #fff;
+}
+
+/* 添加点击效果 */
+.close-button:active {
+    transform: scale(0.95);
+}
+
+/* 移除按钮的默认外观 */
+.close-button:focus {
+    outline: none;
+}
+
+/* 可选: 添加键盘焦点样式 */
+.close-button:focus-visible {
+    box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.5);
+    border-radius: 4px;
+}
+
+.slot-list {
+    overflow-y: auto;
+    max-height: calc(80vh - 100px);
+    padding-right: 10px;
+}
+
+.save-slot {
+    display: flex;
+    padding: 15px;
+    border: 1px solid #ddd;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    align-items: center;
+}
+
+.save-slot:hover {
+    background-color: #f5f5f5;
+    transform: translateX(5px);
+}
+
+.save-slot .number {
+    width: 60px;
+    font-weight: bold;
+    color: #666;
+}
+
+.save-slot .content {
+    flex-grow: 1;
+    font-size: 14px;
+}
+
+.save-slot .time {
+    width: 150px;
+    text-align: right;
+    color: #888;
+    font-size: 12px;
+}
+
+.empty-slot {
+    color: #999;
+    background-color: #fafafa;
+}
+
+.empty-slot:hover {
+    background-color: #f0f0f0;
+}
+
+/* 自定义滚动条样式 */
+.save-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.save-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.save-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.save-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.new-save {
+    border: 2px dashed #ccc;
+    background-color: #f9f9f9;
+}
+
+.new-save:hover {
+    border-color: #999;
+    background-color: #f0f0f0;
+}
+
+.empty-notice {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+}
+
+.dark .new-save {
+    border-color: #444;
+    background-color: #222;
+}
+
+.dark .new-save:hover {
+    border-color: #666;
+    background-color: #333;
+}
+
+.dark .empty-notice {
+    color: #999;
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.fade-out {
+    animation: fadeOut 0.2s ease-out forwards;
+}
+
+.slot-content {
+    display: flex;
+    flex-grow: 1;
+    cursor: pointer;
+    align-items: center;
+}
+
+.delete-button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 8px;
+    color: #999;
+    transition: color 0.2s ease;
+    margin-left: 10px;
+}
+
+.delete-button:hover {
+    color: #ff4444;
+}
+
+.dark .delete-button {
+    color: #666;
+}
+
+.dark .delete-button:hover {
+    color: #ff6666;
+}
+
+/* 新存档按钮不需要删除按钮 */
+.new-save .delete-button {
+    display: none;
+}
+
+/* 背景图 */
+.bg {
+    visibility: hidden;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+}
+
+/* 定义keyframe动画，命名为blink */
+@keyframes blink {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+/* 添加兼容性前缀 */
+@-webkit-keyframes blink {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@-moz-keyframes blink {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@-ms-keyframes blink {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@-o-keyframes blink {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+/* 定义blink类*/
+.blink {
+    /* color: red; */
+    /* font-size: 46px; */
+    -o-animation: blink 1s linear infinite;
+    -webkit-animation: blink 1s linear infinite;
+    -moz-animation: blink 1s linear infinite;
+    -ms-animation: blink 1s linear infinite;
+    animation: blink 1s linear infinite;
+}
+
+/* 输入框容器样式 */
+#input-container {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    margin: 10px 0;
+}
+
+/* 输入框样式 */
+#input-box {
+    flex: 1;
+    padding: 10px;
+    font-size: 13pt;
+    border: 2px solid #b97c2c;
+    border-radius: 4px;
+    background: white;
+    color: #888;
+    font-family: inherit;
+}
+
+/* 确定按钮样式 */
+#input-submit {
+    padding: 10px 20px;
+    font-size: 13pt;
+    background: #b97c2c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#input-submit:hover {
+    background: #a16923;
+}
+
+/* 深色主题样式 */
+.dark #input-box {
+    background: #222;
+    border-color: #cc8f1a;
+    color: #fff;
+}
+
+.dark #input-submit {
+    background: #cc8f1a;
+}
+
+.dark #input-submit:hover {
+    background: #b37d15;
+}
+
+#input-box:focus {
+    outline: none;
+    border-color: #4a3011;
+    box-shadow: 0 0 5px rgba(185, 124, 44, 0.5);
+}
+
+.dark #input-box:focus {
+    border-color: #e6a01c;
+    box-shadow: 0 0 5px rgba(204, 143, 26, 0.5);
+}

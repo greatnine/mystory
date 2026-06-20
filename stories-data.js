@@ -14,6 +14,11 @@ if (typeof window !== "undefined") {
       "cover": null
     },
     {
+      "name": "sample_export",
+      "hasIndex": true,
+      "cover": null
+    },
+    {
       "name": "twineIF",
       "hasIndex": true,
       "cover": null

@@ -1,0 +1,62 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <title>sample_export</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+    <div id="save-overlay" class="modal-overlay hidden">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>存档列表</h2>
+                <button class="close-button">×</button>
+            </div>
+            <div class="slot-list" id="save-slot-list">
+                <!-- 存档列表将由 JavaScript 动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <div id="load-overlay" class="modal-overlay hidden">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>读档列表</h2>
+                <button class="close-button">×</button>
+            </div>
+            <div class="slot-list" id="load-slot-list">
+                <!-- 读档列表将由 JavaScript 动态生成 -->
+            </div>
+        </div>
+    </div>
+    
+    <img alt="" id="bg_img" class="bg" />
+    <div class="outerContainer">
+        <h3 class="written-in-ink"><a href="https://www.inklestudios.com/ink">WRITTEN IN INK</a></h3>
+
+        <div id="controls" class="buttons">
+          <a id="rewind" title="重新开始">重新开始</a>
+          <a id="save" title="保存进度">保存进度</a>
+          <a id="reload" title="读取进度">读取进度</a>
+          <a id="theme-switch" title="切换主题">切换主题</a>
+        </div>
+
+        <div id="story" class="container">
+            <div class="header">
+                <h1>sample_export</h1>
+                <h2 class="byline"></h2>
+            </div>
+        </div>
+    </div>
+
+    <script src="ink.js"></script>
+    <script src="niky.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
