@@ -113,12 +113,12 @@ h2 {
     }
 }
 
-p {
+/*p {
     font-size: 13pt;
     color: #888;
     line-height: 1.7em;
     font-weight: lighter;
-}
+}*/
 
 a {
     font-weight: 700;
@@ -406,7 +406,7 @@ html, body {
 }
 
 #controls a {
-    font-size: 9pt;
+    font-size: 11pt;  /*9pt*/
     font-family: sans-serif;
     font-weight: 700;
     text-decoration: none;
