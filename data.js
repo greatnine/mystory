@@ -17,6 +17,11 @@ if (typeof window !== "undefined") {
       "name": "守护者",
       "hasIndex": true,
       "cover": "stories/守护者/images/cover.jpg"
+    },
+    {
+      "name": "灯塔",
+      "hasIndex": true,
+      "cover": null
     }
   ]
 };
