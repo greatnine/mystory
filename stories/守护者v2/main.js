@@ -378,13 +378,16 @@
             console.debug("Couldn't load saved theme");
         }
 
-        // Check whether the OS/browser is configured for dark mode
-        var browserDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-
-        if (savedTheme === "dark"
-            || (savedTheme == undefined && globalTagTheme === "dark")
-            || (savedTheme == undefined && globalTagTheme == undefined && browserDark))
+        // 强制默认浅色主题，忽略之前的保存设置
+        // 只有故事明确指定深色主题时才启用深色
+        if (globalTagTheme === "dark") {
             document.body.classList.add("dark");
+        } else {
+            // 确保移除dark类，保证浅色主题
+            document.body.classList.remove("dark");
+            // 同时清除localStorage中的深色设置
+            window.localStorage.setItem('theme', "");
+        }
     }
 
     // Used to hook up the functionality for global functionality buttons
@@ -437,3 +440,38 @@
     }
 
 })(storyContent);
+
+
+// iOS Safari 地址栏自适应 - TRAE方案
+(function() {
+    'use strict';
+    
+    function fixIOSAddressBar() {
+        var ua = window.navigator.userAgent;
+        var isIOS = /iPhone|iPad|iPod/.test(ua);
+        if (!isIOS) return;
+
+        var setVH = function() {
+            var vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', vh + 'px');
+        };
+        
+        setVH();
+        window.addEventListener('resize', setVH, { passive: true });
+        window.addEventListener('orientationchange', function() {
+            setTimeout(setVH, 100);
+        });
+        
+        if (window.scrollTo) {
+            setTimeout(function() {
+                window.scrollTo(0, 0);
+            }, 100);
+        }
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', fixIOSAddressBar);
+    } else {
+        fixIOSAddressBar();
+    }
+})();
