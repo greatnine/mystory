@@ -4,7 +4,7 @@ if (typeof window !== "undefined") {
     window.STORIES_MANIFEST = {
   "stories": [
     {
-      "name": "ink-phone",
+      "name": "ink-phone-new",
       "hasIndex": true,
       "cover": null
     },
@@ -14,9 +14,9 @@ if (typeof window !== "undefined") {
       "cover": null
     },
     {
-      "name": "守护者v2",
+      "name": "守护者v3",
       "hasIndex": true,
-      "cover": "stories/守护者v2/images/cover.jpg"
+      "cover": "stories/守护者v3/images/cover.jpg"
     }
   ]
 };
