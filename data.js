@@ -9,6 +9,11 @@ if (typeof window !== "undefined") {
       "cover": null
     },
     {
+      "name": "ink-story-template",
+      "hasIndex": true,
+      "cover": null
+    },
+    {
       "name": "twineIF",
       "hasIndex": true,
       "cover": null
