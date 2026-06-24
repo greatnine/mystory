@@ -44,7 +44,7 @@
 
     // Kick off the start of the story!
     continueStory(true);
-
+    
     // Main story processing function. Each time this is called it generates
     // all the next content up as far as the next set of choices.
     function continueStory(firstTime) {
@@ -135,6 +135,7 @@
                 else if( tag == "CLEAR" || tag == "RESTART" ) {
                     removeAll("p");
                     removeAll("img");
+                    removeAll("hr.ink-choice-divider"); // ✅ 加这一行
 
                     // Comment out this line if you want to leave the header visible when clearing
                     setVisible(".header", false);
@@ -220,15 +221,24 @@
 
                     // Remove all existing choices
                     removeAll(".choice");
+                    //removeAll("hr.ink-choice-divider"); // ✅ 删除<hr>！！！
+                   
+
+                    // ✅ 在选择后、新内容前插入分割线
+                    var divider = document.createElement('hr');
+                    divider.className = 'ink-choice-divider';
+                    storyContainer.appendChild(divider);
 
                     // Tell the story where to go next
                     story.ChooseChoiceIndex(choice.index);
 
                     // This is where the save button will save from
                     savePoint = story.state.toJson();
-
+                    
+                     
                     // Aaand loop
                     continueStory();
+                    
                 });
             }
         });
@@ -248,6 +258,7 @@
 
         // set save point to here
         savePoint = story.state.toJson();
+        removeAll("hr.ink-choice-divider"); // ✅ 加这行，点rewind/重新开始时清残余线
 
         continueStory(true);
 
@@ -442,7 +453,10 @@
 })(storyContent);
 
 
-// iOS Safari 地址栏自适应 - TRAE方案
+/* ------------------------------------------------------
+    TRAE方案 20260620
+   ------------------------------------------------------*/
+// iOS Safari 地址栏自适应 - //TRAE方案 20260620//
 (function() {
     'use strict';
     

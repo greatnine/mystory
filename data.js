@@ -9,22 +9,22 @@ if (typeof window !== "undefined") {
       "cover": null
     },
     {
+      "name": "ink-phone-hr",
+      "hasIndex": true,
+      "cover": null
+    },
+    {
       "name": "ink-story-template",
       "hasIndex": true,
       "cover": null
     },
     {
-      "name": "twineIF",
+      "name": "ink灯塔",
       "hasIndex": true,
       "cover": null
     },
     {
-      "name": "守护者",
-      "hasIndex": true,
-      "cover": "stories/守护者/images/cover.jpg"
-    },
-    {
-      "name": "灯塔",
+      "name": "twineIF",
       "hasIndex": true,
       "cover": null
     }
