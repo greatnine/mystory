@@ -1,1 +1,0 @@
-pyinstaller -F ./main.py -i ./favicon.ico -w -n "Inky Go"
