@@ -19,17 +19,17 @@ if (typeof window !== "undefined") {
       "cover": null
     },
     {
-      "name": "ink灯塔",
-      "hasIndex": true,
-      "cover": null
-    },
-    {
       "name": "twineIF",
       "hasIndex": true,
       "cover": null
     },
     {
-      "name": "简易web",
+      "name": "夫妻共管chap",
+      "hasIndex": true,
+      "cover": null
+    },
+    {
+      "name": "夫妻共管sugar",
       "hasIndex": true,
       "cover": null
     }
