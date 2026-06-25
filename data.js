@@ -19,6 +19,11 @@ if (typeof window !== "undefined") {
       "cover": null
     },
     {
+      "name": "inky-go-master",
+      "hasIndex": true,
+      "cover": null
+    },
+    {
       "name": "ink灯塔",
       "hasIndex": true,
       "cover": null
