@@ -19,6 +19,11 @@ if (typeof window !== "undefined") {
       "cover": null
     },
     {
+      "name": "onepage",
+      "hasIndex": true,
+      "cover": null
+    },
+    {
       "name": "twineIF",
       "hasIndex": true,
       "cover": null
