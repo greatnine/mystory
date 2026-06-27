@@ -46,7 +46,7 @@ if (typeof window !== "undefined") {
     {
       "name": "远山",
       "hasIndex": true,
-      "cover": null
+      "cover": "stories/远山/images/cover.jpg"
     }
   ]
 };
