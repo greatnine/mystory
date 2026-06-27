@@ -104,40 +104,47 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
 		<div id="init-lacking"><p>Browser lacks capabilities required to play.</p><p>Upgrade or switch to another browser.</p></div>
 		<div id="init-loading"><div>Loading&hellip;</div></div>
 	</div>
-	<tw-storydata name="sugarcube_no_menu" startnode="15" creator="Twine" creator-version="2.12.0" format="SugarCube" format-version="2.37.3" ifid="17d0d8c2-e6d5-4dcc-a857-0f9200e67445" options="" tags="" zoom="1" hidden><style role="stylesheet" id="twine-user-stylesheet" type="text/twine-css">/*#menu-item-saves {
-  display: none !important;
-}*/
-
-
-h2 {
-  color: #1a4e2a;  /*#fff;*/
+	<tw-storydata name="sugarcube_no_menu" startnode="15" creator="Twine" creator-version="2.12.0" format="SugarCube" format-version="2.37.3" ifid="17d0d8c2-e6d5-4dcc-a857-0f9200e67445" options="" tags="" zoom="1" hidden><style role="stylesheet" id="twine-user-stylesheet" type="text/twine-css">h2 {
+  color: #fff; /*#1a4e2a; */
   text-align: center;
   font-size: 1.5em;
   margin-bottom: 30px;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
-/*. #story 容器 - 红色边框，代表故事整体框架 */
+/*. #story 容器 代表故事整体框架 */
 #story {
-    background-color: black; /*#4e2a1a;  */    /* 棕红色 - Story背景 */
-    /*满铺占据全背景*/
-    margin: 0;
+    background-color: black; 	/*#4e2a1a;  */    /* 棕红色 - Story背景 */   
+    margin: 0; 							/*满铺占据全背景*/
     padding: 0;
 }
 
-/*  #passages 正文容器 - 绿色区域，代表可滚动的内容区 */
-#passages {
-       /* background-color: #1a4e2a;    深绿色 - Passages背景 */   
-    background-color: rgba(255,255,255,0.95);
+/*  #passages 正文容器，代表可滚动的内容区 */
+#passages {  
+    /*background-color: rgba(255,255,255,0.95);   */   
+  background-color: #2a4e6e;      /* 蓝灰色 - Passage背景 */
 }
 
-/* 5. .passage 单个段落 - 蓝色区域，代表每个独立页面 */
+/* .passage 单个段落，代表每个独立页面 */
 .passage {
+  font-size: 1.2em;  
+  /*color: #333;  */
+  padding: 1rem 0.5rem 2rem 1rem;   /* 上 右 下 左 各留 1rem 的空白 */
    /* background-color: #2a4e6e;*/
-   color: #333;
-    /* 上下左右各留 1rem 的空白 */
-  padding: 1rem 0.5rem 2rem 1rem;   /* 上 右 下 左 */
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
