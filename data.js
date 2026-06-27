@@ -42,6 +42,11 @@ if (typeof window !== "undefined") {
       "name": "夫妻共管sugar",
       "hasIndex": true,
       "cover": null
+    },
+    {
+      "name": "远山",
+      "hasIndex": true,
+      "cover": null
     }
   ]
 };
