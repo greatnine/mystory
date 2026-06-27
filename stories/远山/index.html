@@ -110,51 +110,46 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
 
 
 h2 {
-  color: #fff;
+  color: #1a4e2a;  /*#fff;*/
   text-align: center;
   font-size: 1.5em;
   margin-bottom: 30px;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
-/* ===== 全局基础布局 ===== */
-
-
-/*  Body - 深蓝色，代表浏览器视口区域 */
-body {
-    background-color: #1a2a4e;      /* 深蓝 - Body背景 */    
-}
-
-/* 隐藏整个页面的滚动条，但保留滚动功能 */
-html, body {
-    scrollbar-width: none;        /* Firefox */
-    -ms-overflow-style: none;     /* IE 10+ */
-}
-
-html::-webkit-scrollbar,
-body::-webkit-scrollbar {
-    display: none;                /* Chrome/Safari/Edge */
-}
-
-
 /*. #story 容器 - 红色边框，代表故事整体框架 */
 #story {
-    background-color: #4e2a1a;      /* 棕红色 - Story背景 */
+    background-color: black; /*#4e2a1a;  */    /* 棕红色 - Story背景 */
+    /*满铺占据全背景*/
     margin: 0;
     padding: 0;
 }
 
 /*  #passages 正文容器 - 绿色区域，代表可滚动的内容区 */
 #passages {
-    background-color: #1a4e2a;      /* 深绿色 - Passages背景 */
-   
+       /* background-color: #1a4e2a;    深绿色 - Passages背景 */   
+    background-color: rgba(255,255,255,0.95);
 }
 
 /* 5. .passage 单个段落 - 蓝色区域，代表每个独立页面 */
 .passage {
-    background-color: #2a4e6e;
-    padding: 1rem; /* 上下左右各留 1rem 的空白 */
-}</style><script role="script" id="twine-user-script" type="text/twine-javascript"></script><tw-tag name="init" color="green"></tw-tag><tw-passagedata pid="1" name="Text01" tags="" position="200,500" size="100,100">这个故事版本是老支书讲给我的。说起往事，他的语速慢得像山路上陷进泥淖的牛车，每一个字都像从岁月的深潭里打捞上来，带着沉甸甸的浊意。我后来走南闯北，见过不少离奇事，可家乡这桩因一个罐头盒而起的冤案，却像根刺扎在心上，总也拔不掉。那是荒诞年代里的真实伤疤，有同学也曾偶然提起。我把它写下来，不为别的，就想为那些被时代车轮碾过的小人物，留下一声微弱的叹息。
+   /* background-color: #2a4e6e;*/
+   color: #333;
+    /* 上下左右各留 1rem 的空白 */
+  padding: 1rem 0.5rem 2rem 1rem;   /* 上 右 下 左 */
+}
+
+
+
+/* 隐藏整个页面的滚动条，但保留滚动功能 */
+html, body {
+    scrollbar-width: none;        /* Firefox */
+    -ms-overflow-style: none;     /* IE 10+ */
+}
+html::-webkit-scrollbar,body::-webkit-scrollbar {
+    display: none;                /* Chrome/Safari/Edge */
+}
+</style><script role="script" id="twine-user-script" type="text/twine-javascript"></script><tw-tag name="init" color="green"></tw-tag><tw-passagedata pid="1" name="Text01" tags="" position="200,500" size="100,100">这个故事版本是老支书讲给我的。说起往事，他的语速慢得像山路上陷进泥淖的牛车，每一个字都像从岁月的深潭里打捞上来，带着沉甸甸的浊意。我后来走南闯北，见过不少离奇事，可家乡这桩因一个罐头盒而起的冤案，却像根刺扎在心上，总也拔不掉。那是荒诞年代里的真实伤疤，有同学也曾偶然提起。我把它写下来，不为别的，就想为那些被时代车轮碾过的小人物，留下一声微弱的叹息。
 
 今儿要说的这事，比说书先生讲的段子还邪乎，当年荒唐得让人掉眼泪，如今权当笑料听听。真人真事已模糊处理，若有雷同，纯属巧合！
 
