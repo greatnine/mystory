@@ -29,6 +29,11 @@ if (typeof window !== "undefined") {
       "cover": null
     },
     {
+      "name": "winky-main",
+      "hasIndex": true,
+      "cover": null
+    },
+    {
       "name": "夫妻共管chap",
       "hasIndex": true,
       "cover": null
