@@ -37,7 +37,7 @@ if not exist "index.html" (
     exit /b 1
 )
 
-echo [1/2] Scanning dist\stories\ ...
+echo [1/2] Scanning stories\ ...
 python "%~dp0check.py"
 if errorlevel 1 (
     echo.
