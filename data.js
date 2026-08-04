@@ -29,7 +29,7 @@ if (typeof window !== "undefined") {
                         "hasIndex":  true
                     },
                     {
-                        "name":  "wechat",
+                        "name":  "wechat-reading-style",
                         "cover":  null,
                         "hasIndex":  true
                     },
