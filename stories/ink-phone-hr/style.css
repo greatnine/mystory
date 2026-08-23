@@ -375,6 +375,21 @@ html, body {
     color: black !important;
 }
 
+
+/* ✅ 已读正文：颜色变浅，与刚跳转显示的新正文区分开 */
+#story p.ink-read {
+    color: #80859e !important;
+}
+body.dark #story p.ink-read {
+    color: #dddde0 !important;
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+    #story p.ink-read {
+        transition: color 0.6s ease;
+    }
+}
+
+
 /* 5. 选择支保持原版样式 */
 .choice {
     text-align: center;

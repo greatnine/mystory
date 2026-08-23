@@ -1,8 +1,22 @@
 (function(storyContent) {
 
+    // ✅ 清掉所有旧存档，防止指针错乱 故事正文空白
+    localStorage.clear();
+    // 只删 ink 的存档
+    /*Object.keys(localStorage).forEach(function (k) {
+        if (k.startsWith("ink_")) {
+            localStorage.removeItem(k);
+        }
+    });*/
+
     // Create ink story from the content using inkjs
     var story = new inkjs.Story(storyContent);
 
+    // ✅ 捕获 ink 警告，不让它变成致命错误
+    story.onError = function (msg, type) {
+        console.warn("Ink runtime warning:", msg);
+    };
+    
     var savePoint = "";
 
     let savedTheme;
@@ -163,7 +177,7 @@
 
             // Fade in paragraph after a short delay
             showAfter(delay, paragraphElement);
-            delay += 200.0;
+            delay += 300.0;
         }
 
         // Create HTML choices from ink choices
@@ -219,6 +233,11 @@
                     // cause the height (and therefore scroll) to jump backwards temporarily.
                     storyContainer.style.height = contentBottomEdgeY()+"px";
 
+                    // ✅ 将已有正文段落标记为"已读"(颜色变浅),与即将跳转显示的新正文区分
+                    var existingParagraphs = storyContainer.querySelectorAll("p:not(.choice)");
+                    for(var i=0; i<existingParagraphs.length; i++) {
+                        existingParagraphs[i].classList.add("ink-read");
+                    }
                     // Remove all existing choices
                     removeAll(".choice");
                     //removeAll("hr.ink-choice-divider"); // ✅ 删除<hr>！！！
@@ -451,6 +470,11 @@
     }
 
 })(storyContent);
+
+
+
+
+
 
 
 /* ------------------------------------------------------
