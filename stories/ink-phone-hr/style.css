@@ -378,10 +378,10 @@ html, body {
 
 /* ✅ 已读正文：颜色变浅，与刚跳转显示的新正文区分开 */
 #story p.ink-read {
-    color: #80859e !important;
+    color: #5360a3 !important;
 }
 body.dark #story p.ink-read {
-    color: #dcdcf8 !important;
+    color: #c0c0f7 !important;
 }
 @media screen and (prefers-reduced-motion: no-preference) {
     #story p.ink-read {
