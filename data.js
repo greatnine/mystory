@@ -19,6 +19,11 @@ if (typeof window !== "undefined") {
                         "hasIndex":  true
                     },
                     {
+                        "name":  "ink-build-template",
+                        "cover":  null,
+                        "hasIndex":  true
+                    },
+                    {
                         "name":  "onepage",
                         "cover":  null,
                         "hasIndex":  true
