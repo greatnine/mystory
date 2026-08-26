@@ -3,82 +3,6 @@
    ============================================================================= */
 
 @font-face {
-  font-family: "Merriweather";
-  src: url("../fonts/Merriweather-VariableFont_opsz,wdth,wght.ttf")
-    format("truetype-variations");
-  font-weight: 300 900;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Merriweather";
-  src: url("../fonts/Merriweather-Italic-VariableFont_opsz,wdth,wght.ttf")
-    format("truetype-variations");
-  font-weight: 300 900;
-  font-style: italic;
-  font-display: swap;
-}
-
-/* Inter Font */
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url("../fonts/Inter-VariableFont_slnt,wght.ttf")
-    format("truetype-variations");
-}
-
-@font-face {
-  font-family: "Inter";
-  src: url("../fonts/Inter-Italic-VariableFont_opsz,wght.ttf")
-    format("truetype-variations");
-  font-weight: 300 900;
-  font-style: italic;
-  font-display: swap;
-}
-
-/* OpenDyslexic Font */
-@font-face {
-  font-family: "OpenDyslexic";
-  src:
-    url("../fonts/OpenDyslexic-Regular.woff2") format("woff2"),
-    url("../fonts/OpenDyslexic-Regular.woff") format("woff");
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "OpenDyslexic";
-  src:
-    url("../fonts/OpenDyslexic-Bold.woff2") format("woff2"),
-    url("../fonts/OpenDyslexic-Bold.woff") format("woff");
-  font-weight: bold;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "OpenDyslexic";
-  src:
-    url("../fonts/OpenDyslexic-Italic.woff2") format("woff2"),
-    url("../fonts/OpenDyslexic-Italic.woff") format("woff");
-  font-weight: normal;
-  font-style: italic;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Material Icons";
-  font-style: normal;
-  font-weight: 400;
-  src: url("../fonts/MaterialIcons-Regular.ttf") format("truetype");
-  font-display: block;
-}
-
-@font-face {
   font-family: "Material Icons Outlined";
   font-style: normal;
   font-weight: 400;
@@ -86,36 +10,9 @@
   font-display: block;
 }
 
-@font-face {
-  font-family: "Material Icons Round";
-  font-style: normal;
-  font-weight: 400;
-  src: url("../fonts/MaterialIconsRound-Regular.otf") format("opentype");
-  font-display: block;
-}
-
-@font-face {
-  font-family: "Material Icons Sharp";
-  font-style: normal;
-  font-weight: 400;
-  src: url("../fonts/MaterialIconsSharp-Regular.otf") format("opentype");
-  font-display: block;
-}
-
-@font-face {
-  font-family: "Material Icons Two Tone";
-  font-style: normal;
-  font-weight: 400;
-  src: url("../fonts/MaterialIconsTwoTone-Regular.otf") format("opentype");
-  font-display: block;
-}
-
 /* Material Icons Base Class */
-.material-icons,
-.material-icons-outlined,
-.material-icons-round,
-.material-icons-sharp,
-.material-icons-two-tone {
+.material-icons-outlined {
+  font-family: "Material Icons Outlined";
   font-weight: normal;
   font-style: normal;
   font-size: 24px;
@@ -130,22 +27,6 @@
   text-rendering: optimizeLegibility;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: "liga";
-}
-
-.material-icons {
-  font-family: "Material Icons";
-}
-.material-icons-outlined {
-  font-family: "Material Icons Outlined";
-}
-.material-icons-round {
-  font-family: "Material Icons Round";
-}
-.material-icons-sharp {
-  font-family: "Material Icons Sharp";
-}
-.material-icons-two-tone {
-  font-family: "Material Icons Two Tone";
 }
 
 /* =============================================================================
@@ -177,16 +58,20 @@
 
   --container-bg-opacity: 98%;
 
-  /* === FONTS === */
-  --font-serif: "Merriweather", Georgia, "Times New Roman", Times, serif;
+  /* === FONTS - 中文系统字体栈 === */
+  --font-serif:
+    "Songti SC", "SimSun", "Noto Serif CJK SC", "Source Han Serif SC",
+    "WenQuanYi Bitmap Song", Georgia, "Times New Roman", serif;
   --font-sans:
-    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  --font-dyslexic: "OpenDyslexic", Arial, sans-serif;
-  --font-heading: "Merriweather", Georgia, "Times New Roman", Times, serif;
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC",
+    "Source Han Sans SC", "WenQuanYi Micro Hei", -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading:
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC",
+    "Source Han Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-monospace:
-    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New",
-    monospace;
+    "JetBrains Mono", "Fira Code", "SF Mono", "Cascadia Code",
+    "Roboto Mono", Consolas, "Courier New", monospace;
 
   /* === CURRENT FONT (DO NOT EDIT - can be overridden by settings) === */
   --font-main: var(--font-serif);
@@ -364,9 +249,6 @@ h4 {
   font-weight: var(--font-weight-bold);
   margin: 0;
   text-align: left;
-  /* Fallback for older browsers */
-  font-family: "Quattrocento", Georgia, "Times New Roman", Times, serif;
-  /* Modern browsers with CSS variables */
   font-family: var(--font-heading);
 }
 
