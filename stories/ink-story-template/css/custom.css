@@ -580,24 +580,23 @@ h1, h2, h3, h4 {
 
 
 /* ============================================================================
-   界面优化: 顶栏中性灰 + 竖屏字号增大 + 选项橘黄
+   界面优化: 竖屏字号增大 + 选项橘黄
+   顶栏背景沿用模板默认 background: var(--color-background),与正文同色并随主题切换
    ============================================================================ */
 
-/* A. 顶栏固定中性灰: 不随深浅主题变化,低调不抢眼,不影响正文阅读 */
-.top-nav {
-  background: #6b7280 !important;
-  border-bottom-color: #5b626e !important;
-  color: #f3f4f6;
-}
+/* 顶栏文字与图标改为更淡的中灰 gray-500(#737373),弱化对正文的干扰;
+   浅色底上足够可辨,深色底上自然后退 */
 .top-nav .nav-title,
 .top-nav .nav-byline,
+.top-nav .nav-controls button,
 .top-nav .nav-icon,
-.top-nav .material-icons-outlined,
-.top-nav button {
-  color: #f3f4f6 !important;
+.top-nav .material-icons-outlined {
+  color: var(--palette-gray-500);
 }
-.top-nav button:hover {
-  background: rgba(255, 255, 255, 0.12) !important;
+/* 悬停/聚焦时恢复正文级对比度,保证可操作性 */
+.top-nav .nav-controls button:hover,
+.top-nav .nav-controls button:focus-visible {
+  color: var(--color-text-primary);
 }
 
 /* B. 手机竖屏: 正文与选项字号增大一号(13pt→15pt),两者共用 --text-size-base */
