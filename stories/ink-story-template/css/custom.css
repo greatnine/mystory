@@ -577,3 +577,61 @@ h1, h2, h3, h4 {
     justify-content: center;
   }
 }
+
+
+/* ============================================================================
+   界面优化: 顶栏中性灰 + 竖屏字号增大 + 选项橘黄
+   ============================================================================ */
+
+/* A. 顶栏固定中性灰: 不随深浅主题变化,低调不抢眼,不影响正文阅读 */
+.top-nav {
+  background: #6b7280 !important;
+  border-bottom-color: #5b626e !important;
+  color: #f3f4f6;
+}
+.top-nav .nav-title,
+.top-nav .nav-byline,
+.top-nav .nav-icon,
+.top-nav .material-icons-outlined,
+.top-nav button {
+  color: #f3f4f6 !important;
+}
+.top-nav button:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* B. 手机竖屏: 正文与选项字号增大一号(13pt→15pt),两者共用 --text-size-base */
+@media screen and (max-width: 680px) {
+  :root {
+    --text-size-base: 15pt;
+  }
+}
+
+/* C. 选项橘黄: 浅色主题用琥珀橘(白底清晰),深色主题用亮黄橘(深底柔和舒适) */
+.choice:not(.unclickable) {
+  color: #d97706;
+}
+.choice:not(.unclickable):hover,
+.choice:not(.unclickable):focus-visible {
+  color: #b45309;
+}
+[data-theme="dark"] .choice:not(.unclickable) {
+  color: #fbbf24;
+}
+[data-theme="dark"] .choice:not(.unclickable):hover,
+[data-theme="dark"] .choice:not(.unclickable):focus-visible {
+  color: #fcd34d;
+}
+
+
+/* 修正: JS 会内联 setProperty 设置 --text-size-base,变量覆盖无效,
+   改为直接覆盖元素字号 */
+@media screen and (max-width: 680px) {
+  #story p,
+  #story li {
+    font-size: 14pt;
+  }
+  #story .choice {
+    font-size: 14pt;
+  }
+}
