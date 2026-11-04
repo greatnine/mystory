@@ -127,3 +127,81 @@
    - Custom UI elements
    
    ============================================================================= */
+
+/* =============================================================================
+   阅读体验优化:选项跳转分隔线 + 平滑滚动锚定
+   =============================================================================
+   玩家点击选项后:
+   1. story:choice — 在选项容器位置插入一条横线(标记"已读/新读"分界)
+   2. story:content — 新正文渲染完成后,平滑滚动把横线提升到正文框上边缘
+   效果:视线从上次阅读位置自然过渡到新内容,无需手动找位置。
+   ============================================================================= */
+
+(function () {
+  // 玩家点击选项(捕获阶段,早于模板的渲染逻辑):
+  // 此时旧选项容器还在,插横线到它前面 —— 新内容将渲染在横线之后
+  document.addEventListener("click", function (e) {
+    const choice = e.target.closest && e.target.closest(".choice");
+    if (!choice) return;
+
+    const story = document.querySelector("#story");
+    if (!story) return;
+
+    const hr = document.createElement("hr");
+    hr.className = "story-divider";
+    hr.setAttribute("aria-hidden", "true");
+
+    const choices = story.querySelector(".choices-container");
+    if (choices) {
+      story.insertBefore(hr, choices);
+    } else {
+      story.appendChild(hr);
+    }
+    watchNewContent(hr);
+  }, true);
+
+  // 观察选择后的新增节点:淡入+上移动画;内容稳定后平滑滚动锚定
+  function watchNewContent(hr) {
+    const story = document.querySelector("#story");
+    if (!story) return;
+
+    // 给单个元素挂进入动画(淡入 + 轻微上移)
+    function addEnter(target) {
+      if (target.nodeType !== 1) return;
+      if (target.classList.contains("choices-container")) return; // 选项不做位移动画
+      if (target.classList.contains("story-divider")) return;
+      target.classList.add("content-enter");
+      target.addEventListener("animationend", function handler() {
+        target.classList.remove("content-enter");
+        target.removeEventListener("animationend", handler);
+      });
+    }
+
+    // 150ms 无新增节点视为渲染完成 → 平滑滚动到横线
+    let settleTimer = null;
+    function scheduleScroll() {
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(function () {
+        observer.disconnect();
+        hr.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 150);
+    }
+
+    const observer = new MutationObserver(function (mutations) {
+      for (const m of mutations) {
+        for (const node of m.addedNodes) {
+          if (node.nodeType !== 1) continue;
+          addEnter(node);
+          // 容器节点:内容段落也挂上
+          if (node.children) {
+            for (const child of node.children) addEnter(child);
+          }
+        }
+      }
+      scheduleScroll();
+    });
+    observer.observe(story, { childList: true, subtree: true });
+
+    scheduleScroll();
+  }
+})();

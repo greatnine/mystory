@@ -406,3 +406,174 @@ body.dark {
    }
    
    ============================================================================= */
+
+
+/* ============================================================================
+   移动端竖屏弹窗优化
+   问题:模板默认让所有弹窗在 ≤680px 时强制全屏(height:100%;inset:0),
+   且 .modal-body{flex:1} 撑满剩余空间,导致"重新开始"等仅两行内容的
+   确认框竖向出现大片空白。
+   修复:小型确认框恢复居中卡片式,高度自适应内容,收紧竖向间距。
+   ============================================================================ */
+@media screen and (max-width: 680px) {
+  .base-modal-content.confirm-modal-content {
+    inset: auto;
+    top: 50%;
+    left: 50%;
+    width: 88%;
+    max-width: 420px;
+    height: auto;
+    max-height: 75vh;
+    padding: 1.25rem;
+    border-radius: var(--border-radius-lg);
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  .base-modal-content.confirm-modal-content.modal-open {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  /* 内容区不再强制撑满剩余空间 */
+  .base-modal-content.confirm-modal-content .modal-body {
+    flex: 0 1 auto;
+  }
+  /* 收紧竖向间距 */
+  .base-modal-content.confirm-modal-content .modal-header {
+    margin-bottom: 0.75rem;
+  }
+  .base-modal-content.confirm-modal-content .modal-footer {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+  }
+}
+
+
+/* ============================================================================
+   中文字体优化
+   1. 正文默认字体已由 JS 改为 sans(黑体系) —— 屏幕阅读比宋体更清晰厚重
+   2. 修复 body{font-weight:lighter}(300) 导致中文发虚的问题 → 400
+   3. 字体栈中文字体置顶,西文仅作末位兜底,摆脱英文字体痕迹
+   ============================================================================ */
+:root {
+  /* 黑体(默认正文): Mac 苹方 → Windows 微软雅黑 → Linux 思源黑体 */
+  --font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+               "Source Han Sans SC", "Noto Sans SC", "Noto Sans CJK SC",
+               system-ui, sans-serif;
+  /* 宋体(设置里可选的"衬线体"): Mac 宋体 → Windows 宋体 → 思源宋体 */
+  --font-serif: "Songti SC", "STSong", "SimSun",
+                "Source Han Serif SC", "Noto Serif SC", "Noto Serif CJK SC",
+                serif;
+  /* 标题: 黑体加粗更有力 */
+  --font-heading: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+                  "Source Han Sans SC", "Noto Sans SC", system-ui, sans-serif;
+}
+
+/* 修复字重: lighter(300) 让中文细弱发虚,恢复正常 400 */
+body {
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* 正文段落: 中文稍加字重与字距,阅读更厚实清晰 */
+.container p {
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+/* 标题加粗,突出层级 */
+h1, h2, h3, h4 {
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+
+/* ============================================================================
+   选项跳转分隔线(配合 custom.js 的滚动锚定)
+   scroll-margin-top: 平滑滚动定位时留出顶部呼吸空间
+   ============================================================================ */
+.story-divider {
+  border: none;
+  border-top: 1px dashed var(--color-border-medium, rgba(128, 128, 128, 0.45));
+  margin: 2.2em 0 1.6em;
+  scroll-margin-top: 14px;
+  /* 淡入动画,与模板的新内容 fadeIn 协调 */
+  animation: story-divider-fade 0.5s ease-out;
+}
+
+@keyframes story-divider-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 新正文进入动画: 淡入 + 轻微上移(由 custom.js 挂到横线后的新段落) */
+.content-enter {
+  animation: content-rise 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@keyframes content-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 深色模式下自动适配变量已处理;减少动画偏好时关闭 */
+@media (prefers-reduced-motion: reduce) {
+  .story-divider { animation: none; }
+  .content-enter { animation: none; }
+}
+
+
+/* ============================================================================
+   手机竖屏顶栏压缩: 标题与按钮一行排布,给正文让出竖向空间
+   原版: flex-direction:column 两行堆叠,导航高 115px
+   优化: 单行横向布局,导航高 52px(桌面端不受影响)
+   ============================================================================ */
+@media screen and (max-width: 680px) {
+  :root {
+    --nav-height-mobile: 52px;
+  }
+  .top-nav {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    min-height: var(--nav-height-mobile);
+    box-sizing: border-box;
+  }
+  .nav-title-section {
+    justify-content: flex-start;
+    flex: 1;
+    min-width: 0;
+  }
+  .nav-title {
+    min-height: 0;
+    font-size: 1.05rem;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* 竖屏省略副标题(作者名),信息优先级让位于空间 */
+  .nav-byline {
+    display: none;
+  }
+  .nav-controls {
+    flex-wrap: nowrap;
+    gap: 2px;
+  }
+  /* 图标按钮保持足够触控区域,但收紧内边距 */
+  .nav-controls button,
+  .nav-controls a {
+    padding: 6px;
+    min-width: 40px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
