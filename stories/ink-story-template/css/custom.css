@@ -640,3 +640,16 @@ h1, h2, h3, h4 {
 .choice:not(.unclickable) .choice-key-hint {
   color: inherit !important;
 }
+
+
+/* ============================================================================
+   浅色主题: 正文字体改为纯黑 #000(模板默认是近似黑的 gray-900 #171717)
+   仅作用于浅色主题;深色主题(.dark / [data-theme="dark"])完全不受影响。
+   ============================================================================ */
+html:not(.dark):not([data-theme="dark"]) body:not(.dark):not([data-theme="dark"]) {
+  --color-text-primary: #000;
+}
+
+html:not(.dark):not([data-theme="dark"]) body:not(.dark):not([data-theme="dark"]) #story {
+  color: #000;
+}
