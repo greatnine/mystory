@@ -147,14 +147,14 @@ EXTERNAL OPEN_PAGE(knotName)
     ->->
 
 === mao_yan
-# AUDIO: assets/notification-bell.mp3
+    # AUDIO: assets/notification-bell.mp3
     黑猫的眼睛在黑暗里亮起来，直勾勾盯着楼梯口。
     你顺着看去，什么也没有。
     # ERROR: 好像有些不对......
     ->->
 
 === dao_bie
-# AUDIO: assets/notification-bell.mp3
+    # AUDIO: assets/notification-bell.mp3
     天亮了。旅人把木匣留在柜台上，走进雪里。
     掌柜打开匣子——里面是那半封旧信的另一半。
     ~ 信任 += 3
