@@ -635,3 +635,9 @@ h1, h2, h3, h4 {
     font-size: 14pt;
   }
 }
+
+
+/* 选项序号颜色跟随选项文字(橘黄),深浅主题自动适配 */
+.choice:not(.unclickable) .choice-key-hint {
+  color: inherit !important;
+}
