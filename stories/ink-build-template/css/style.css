@@ -112,6 +112,11 @@
   --content-max-width: 700px;
   --nav-height-desktop: 60px;
   --nav-height-mobile: 80px;
+  --nav-height-mobile-collapsed: 0px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
   --border-radius: 3px;
   --border-radius-lg: 8px;
 
@@ -165,6 +170,10 @@ body {
   background: var(--color-background);
   overflow: hidden;
   color: var(--color-text-primary);
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
 }
 
 @media screen and (prefers-reduced-motion: no-preference) {
@@ -297,18 +306,50 @@ h4 {
 /* === MOBILE NAVIGATION === */
 @media screen and (max-width: 680px) {
   .top-nav {
-    flex-direction: column;
-    gap: var(--spacing-md);
-    padding: var(--spacing-lg) var(--spacing-xxl);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 99;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    padding-top: calc(8px + var(--safe-top));
+    gap: var(--spacing-sm);
+    transition:
+      transform var(--transition-medium) ease,
+      padding var(--transition-medium) ease,
+      opacity var(--transition-fast) ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  }
+
+  /* 滚动收起态：顶栏缩成一条细条，仅保留图标 */
+  .top-nav.nav-collapsed {
+    transform: translateY(-100%);
+    opacity: 0.6;
+  }
+
+  .top-nav.nav-collapsed:hover {
+    transform: translateY(0);
+    opacity: 1;
   }
 
   .nav-title-section {
-    justify-content: center;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    min-width: 0;
+    flex: 1;
   }
 
   .nav-title {
-    text-align: center;
-    font-size: var(--text-size-xl);
+    font-size: var(--text-size-medium);
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: var(--font-weight-bold);
   }
 
   .nav-byline {
@@ -316,14 +357,13 @@ h4 {
   }
 
   .nav-controls {
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: var(--spacing-md);
+    flex-shrink: 0;
+    gap: 2px;
   }
 
   .nav-controls a {
     font-size: var(--text-size-small);
-    padding: var(--spacing-xs) var(--spacing-sm);
+    padding: 6px 8px;
   }
 }
 
@@ -363,18 +403,32 @@ h4 {
     margin: 0;
     padding: 0;
     -webkit-overflow-scrolling: touch;
-    overflow: scroll;
+    overflow-y: auto;
     overflow-x: hidden;
     height: calc(100% - var(--nav-height-desktop));
     width: 100%;
     top: var(--nav-height-desktop);
     left: 0;
+    overscroll-behavior-y: contain;
   }
 
   @media screen and (max-width: 680px) {
     .outerContainer {
-      height: calc(100% - var(--nav-height-mobile));
-      top: var(--nav-height-mobile);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 100dvh;
+      width: 100%;
+      padding-top: calc(40px + var(--safe-top));
+      padding-bottom: var(--safe-bottom);
+      box-sizing: border-box;
+    }
+
+    /* 顶栏收起时，内容可以滚到最顶部（无占位） */
+    body.nav-collapsed .outerContainer {
+      padding-top: var(--safe-top);
     }
   }
 
@@ -1199,11 +1253,13 @@ h4 {
 
 @media screen and (max-width: 680px) {
   .slide-panel {
-    top: var(--nav-height-mobile);
+    top: 0;
+    padding-top: calc(40px + var(--safe-top));
+    box-sizing: border-box;
   }
 
   .slide-panel.show {
-    height: calc(100vh - var(--nav-height-mobile));
+    height: 100dvh;
   }
 }
 
