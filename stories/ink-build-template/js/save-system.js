@@ -67,7 +67,7 @@ class SaveSystem {
       this.modal?.populateSaveSlots?.();
       return true;
     } catch (error) {
-      window.errorManager.error("Failed to save game", error, "save-system");
+      window.errorManager.error("存档失败", error, "save-system");
       return false;
     }
   }
@@ -99,7 +99,7 @@ class SaveSystem {
       this.hideSaveDialog();
       return true;
     } catch (error) {
-      window.errorManager.error("Failed to load game", error, "save-system");
+      window.errorManager.error("读档失败", error, "save-system");
       return false;
     }
   }
@@ -120,7 +120,7 @@ class SaveSystem {
       this.saveToSlot(this.autosaveSlot);
       console.log("[AUTOSAVE] Game autosaved successfully");
     } catch (error) {
-      window.errorManager.error("Autosave failed", error, "save-system");
+      window.errorManager.error("自动存档失败", error, "save-system");
     }
   }
 
@@ -158,7 +158,7 @@ class SaveSystem {
               this.modal?.populateSaveSlots?.();
             } catch (error) {
               window.errorManager.error(
-                "Failed to delete save slot",
+                "删除存档槽失败",
                 error,
                 "save-system",
               );
@@ -194,7 +194,7 @@ class SaveSystem {
       }
     } catch (error) {
       window.errorManager.error(
-        "Failed to delete save slot",
+        "删除存档槽失败",
         error,
         "save-system",
       );
@@ -237,7 +237,7 @@ class SaveSystem {
       this.showNotification(`已从${exportSlotName}导出存档！`);
       return true;
     } catch (error) {
-      window.errorManager.error("Failed to export save", error, "save-system");
+      window.errorManager.error("导出存档失败", error, "save-system");
       return false;
     }
   }
@@ -301,7 +301,7 @@ class SaveSystem {
           this.modal?.populateSaveSlots?.();
         } catch (error) {
           window.errorManager.error(
-            "Failed to import save file",
+            "导入存档文件失败",
             error,
             "save-system",
           );
@@ -380,7 +380,7 @@ class SaveSystem {
       return saveJson ? JSON.parse(saveJson) : null;
     } catch (error) {
       window.errorManager.error(
-        "Failed to get save data",
+        "读取存档数据失败",
         error,
         "save-system",
       );
@@ -524,7 +524,7 @@ class SaveSystem {
         );
       }
     } catch (error) {
-      window.errorManager.error("Storage cleanup failed", error, "save-system");
+      window.errorManager.error("清理存储空间失败", error, "save-system");
     }
   }
 

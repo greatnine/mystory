@@ -6,11 +6,11 @@ class ErrorManager {
 
   setupGlobalHandlers() {
     window.addEventListener("error", (event) => {
-      this.handleError("Uncaught Error", event.error, "system");
+      this.handleError("未捕获的错误", event.error, "system");
     });
 
     window.addEventListener("unhandledrejection", (event) => {
-      this.handleError("Unhandled Promise", event.reason, "system");
+      this.handleError("未处理的 Promise 异常", event.reason, "system");
       event.preventDefault();
     });
   }

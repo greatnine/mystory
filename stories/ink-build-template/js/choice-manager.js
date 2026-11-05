@@ -13,7 +13,7 @@ class ChoiceManager {
   generate(storyChoices) {
     if (!Array.isArray(storyChoices)) {
       window.errorManager.error(
-        "Invalid storyChoices - expected array",
+        "storyChoices 无效——需要数组",
         null,
         "choice-manager",
       );
@@ -38,14 +38,14 @@ class ChoiceManager {
         };
       } catch (error) {
         window.errorManager.error(
-          `Failed to process choice at index ${index}`,
+          `处理选项失败（索引 ${index}）`,
           error,
           "choice-manager",
         );
 
         // Return safe fallback choice
         return {
-          text: choice.text || "Invalid choice",
+          text: choice.text || "无效选项",
           classes: ["error-choice"],
           isClickable: false,
           onClick: () => {},
@@ -63,7 +63,7 @@ class ChoiceManager {
   selectChoice(choiceIndex) {
     if (typeof choiceIndex !== "number" || choiceIndex < 0) {
       window.errorManager.error(
-        `Invalid choice index: ${choiceIndex}`,
+        `选项索引无效：${choiceIndex}`,
         null,
         "choice-manager",
       );
@@ -72,7 +72,7 @@ class ChoiceManager {
 
     if (!this.storyManager) {
       window.errorManager.error(
-        "Story manager not available",
+        "故事管理器不可用",
         null,
         "choice-manager",
       );
@@ -83,7 +83,7 @@ class ChoiceManager {
       this.storyManager.selectChoice(choiceIndex);
     } catch (error) {
       window.errorManager.error(
-        "Failed to select choice",
+        "选择选项失败",
         error,
         "choice-manager",
       );
@@ -100,12 +100,12 @@ class ChoiceManager {
   createSpecialChoice(text, onClick, classes = []) {
     if (typeof text !== "string" || typeof onClick !== "function") {
       window.errorManager.error(
-        "Invalid parameters for special choice",
+        "特殊选项的参数无效",
         null,
         "choice-manager",
       );
       return {
-        text: text || "Error",
+        text: text || "错误",
         classes: ["error-choice"],
         isClickable: false,
         onClick: () => {},
@@ -118,7 +118,7 @@ class ChoiceManager {
         onClick();
       } catch (error) {
         window.errorManager.error(
-          "Special choice click failed",
+          "特殊选项点击失败",
           error,
           "choice-manager",
         );
@@ -142,7 +142,7 @@ class ChoiceManager {
   createReturnChoice(onReturn) {
     if (typeof onReturn !== "function") {
       window.errorManager.error(
-        "onReturn must be a function",
+        "onReturn 必须是函数",
         null,
         "choice-manager",
       );

@@ -7,7 +7,7 @@ class DisplayManager {
 
     if (!this.container) {
       window.errorManager.critical(
-        "Story container element not found",
+        "未找到故事容器元素",
         new Error("Missing #story element"),
         "display",
       );
@@ -39,7 +39,7 @@ class DisplayManager {
         }
       } catch (error) {
         window.errorManager.error(
-          `Failed to render content item at index ${index}`,
+          `渲染内容项失败（索引 ${index}）`,
           error,
           "display",
         );
@@ -86,7 +86,7 @@ class DisplayManager {
         }
       } catch (error) {
         window.errorManager.error(
-          `Failed to render choice at index ${index}`,
+          `渲染选项失败（索引 ${index}）`,
           error,
           "display",
         );
@@ -112,7 +112,7 @@ class DisplayManager {
 
     if (!this.domHelpers) {
       window.errorManager.error(
-        "Cannot create element - DOM helpers not available",
+        "无法创建元素——DOM 助手不可用",
         null,
         "display",
       );
@@ -145,7 +145,7 @@ class DisplayManager {
 
       return element;
     } catch (error) {
-      window.errorManager.error("Failed to create element", error, "display");
+      window.errorManager.error("创建元素失败", error, "display");
       return null;
     }
   }
@@ -173,9 +173,9 @@ class DisplayManager {
         <input type="text" class="user-input-inline-field" 
                placeholder="${placeholderText}" 
                maxlength="100" autocomplete="off">
-        <button class="user-input-submit-btn">Submit</button>
+        <button class="user-input-submit-btn">Submit 提交</button>
       </div>
-      <div class="user-input-help">Press Enter or click Submit to continue</div>
+      <div class="user-input-help">按 Enter 或点击提交以继续<br>Press Enter or click Submit to continue</div>
     </div>
   `;
 
@@ -191,7 +191,7 @@ class DisplayManager {
 
       if (!userInput) {
         inputField.style.borderColor = "var(--color-important)";
-        inputField.placeholder = "Please enter a value...";
+        inputField.placeholder = "Please enter a value... 请输入内容";
         inputField.focus();
         return;
       }
@@ -207,12 +207,12 @@ class DisplayManager {
         window.storyManager.continueWithoutClearing();
       } catch (error) {
         window.errorManager.error(
-          "Failed to set user input variable",
+          "设置用户输入变量失败",
           error,
           "display",
         );
         inputField.style.borderColor = "var(--color-important)";
-        inputField.placeholder = "Error - please try again...";
+        inputField.placeholder = "出错了，请重试……";
       }
     };
 
@@ -247,10 +247,30 @@ class DisplayManager {
     // Create the image element
     const imageElement = document.createElement("img");
     imageElement.src = imageData.src;
+    if (imageData.alt) imageElement.alt = imageData.alt;
     imageElement.className = "story-image";
+
+    // 应用 IMAGE 标签的可选参数：位置与尺寸
+    (imageData.params || []).forEach((param) => {
+      if (/^[\d.]+(vw|vh|px|%|em|rem)$/i.test(param)) {
+        imageElement.style.width = param;
+      } else if (param === "top") {
+        imageElement.classList.add("story-image-top");
+      } else if (param === "bottom") {
+        imageElement.classList.add("story-image-bottom");
+      } else if (param === "left") {
+        imageElement.style.marginLeft = "0";
+        imageElement.style.marginRight = "auto";
+      } else if (param === "right") {
+        imageElement.style.marginLeft = "auto";
+        imageElement.style.marginRight = "0";
+      }
+      // center 为默认样式，无需处理
+    });
+
     imageElement.onerror = () => {
       window.errorManager.warning(
-        `Failed to load image: ${imageData.src}`,
+        `加载图片失败：${imageData.src}`,
         null,
         "display",
       );
@@ -296,7 +316,7 @@ class DisplayManager {
   clear() {
     if (!this.domHelpers) {
       window.errorManager.error(
-        "Cannot clear - DOM helpers not available",
+        "无法清空——DOM 助手不可用",
         null,
         "display",
       );
@@ -313,7 +333,7 @@ class DisplayManager {
   clearContent() {
     if (!this.domHelpers) {
       window.errorManager.error(
-        "Cannot clear content - DOM helpers not available",
+        "无法清空内容——DOM 助手不可用",
         null,
         "display",
       );
@@ -338,7 +358,7 @@ class DisplayManager {
 
     if (!this.domHelpers) {
       window.errorManager.error(
-        "Cannot scroll - DOM helpers not available",
+        "无法滚动——DOM 助手不可用",
         null,
         "display",
       );
@@ -399,7 +419,7 @@ class DisplayManager {
         this.createElement(content);
       } catch (error) {
         window.errorManager.error(
-          `Failed to restore history item at index ${index}`,
+          `恢复历史记录项失败（索引 ${index}）`,
           error,
           "display",
         );

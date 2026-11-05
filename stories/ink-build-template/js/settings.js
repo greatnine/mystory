@@ -5,7 +5,7 @@ class SettingsManager {
       theme: "auto", // 'light', 'dark', 'auto'
       textSize: "medium", // 'small', 'medium', 'large', 'xl'
       lineHeight: "normal", // 'tight', 'normal', 'loose'
-      fontFamily: "serif", // 'serif', 'sans', 'dyslexic'
+      fontFamily: "sans", // 'serif', 'sans', 'dyslexic'
       audioEnabled: true,
       autoSave: true,
       animations: true,
@@ -162,9 +162,9 @@ class SettingsManager {
         <div class="setting-item">
           <label class="setting-label">字体</label>
           <select name="fontFamily" class="setting-select">
-            <option value="serif">Merriweather（衬线）</option>
-            <option value="sans">Inter（无衬线）</option>
-            <option value="dyslexic">OpenDyslexic（无障碍）</option>
+            <option value="serif">宋体（衬线）</option>
+            <option value="sans">雅黑（无衬线）</option>
+            <option value="dyslexic">楷体（无障碍）</option>
           </select>
         </div>
 
@@ -229,7 +229,7 @@ class SettingsManager {
   showSettings() {
     if (!this.modal?.isReady()) {
       window.errorManager.error(
-        "Cannot show settings - modal not available",
+        "无法打开设置——弹窗组件不可用",
         null,
         "settings",
       );
@@ -450,7 +450,7 @@ class SettingsManager {
       theme: "auto",
       textSize: "medium",
       lineHeight: "normal",
-      fontFamily: "serif",
+      fontFamily: "sans",
       audioEnabled: true,
       autoSave: true,
       animations: true,
@@ -557,7 +557,7 @@ class SettingsManager {
         JSON.stringify(this.settings),
       );
     } catch (error) {
-      window.errorManager.error("Failed to store settings", error, "settings");
+      window.errorManager.error("保存设置失败", error, "settings");
     }
   }
 

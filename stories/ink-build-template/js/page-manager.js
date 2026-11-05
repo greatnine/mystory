@@ -8,7 +8,7 @@ class PageManager {
 
     if (!this.storyManager) {
       window.errorManager.critical(
-        "PageManager requires a story manager",
+        "页面管理器缺少故事管理器",
         new Error("Invalid story manager"),
         "pages",
       );
@@ -175,7 +175,7 @@ class PageManager {
       return content;
     } catch (error) {
       window.errorManager.error(
-        "Failed to generate page content",
+        "生成页面内容失败",
         error,
         "pages",
       );
@@ -218,7 +218,7 @@ class PageManager {
   addReturnButton() {
     if (!this.storyManager.choices || !this.storyManager.display) {
       window.errorManager.error(
-        "Required managers not available for return button",
+        "返回按钮所需的组件不可用",
         null,
         "pages",
       );
@@ -232,7 +232,7 @@ class PageManager {
 
       this.storyManager.display.renderChoices([returnChoice]);
     } catch (error) {
-      window.errorManager.error("Failed to add return button", error, "pages");
+      window.errorManager.error("添加返回按钮失败", error, "pages");
     }
   }
 
@@ -248,7 +248,7 @@ class PageManager {
 
       if (!this.storyManager.display) {
         window.errorManager.error(
-          "Display manager not available for return",
+          "显示管理器不可用，无法返回",
           null,
           "pages",
         );
@@ -264,7 +264,7 @@ class PageManager {
           this.storyManager.story.state.LoadJson(this.savedStoryState);
         } catch (error) {
           window.errorManager.error(
-            "Failed to restore story state",
+            "恢复故事状态失败",
             error,
             "pages",
           );
@@ -281,7 +281,7 @@ class PageManager {
           this.storyManager.display.restoreState(this.savedDisplayState);
         } catch (error) {
           window.errorManager.error(
-            "Failed to restore display state",
+            "恢复显示状态失败",
             error,
             "pages",
           );
@@ -300,7 +300,7 @@ class PageManager {
       this.savedDisplayState = null;
       this.savedStoryState = null;
     } catch (error) {
-      window.errorManager.error("Failed to return to story", error, "pages");
+      window.errorManager.error("返回故事失败", error, "pages");
     }
   }
 
@@ -416,7 +416,7 @@ class PageManager {
       return fullText.trim();
     } catch (error) {
       window.errorManager.error(
-        "Failed to evaluate page content",
+        "解析页面内容失败",
         error,
         "pages",
       );

@@ -26,7 +26,7 @@ fetch("story.json")
       }
     } catch (error) {
       window.errorManager.critical(
-        "Failed to initialize story manager",
+        "故事管理器初始化失败",
         error,
         "story",
       );
@@ -125,7 +125,7 @@ document.addEventListener("keydown", (event) => {
       }
     } catch (error) {
       window.errorManager.error(
-        "Keyboard shortcut failed",
+        "快捷键操作失败",
         error,
         "navigation",
       );
@@ -141,7 +141,7 @@ document.addEventListener("keydown", (event) => {
       window.storyManager.pages.returnToStory();
     } catch (error) {
       window.errorManager.error(
-        "Failed to return from special page",
+        "从特殊页面返回失败",
         error,
         "navigation",
       );

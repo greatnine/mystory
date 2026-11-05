@@ -8,7 +8,7 @@ class SavesModalManager {
 
     if (!this.gameSaveSystem) {
       window.errorManager.critical(
-        "SavesModalManager requires a save system",
+        "存档界面缺少存档系统",
         new Error("Invalid save system"),
         "saves-modal",
       );
@@ -112,7 +112,7 @@ class SavesModalManager {
       }
     } catch (error) {
       window.errorManager.error(
-        "Failed to create save slot HTML",
+        "生成存档槽界面失败",
         error,
         "saves-modal",
       );
@@ -232,7 +232,7 @@ class SavesModalManager {
           }
         } catch (error) {
           window.errorManager.error(
-            "Save slot action failed",
+            "存档槽操作失败",
             error,
             "saves-modal",
           );

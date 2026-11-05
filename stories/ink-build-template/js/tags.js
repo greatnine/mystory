@@ -69,8 +69,9 @@ class TagProcessor {
             case "AUDIOLOOP":
               specialActions.push(() => this.playAudioLoop(value));
               break;
-            case "IMAGE":
-              const imageSrc = value.trim();
+            case "IMAGE": {
+              // 支持扩展语法：IMAGE: 路径 [top|bottom|center|left|right] [尺寸] ["替代文字"]
+              const parsedImage = this.parseImageTag(value);
 
               // Store image info globally for display-manager to access
               if (!window._pendingImages) window._pendingImages = [];
@@ -78,13 +79,16 @@ class TagProcessor {
 
               window._pendingImages.push({
                 id: imageId,
-                src: imageSrc,
+                src: parsedImage.src,
+                alt: parsedImage.alt,
+                params: parsedImage.params,
               });
 
               // Mark this paragraph as having an image
               customClasses.push("has-image");
               customClasses.push(`image-${imageId}`);
               break;
+            }
             case "BACKGROUND":
               specialActions.push(() => this.setBackground(value));
               break;
@@ -134,9 +138,33 @@ class TagProcessor {
 
       return { customClasses, specialActions };
     } catch (error) {
-      window.errorManager.error("Failed to process line tags", error, "tags");
+      window.errorManager.error("处理行标签失败", error, "tags");
       return { customClasses: [], specialActions: [] };
     }
+  }
+
+  /**
+   * 解析 IMAGE 标签值
+   * 语法：IMAGE: 图片路径 [top|bottom|center|left|right] [尺寸如 50vw] ["替代文字"]
+   * 例如：IMAGE: assets/background.jpg center 50vw "Flowers!"
+   * 仅第一个空格前的部分作为路径，路径本身不能包含空格
+   */
+  parseImageTag(value) {
+    let rest = (value || "").trim();
+    let alt = "";
+
+    // 提取引号中的替代文字
+    const altMatch = rest.match(/"([^"]*)"/);
+    if (altMatch) {
+      alt = altMatch[1];
+      rest = rest.replace(altMatch[0], "").trim();
+    }
+
+    const tokens = rest.split(/\s+/).filter(Boolean);
+    const src = tokens.shift() || "";
+    const params = tokens; // 其余 token 作为位置/尺寸参数
+
+    return { src, alt, params };
   }
 
   processChoiceTags(choiceTags) {
@@ -181,7 +209,7 @@ class TagProcessor {
 
       return { customClasses, isClickable };
     } catch (error) {
-      window.errorManager.error("Failed to process choice tags", error, "tags");
+      window.errorManager.error("处理选项标签失败", error, "tags");
       return { customClasses: [], isClickable: true };
     }
   }
@@ -236,7 +264,7 @@ class TagProcessor {
         );
       });
     } catch (error) {
-      window.errorManager.error("Failed to play audio", error, "tags");
+      window.errorManager.error("播放音频失败", error, "tags");
     }
   }
 
@@ -292,7 +320,7 @@ class TagProcessor {
         );
       });
     } catch (error) {
-      window.errorManager.error("Failed to play audio loop", error, "tags");
+      window.errorManager.error("播放循环音频失败", error, "tags");
     }
   }
 
@@ -375,7 +403,7 @@ class TagProcessor {
         this.outerScrollContainer.style.backgroundImage = "url(" + src + ")";
       }
     } catch (error) {
-      window.errorManager.error("Failed to set background", error, "tags");
+      window.errorManager.error("设置背景失败", error, "tags");
     }
   }
 

@@ -40,7 +40,7 @@ class ContentProcessor {
     // Check if tag processor is available
     if (!this.tagProcessor?.processLineTags) {
       window.errorManager.error(
-        "TagProcessor not available in ContentProcessor",
+        "ContentProcessor 中标签处理器不可用",
         null,
         "content-processor",
       );
@@ -71,7 +71,7 @@ class ContentProcessor {
       };
     } catch (error) {
       window.errorManager.error(
-        "Failed to process content",
+        "处理内容失败",
         error,
         "content-processor",
       );
@@ -115,7 +115,7 @@ class ContentProcessor {
         );
       } catch (error) {
         window.errorManager.error(
-          "Error executing special action function",
+          "执行特殊动作函数时出错",
           error,
           "content-processor",
         );
@@ -132,7 +132,7 @@ class ContentProcessor {
   processMultiple(textTagPairs) {
     if (!Array.isArray(textTagPairs)) {
       window.errorManager.error(
-        "Invalid input to processMultiple - expected array",
+        "processMultiple 的输入无效——需要数组",
         null,
         "content-processor",
       );

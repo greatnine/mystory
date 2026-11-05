@@ -13,7 +13,7 @@ class StoryManager {
       this.setupInitialState();
     } catch (error) {
       window.errorManager.critical(
-        "Failed to initialize story",
+        "故事初始化失败",
         error,
         "story",
       );
@@ -48,7 +48,7 @@ class StoryManager {
       return initFunc();
     } catch (error) {
       window.errorManager.error(
-        `Failed to initialize ${componentName}`,
+        `初始化 ${componentName} 失败`,
         error,
         "story",
       );
@@ -93,7 +93,7 @@ class StoryManager {
       );
     } catch (error) {
       window.errorManager.error(
-        "Failed to detect special pages",
+        "检测特殊页面失败",
         error,
         "story",
       );
@@ -174,7 +174,7 @@ class StoryManager {
       this.continue(true);
     } catch (error) {
       window.errorManager.error(
-        "Failed to setup initial state",
+        "初始化状态设置失败",
         error,
         "story",
       );
@@ -256,7 +256,7 @@ class StoryManager {
       // Update save point after generating new content
       this.savePoint = this.story.state.ToJson();
     } catch (error) {
-      window.errorManager.error("Failed to continue story", error, "story");
+      window.errorManager.error("继续故事失败", error, "story");
     }
   }
 
@@ -280,7 +280,7 @@ class StoryManager {
       this.savePoint = this.story.state.ToJson();
     } catch (error) {
       window.errorManager.error(
-        "Failed to continue story without clearing",
+        "继续故事（不清空内容）失败",
         error,
         "story",
       );
@@ -345,7 +345,7 @@ class StoryManager {
       }
     } catch (error) {
       window.errorManager.error(
-        "Error generating story content",
+        "生成故事内容时出错",
         error,
         "story",
       );
@@ -373,7 +373,7 @@ class StoryManager {
       return true;
     } catch (error) {
       window.errorManager.error(
-        "Failed to handle special action",
+        "处理特殊动作失败",
         error,
         "story",
       );
@@ -384,7 +384,7 @@ class StoryManager {
   requestUserInput(variableName) {
     if (!variableName || typeof variableName !== "string") {
       window.errorManager.error(
-        "Invalid variable name for user input",
+        "用户输入的变量名无效",
         null,
         "story",
       );
@@ -450,7 +450,7 @@ class StoryManager {
           );
         } catch (error) {
           window.errorManager.error(
-            "Failed to set user input variable",
+            "设置用户输入变量失败",
             error,
             "story",
           );
@@ -483,7 +483,7 @@ class StoryManager {
         }
       }
     } catch (error) {
-      window.errorManager.error("Failed to create choices", error, "choices");
+      window.errorManager.error("创建选项失败", error, "choices");
     }
   }
 
@@ -517,7 +517,7 @@ class StoryManager {
       // Auto-save if enabled
       this.saves?.autosave?.();
     } catch (error) {
-      window.errorManager.error("Failed to select choice", error, "navigation");
+      window.errorManager.error("选择选项失败", error, "navigation");
     }
   }
 
@@ -539,7 +539,7 @@ class StoryManager {
         "故事已从头重启",
       );
     } catch (error) {
-      window.errorManager.error("Failed to restart story", error, "story");
+      window.errorManager.error("重启故事失败", error, "story");
     }
   }
 
@@ -553,7 +553,7 @@ class StoryManager {
         timestamp: Date.now(),
       };
     } catch (error) {
-      window.errorManager.error("Failed to get current state", error, "story");
+      window.errorManager.error("获取当前状态失败", error, "story");
       return {};
     }
   }
@@ -585,7 +585,7 @@ class StoryManager {
       this.createChoices();
       this.display?.scrollToTop?.();
     } catch (error) {
-      window.errorManager.error("Failed to load state", error, "save-system");
+      window.errorManager.error("读取存档状态失败", error, "save-system");
     }
   }
 
@@ -604,7 +604,7 @@ class StoryManager {
       }
     } catch (error) {
       window.errorManager.error(
-        "Failed to regenerate display",
+        "重新生成显示内容失败",
         error,
         "display",
       );

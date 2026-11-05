@@ -58,7 +58,7 @@ class BaseModal {
 
     if (!document.body) {
       window.errorManager.error(
-        "Cannot create modal - document.body not available",
+        "无法创建弹窗——document.body 不可用",
         null,
         "modal",
       );
@@ -134,7 +134,7 @@ class BaseModal {
   show(contentCallback = null) {
     if (!this.modalElement) {
       window.errorManager.error(
-        "Cannot show modal - modal element not available",
+        "无法打开弹窗——弹窗元素不可用",
         null,
         "modal",
       );
@@ -147,7 +147,7 @@ class BaseModal {
         contentCallback(this);
       } catch (error) {
         window.errorManager.error(
-          "Failed to populate modal content",
+          "填充弹窗内容失败",
           error,
           "modal",
         );

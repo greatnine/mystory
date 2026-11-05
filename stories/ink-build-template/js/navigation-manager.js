@@ -8,7 +8,7 @@ class NavigationManager {
 
     if (!this.storyManager) {
       window.errorManager.critical(
-        "NavigationManager requires a story manager",
+        "导航管理器缺少故事管理器",
         new Error("Invalid story manager"),
         "navigation",
       );
@@ -297,7 +297,7 @@ class NavigationManager {
             );
           } catch (error) {
             window.errorManager.error(
-              "Failed to restart from title click",
+              "通过标题点击重启失败",
               error,
               "navigation",
             );
@@ -391,7 +391,7 @@ class NavigationManager {
           clickHandler(e);
         } catch (error) {
           window.errorManager.error(
-            `Button click failed: ${buttonId}`,
+            `按钮点击失败：${buttonId}`,
             error,
             "navigation",
           );

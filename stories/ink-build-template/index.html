@@ -5,7 +5,7 @@
     <title class="title"></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="css/style.css" />
-    <link rel="icon" href="favicon.ico" />
+    <link rel="icon" href="favicon.png" />
   </head>
 
   <body>
@@ -15,7 +15,10 @@
         <h1 class="nav-title title"></h1>
         <span class="nav-byline byline"></span>
       </div>
-      <div class="nav-controls">
+      <div class="nav-controls">        
+        <a href="https://sagetime.pages.dev/" title="退出返回主页">
+          <span class="material-icons-outlined nav-icon">home</span>
+        </a>
         <a id="rewind" title="从头开始故事">
           <span class="material-icons-outlined nav-icon">replay</span>
         </a>
@@ -25,11 +28,15 @@
         <a id="settings-btn" title="设置">
           <span class="material-icons-outlined nav-icon">settings</span>
         </a>
-      </div>
-    </div>
-    <div class="outerContainer">
+      </div>      
+    </div>    
+    <div class="outerContainer">      
       <!-- Story container -->
       <div id="story" class="container"></div>
+<!--
+      <span class="material-icons-outlined nav-icon">arrow_back  check close</span>
+      <span class="material-icons-outlined nav-icon">arrow_forward</span>
+-->
     </div>
 
     <!-- Scripts - Load in dependency order -->

@@ -3,7 +3,7 @@ class DOMHelpers {
   constructor(storyContainer) {
     if (!storyContainer || !(storyContainer instanceof Element)) {
       window.errorManager.critical(
-        "Invalid story container provided to DOM helpers",
+        "传给 DOM 助手的故事容器无效",
         new Error("Invalid story container"),
         "dom-helpers",
       );
@@ -110,7 +110,7 @@ class DOMHelpers {
       return paragraphElement;
     } catch (error) {
       window.errorManager.error(
-        "Failed to create paragraph",
+        "创建段落失败",
         error,
         "dom-helpers",
       );
@@ -160,7 +160,7 @@ class DOMHelpers {
       return choiceParagraphElement;
     } catch (error) {
       window.errorManager.error(
-        "Failed to create choice",
+        "创建选项失败",
         error,
         "dom-helpers",
       );
@@ -196,7 +196,7 @@ class DOMHelpers {
           callback();
         } catch (error) {
           window.errorManager.error(
-            "Choice click handler failed",
+            "选项点击处理失败",
             error,
             "dom-helpers",
           );
@@ -295,7 +295,7 @@ class DOMHelpers {
         );
       } else {
         window.errorManager.error(
-          "DOM helpers recovery failed - no story container found",
+          "DOM 助手恢复失败——未找到故事容器",
           null,
           "dom-helpers",
         );

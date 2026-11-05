@@ -36,10 +36,12 @@
 :root {
   /* === COLORS - LIGHT THEME === */
   --color-background: #ddd;
-  --color-text-primary: #222;
+  --color-text-primary: #000;
   --color-text-secondary: #444;
   --color-text-tertiary: #aaa;
   --color-text-strong: black;
+  --color-nav-text: #999;
+  --color-heading: #333;
   --color-accent-primary: #b97c2c;
   --color-accent-dark: #4f3411;
   --color-accent-warning: #cc8f1a;
@@ -63,7 +65,7 @@
     "Songti SC", "SimSun", "Noto Serif CJK SC", "Source Han Serif SC",
     "WenQuanYi Bitmap Song", Georgia, "Times New Roman", serif;
   --font-sans:
-    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC",
+    "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC",
     "Source Han Sans SC", "WenQuanYi Micro Hei", -apple-system,
     BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-heading:
@@ -72,14 +74,17 @@
   --font-monospace:
     "JetBrains Mono", "Fira Code", "SF Mono", "Cascadia Code",
     "Roboto Mono", Consolas, "Courier New", monospace;
+  --font-dyslexic:
+    "Kaiti SC", "KaiTi", "STKaiti", "楷体", "Noto Serif CJK SC", serif;
 
   /* === CURRENT FONT (DO NOT EDIT - can be overridden by settings) === */
-  --font-main: var(--font-serif);
+  --font-main: var(--font-sans);
 
   /* Use standard font weights for compatibility */
   --font-weight-light: 300;
   --font-weight-normal: 400;
   --font-weight-bold: 700;
+  --font-weight-story: 500;
 
   /* === FONT SIZES === */
   --text-size-base: 13pt;
@@ -133,6 +138,8 @@ body.dark {
   --color-text-secondary: #888;
   --color-text-tertiary: #666;
   --color-text-strong: white;
+  --color-nav-text: #888;
+  --color-heading: #f5f5f5;
   --color-accent-primary: #cc8f1a;
   --color-accent-dark: #c4af87;
   --color-accent-warning: #cc8f1a;
@@ -154,7 +161,7 @@ body.dark {
 
 body {
   font-family: var(--font-main);
-  font-weight: lighter;
+  font-weight: var(--font-weight-normal);
   background: var(--color-background);
   overflow: hidden;
   color: var(--color-text-primary);
@@ -177,6 +184,7 @@ h4 {
   line-height: var(--line-height-heading);
   margin: 0;
   padding: 0;
+  color: var(--color-heading);
 }
 
 h1,
@@ -192,7 +200,6 @@ h3 {
   font-size: var(--text-size-title-smaller);
   font-style: strong;
   font-weight: var(--font-weight-bold);
-  color: var(--color-text-secondary);
   margin-top: var(--spacing-huge);
   margin-bottom: var(--spacing-huge);
 }
@@ -202,7 +209,6 @@ h4 {
   font-size: var(--text-size-subtitle);
   font-style: strong;
   font-weight: var(--font-weight-bold);
-  color: var(--color-text-tertiary);
 }
 
 /* Title elements that get populated by JavaScript */
@@ -250,13 +256,14 @@ h4 {
   margin: 0;
   text-align: left;
   font-family: var(--font-heading);
+  color: var(--color-nav-text);
 }
 
 .nav-byline {
   font-size: var(--text-size-tiny);
   font-style: italic;
   font-weight: var(--font-weight-light);
-  color: var(--color-text-primary);
+  color: var(--color-nav-text);
   margin: 0;
 }
 
@@ -416,7 +423,7 @@ h4 {
     font-size: var(--text-size-base);
     color: var(--color-text-primary);
     line-height: var(--line-height-text);
-    font-weight: var(--font-weight-light);
+    font-weight: var(--font-weight-story);
   }
 
   a {
