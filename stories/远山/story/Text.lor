@@ -1,0 +1,325 @@
+
+character narrator 
+  name: "旁白"
+
+character detective 
+  name: 小洁
+
+character suspect 
+  name: 嫌疑犯
+
+//🎯 状态设计
+state 
+  // ===== 时间压力 =====
+  timeLeft: 30 // 剩余分钟数，每轮提问或观察扣减
+  // ===== 证据体系 =====
+  evidenceFound: 0 // 已掌握的硬证据点
+  evidencePresented: []
+  // 已出示的证据，防止重复
+  // ===== 犯人心理 =====
+  suspectResistance: 100 // 心理防线
+  suspectCunning: 85 // 南合治的奸诈度  高智商、有准备
+  suspectTrust: 0 // 对小洁的信任度 初始为0
+  crackedTopics: []
+  // 已突破的话题
+  // ===== 全局 =====
+  confessionLevel: 0 // 交代程度 0-100，达到60算突破
+  pressureMode: neutral
+
+// 犯人策略引擎：时间压力会削弱防线，拖得越久犯人越焦虑
+function suspectStrategy(requiredEvidence, weight)
+  var timePressure = 0
+  if timeLeft < 15
+    timePressure = 15
+  if timeLeft < 8
+    timePressure = 30
+  // 信任度可以部分替代证据
+  var effectiveEvidence = evidenceFound + (suspectTrust / 20)
+  // 证据严重不足 → 抵赖
+  if effectiveEvidence < requiredEvidence
+    return "deny"
+  // 证据边缘，犯人奸诈 → 狡辩或部分供述
+  if effectiveEvidence < requiredEvidence + weight
+    if suspectCunning > 50 and suspectResistance > 50
+      return "evade"
+    else
+      return "partial"
+  // 证据确凿，防线被时间与信任共同侵蚀
+  if suspectResistance - timePressure < 30
+    return "confess"
+  return "partial"
+
+
+// 时间消耗：扣减时间，返回是否超时
+function spendTime(minutes)
+  timeLeft -= minutes
+  if timeLeft <= 0
+    return 0
+
+
+//🎬 审问流程
+//开场：建立压迫感
+beat Opening1 //小洁没有立刻坐下，而是站在南合治身后，沉默 30 秒
+
+  审讯室只有一盏顶灯。 $detective站在南合治身后，没有坐下，也没有说话。沉默持续了三十秒。$suspect的手指在桌下微微蜷了一下。$detective注意到了。
+
+  detective: 三天前，你所里有 2.3GB 的核心数据被窃。你知道这意味着什么。
+
+  suspect:
+    <calm> 我知道。但跟我没关系。
+    南合治，34 岁，冶金学硕士，材料组核心成员。
+
+  detective: 我没说跟你有关系。我只是在陈述事实。
+  // 首次微表情观察，消耗 1 分钟
+  spendTime(1)
+
+  narrator:
+    $detective观察到他听到“2.3GB”时，瞳孔收缩了不到一秒。
+    他知道这个数字。
+
+  choice {
+    直接出示异常登录记录（强硬） {
+      pressureMode = "confrontation"
+
+      -> PresentLoginLog
+    }
+
+    先聊他的工作（共情） {
+      pressureMode = "empathy"
+      suspectTrust += 5
+
+      -> BuildRapport
+    }
+
+  }
+
+//分支 A：强硬路线——出示登录记录
+beat PresentLoginLog 
+
+  detective: 案发当晚 23:47，你的工位终端登录了配方数据库，下载了 2.3GB 数据。
+
+  detective: 但你的门禁卡记录显示，你 22:30 就已经离开研究所了。
+  // 这是一个硬证据，权重高
+  evidenceFound += 1
+  array_add(evidencePresented, "login_log")
+  strategy = suspectStrategy(1, 2)
+  spendTime(2)
+
+  if strategy == "deny"
+    suspect: <defensive> 我的账号可能被盗了。研究所的网络安全一直很差。
+
+    detective: （他在第一时间把责任推给系统，这是有准备的表现。）
+    suspectResistance += 5
+
+  else if strategy == "evade"
+    suspect: <nervous> 我……我不记得那晚具体几点走的。也许我回去拿过东西？
+
+    $suspect：她在试探我掌握多少。
+    suspectResistance -= 5
+
+  else
+    suspect: <silent> ……
+
+    narrator: 他沉默了整整十秒。
+    suspectResistance -= 20
+    array_add(crackedTopics, "login_log")
+
+  -> MidGame
+
+//分支 B：共情路线——先建立信任
+beat BuildRapport 
+
+  detective: 我看了你的履历。你花了六年做的那个高温合金项目，去年被砍了。
+
+  detective: 所里把经费全给了新来的团队。你什么都没说。
+
+  suspect: <surprised> ……你连这个都查了？
+
+  detective: 我不是来审你的。我是来搞清楚，一个花了六年做合金的人，为什么会走到今天这一步。
+  // 共情策略：信任度上升，但时间也在流逝
+  suspectTrust += 15
+  spendTime(3)
+
+  narrator: 南合治第一次抬起头，看了小洁一眼。
+
+  narrator: 那一眼里有疲惫，也有一丝……动摇。
+
+  suspect: <quiet> 你们这些人，从来只看结果。
+
+  choice {
+    继续深入共情 {
+      suspectTrust += 10
+      spendTime(2)
+
+      -> BuildRapport
+    }
+
+    突然转向证据（共情后突袭） {
+      // 信任度加成下的突袭，效果更强
+      evidenceFound += 1
+      array_add(evidencePresented, "login_log")
+
+      -> PresentLoginLog
+    }
+
+  }
+
+//中间博弈：核心审问
+beat MidGame 
+
+  时间在一分一秒地过去。
+
+  choice {
+    出示网络流量分析报告（需要 evidenceFound >= 1） {
+      detective: 这是当晚 23:47 到 00:12 的流量分析。
+
+      detective: 数据不是从你的终端直接传出的。是通过一个加密隧道，中转了三跳。
+
+      detective: 能设计这种隧道的人，整个研究所不超过五个。
+      evidenceFound += 2
+      array_add(evidencePresented, "traffic")
+      spendTime(2)
+      strategy = suspectStrategy(3, 1)
+
+      if strategy == "confess" or strategy == "partial"
+        suspect: <breaking> 那个隧道……是我写的。
+        suspectResistance -= 30
+        confessionLevel += 30
+        array_add(crackedTopics, "traffic")
+      else
+        suspect: <cold> 技术分析不能证明是我。你们需要更多。
+        suspectResistance += 5
+
+    }
+
+    心理施压(提到他的母亲) {
+      // 这是一个有风险的策略
+      detective: 你母亲还在老家吧？她身体不好。
+
+      detective: 如果这件事定性为间谍罪，她可能等不到你出来了。
+      spendTime(2)
+
+      if chance(3)
+        suspect: <angry> 你别提我妈！
+        suspectResistance += 20
+        suspectTrust -= 15
+
+        narrator: 小洁意识到自己犯了一个错误——用家人施压，对一个内向型高智商犯人来说，是羞辱。
+
+      else
+        suspect: <silent> ……
+
+        narrator: 他的手在桌下攥紧了。
+        suspectResistance -= 15
+        suspectTrust += 5
+
+    }
+
+    沉默对峙 {
+      // 不提问，只是看着他
+      narrator: 小洁合上笔记本，靠在椅背上，静静地看着他。
+
+      narrator: 一分钟。两分钟。三分钟。
+      spendTime(3)
+
+      if suspectCunning < 70
+        suspectResistance -= 10
+
+        narrator: 南合治开始不安地换了个坐姿。
+
+      else
+        narrator: 南合治一动不动，甚至闭上了眼睛。
+        suspectResistance += 5
+
+    }
+
+  }
+
+  -> Climax
+
+//高潮：最后五分钟
+beat Climax 
+
+  if timeLeft <= 5
+    narrator: 墙上的时钟指向剩余不到五分钟。
+
+    detective: 南合治，我没有时间了。你也没有。
+
+    detective: 现在说出来，算你主动交代。等我们查出来，性质就不一样了。
+    // 最后通牒，时间压力最大化
+    finalStrategy = suspectStrategy(2, 1)
+
+    if finalStrategy == "confess" or confessionLevel >= 50
+      -> Confession
+    else if finalStrategy == "partial"
+      -> PartialConfession
+    else
+      -> TimeUp
+
+  else
+    -> MidGame
+
+//结局 A：完整交代
+beat Confession 
+
+  suspect: <broken> 是我。都是我做的。
+
+  suspect: 他们联系我，说只要配方，给我三百万，还有……出国机会。
+
+  suspect: 我花了六年做的项目被砍了，我什么都没了。我只是想……
+
+  他的声音断了。小洁没有打断他。
+  confessionLevel += 40
+
+  30 分钟，刚好用完。
+
+  小洁合上笔录，站起来。
+
+  detective: 我会记录你主动交代的情节。这是你现在唯一能做的。
+
+  南合治低下头，不再说话。
+
+  走廊尽头的灯亮了。案件，破了。
+
+//结局 B：部分供述
+beat PartialConfession 
+
+  suspect: <nervous> 我……我承认那个隧道是我写的。但我没有传数据。
+
+  suspect: 有人用我的代码，我不知道是谁。
+
+  narrator: 他给出了一个“半真半假”的答案——承认技术部分，否认核心行为。
+
+  但小洁注意到，他说“没有传数据”时，视线向右上方偏移了。
+
+  那是编造记忆的典型微表情。
+
+  detective: 你说的每一句话，我都会去核实。
+
+  detective: 如果有一句是假的，你今天的配合就全部作废。
+
+  时间到了。小洁没有得到完整供词，但她手里多了一条线索。
+
+  那个隧道代码，是突破口。
+
+//结局 C：时间耗尽
+beat TimeUp 
+
+  墙上的钟响了。
+
+  30 分钟到了。
+
+  detective: 时间到了。你可以走了。
+
+  detective: 但南合治，我提醒你一句——从你走出这扇门开始，你说的每一句话，我都会重新听一遍。
+
+  suspect: <calm> 我没什么好说的。
+
+  他站起来，整理了一下衣领，走了出去。
+
+  小洁坐在空荡荡的审讯室里，翻开笔记本。
+
+  第一页写着三个字：隧道代码。
+
+  案子没破，但还没有结束。
+
