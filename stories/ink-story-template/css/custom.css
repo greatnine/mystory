@@ -578,6 +578,30 @@ h1, h2, h3, h4 {
   }
 }
 
+/* 320px 级窄屏:按钮增加到 6 个后收紧间距,保证标题与"返回主页"都不被挤掉 */
+@media screen and (max-width: 360px) {
+  .top-nav {
+    padding-left: 8px;
+    padding-right: 8px;
+    gap: 4px;
+  }
+  .nav-title-wrapper,
+  .nav-title-section {
+    min-width: 0;
+  }
+  .nav-title {
+    font-size: 1rem;
+  }
+  .nav-controls {
+    gap: 0;
+  }
+  .nav-controls button,
+  .nav-controls a {
+    min-width: 36px;
+    padding: 4px;
+  }
+}
+
 
 /* ============================================================================
    界面优化: 竖屏字号增大 + 选项橘黄
@@ -628,28 +652,28 @@ h1, h2, h3, h4 {
 @media screen and (max-width: 680px) {
   #story p,
   #story li {
-    font-size: 14pt;
+html.ink-reader .slide-panel.show {
+  height: calc(100dvh - var(--nav-height-mobile));
+}
+
+html.ink-reader .panel-content {
+  padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* 手机全屏弹窗用动态视口高度,避免被地址栏裁切 */
+html.ink-reader .base-modal-content {
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
+}
+
+html.ink-reader .modal-body {
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* 系统开启"减少动态效果"时,顶栏不做滑动动画 */
+@media screen and (prefers-reduced-motion: reduce) {
+  html.ink-reader .top-nav {
+    transition: none;
   }
-  #story .choice {
-    font-size: 14pt;
-  }
-}
-
-
-/* 选项序号颜色跟随选项文字(橘黄),深浅主题自动适配 */
-.choice:not(.unclickable) .choice-key-hint {
-  color: inherit !important;
-}
-
-
-/* ============================================================================
-   浅色主题: 正文字体改为纯黑 #000(模板默认是近似黑的 gray-900 #171717)
-   仅作用于浅色主题;深色主题(.dark / [data-theme="dark"])完全不受影响。
-   ============================================================================ */
-html:not(.dark):not([data-theme="dark"]) body:not(.dark):not([data-theme="dark"]) {
-  --color-text-primary: #000;
-}
-
-html:not(.dark):not([data-theme="dark"]) body:not(.dark):not([data-theme="dark"]) #story {
-  color: #000;
 }
