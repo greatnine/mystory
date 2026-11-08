@@ -248,18 +248,14 @@ window.INK_CUSTOM_EXTERNALS = {
    思路与 Ink 网页模板一致:把滚动从 .outerContainer 交还给文档,
    移动浏览器在文档滚动时才会自动收起地址栏。
    · 仅 (最大宽度 680px + 竖屏 + 触摸/粗指针) 时启用,桌面与横屏零影响
-   · 顶栏固定覆盖,向下滚动自动隐藏,回到顶部恢复
-   · 手动退出后本次会话不再自动进入(可随时点按钮重进)
+   · 移动端自动进入,无需手动切换;顶栏随滚动方向自动隐藏
    · 返回主页:window.INK_HOME_URL → ?home= → 同源 referrer → history.back()
-   · theme-color 跟随明暗主题,配合 iOS 主屏 standalone 启动
-   -----------------------------------------------------------------------------
-   对外接口:window.INK_READER = { enter, exit, toggle, isActive }
+   · theme-color 跟随明暗主题
    ============================================================================= */
 
 (function () {
   var MOBILE_QUERY = "(max-width: 680px) and (orientation: portrait)";
   var COARSE_QUERY = "(pointer: coarse)";
-  var DISMISS_KEY = "ink-reader-dismissed";
   var NAV_HIDE_OFFSET = 32;
   var NAV_DELTA = 2;
 
@@ -278,21 +274,6 @@ window.INK_CUSTOM_EXTERNALS = {
   function getOuter() {
     if (!outerEl) outerEl = document.querySelector(".outerContainer");
     return outerEl;
-  }
-
-  function readDismissed() {
-    try {
-      return sessionStorage.getItem(DISMISS_KEY) === "1";
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function writeDismissed(value) {
-    try {
-      if (value) sessionStorage.setItem(DISMISS_KEY, "1");
-      else sessionStorage.removeItem(DISMISS_KEY);
-    } catch (e) {}
   }
 
   function isSupported() {
@@ -332,16 +313,6 @@ window.INK_CUSTOM_EXTERNALS = {
     }
   }
 
-  function updateButton() {
-    var btn = document.getElementById("reader-btn");
-    if (!btn) return;
-    var active = isActive();
-    btn.setAttribute("aria-pressed", active ? "true" : "false");
-    btn.setAttribute("aria-label", active ? "退出全屏阅读" : "全屏阅读");
-    var icon = btn.querySelector(".nav-icon");
-    if (icon) icon.textContent = active ? "fullscreen_exit" : "fullscreen";
-  }
-
   function showNav() {
     html.classList.remove("ink-nav-hidden");
   }
@@ -370,7 +341,6 @@ window.INK_CUSTOM_EXTERNALS = {
     showNav();
     patchScroll(true);
     lastY = 0;
-    updateButton();
 
     requestAnimationFrame(function () {
       window.scrollTo(0, pendingWindowY || 0);
@@ -387,23 +357,12 @@ window.INK_CUSTOM_EXTERNALS = {
     html.classList.remove("ink-reader");
     showNav();
     patchScroll(false);
-    updateButton();
 
-    if (opts.manual) writeDismissed(true);
     if (opts.preserveScroll === false) return;
 
     requestAnimationFrame(function () {
       if (el) el.scrollTop = windowY;
     });
-  }
-
-  function toggle(manual) {
-    if (isActive()) {
-      exit({ manual: manual !== false });
-    } else {
-      writeDismissed(false);
-      enter();
-    }
   }
 
   function notify(message) {
@@ -417,6 +376,10 @@ window.INK_CUSTOM_EXTERNALS = {
   }
 
   function resolveHomeUrl() {
+    var homeBtn = document.getElementById("home-btn");
+    if (homeBtn && homeBtn.dataset && homeBtn.dataset.homeUrl) {
+      return homeBtn.dataset.homeUrl;
+    }
     if (window.INK_HOME_URL) return String(window.INK_HOME_URL);
     try {
       var fromQuery = new URLSearchParams(window.location.search).get("home");
@@ -432,7 +395,7 @@ window.INK_CUSTOM_EXTERNALS = {
   }
 
   function goHome() {
-    exit({ manual: false });
+    exit({ preserveScroll: false });
     var url = resolveHomeUrl();
     if (url) {
       window.location.assign(url);
@@ -464,24 +427,15 @@ window.INK_CUSTOM_EXTERNALS = {
 
   function syncViewportMode() {
     if (isSupported()) {
-      if (!readDismissed()) enter();
+      enter();
     } else {
       exit({ preserveScroll: false });
     }
-    updateButton();
   }
 
   function init() {
     var homeBtn = document.getElementById("home-btn");
     if (homeBtn) homeBtn.addEventListener("click", goHome);
-
-    var readerBtn = document.getElementById("reader-btn");
-    if (readerBtn) {
-      readerBtn.addEventListener("click", function () {
-        toggle(true);
-        if (isActive()) syncThemeColor();
-      });
-    }
 
     ["rewind", "saves-btn", "settings-btn"].forEach(function (id) {
       var el = document.getElementById(id);
@@ -514,15 +468,6 @@ window.INK_CUSTOM_EXTERNALS = {
     syncThemeColor();
     syncViewportMode();
   }
-
-  window.INK_READER = {
-    enter: enter,
-    exit: function (manual) {
-      exit({ manual: manual !== false });
-    },
-    toggle: toggle,
-    isActive: isActive,
-  };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init, { once: true });

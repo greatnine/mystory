@@ -664,19 +664,11 @@ h1, h2, h3, h4 {
    仅在手机竖屏 + 触摸设备生效,桌面端/横屏完全不受影响。
    ============================================================================ */
 
-/* 两个入口按钮默认隐藏,仅手机竖屏显示 */
-#home-btn,
-#reader-btn {
-  display: none;
-}
-
-@media (max-width: 680px) and (orientation: portrait) and (pointer: coarse) {
-  #home-btn,
-  #reader-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
+/* 返回主页按钮:桌面与手机都显示 */
+#home-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* --- 沉浸模式:把滚动交还给文档 ---
