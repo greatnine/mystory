@@ -287,6 +287,44 @@ class StoryManager {
     }
   }
 
+  /**
+   * 选择跳转后继续故事：保留之前的正文，插入分隔虚线，再追加新内容
+   * 并把分隔线缓缓滚动到故事文本框的上边缘
+   */
+  continueWithDivider() {
+    try {
+      // Don't continue if viewing a special page
+      if (this.currentPage) return;
+
+      // 在旧正文末尾插入居中虚线
+      const divider = this.display?.addDivider?.();
+
+      // 生成故事内容但不清空已有显示
+      const { content: storyContent } = this.generateContent();
+
+      if (storyContent.length > 0) {
+        this.display?.render?.(storyContent);
+      }
+
+      // 生成并渲染新的选项
+      this.createChoices();
+
+      // Update save point after generating new content
+      this.savePoint = this.story.state.ToJson();
+
+      // 缓缓滚动，让分隔线停在文本框上边缘
+      if (divider) {
+        this.display?.scrollElementToTop?.(divider);
+      }
+    } catch (error) {
+      window.errorManager.error(
+        "继续故事（带分隔线）失败",
+        error,
+        "story",
+      );
+    }
+  }
+
   generateContent() {
     const content = [];
     let stoppedForUserInput = false;
@@ -511,8 +549,8 @@ class StoryManager {
       // Update save point before continuing
       this.savePoint = this.story.state.ToJson();
 
-      // Continue the story
-      this.continue();
+      // Continue the story（保留旧正文，插入分隔线）
+      this.continueWithDivider();
 
       // Auto-save if enabled
       this.saves?.autosave?.();

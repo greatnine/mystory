@@ -1,106 +1,32 @@
 // main.js
 
-// === 移动端顶栏滚动收起行为 ===
-// 往下滚 → 顶栏滑走，最大化阅读面积
-// 往上拉 / 触摸 → 顶栏立即还原
-(function initMobileNavBehavior() {
+// === 手机端顶栏固定：测量实际高度，让正文区域正好位于顶栏下方 ===
+(function measureMobileNavHeight() {
   const MOBILE_MEDIA = "(max-width: 680px)";
   const nav = document.querySelector(".top-nav");
-  const body = document.body;
-  const container = document.querySelector(".outerContainer");
-  if (!nav || !container) return;
-
-  let enabled = false;
-  let lastScrollY = 0;
-  let ticking = false;
-  const SHOW_THRESHOLD = 8;
-  const HIDE_THRESHOLD = 24;
-  let accumulatedUp = 0;
-  let accumulatedDown = 0;
-  let lastDirection = 0;
-
-  function resetState() {
-    nav.classList.remove("nav-collapsed");
-    body.classList.remove("nav-collapsed");
-    lastScrollY = 0;
-    accumulatedUp = 0;
-    accumulatedDown = 0;
-    lastDirection = 0;
-  }
+  const rootEl = document.documentElement;
+  if (!nav) return;
 
   function update() {
-    ticking = false;
-    if (!enabled) return;
-    const currentY = container.scrollTop;
-    const delta = currentY - lastScrollY;
-
-    if (delta > 0) {
-      if (lastDirection !== 1) { accumulatedDown = 0; accumulatedUp = 0; }
-      accumulatedDown += delta;
-      accumulatedUp = 0;
-      if (accumulatedDown > HIDE_THRESHOLD && currentY > 40) {
-        nav.classList.add("nav-collapsed");
-        body.classList.add("nav-collapsed");
-      }
-      lastDirection = 1;
-    } else if (delta < 0) {
-      if (lastDirection !== -1) { accumulatedUp = 0; accumulatedDown = 0; }
-      accumulatedUp -= delta;
-      accumulatedDown = 0;
-      if (accumulatedUp > SHOW_THRESHOLD) {
-        nav.classList.remove("nav-collapsed");
-        body.classList.remove("nav-collapsed");
-      }
-      lastDirection = -1;
+    if (!window.matchMedia(MOBILE_MEDIA).matches) {
+      rootEl.style.removeProperty("--nav-reserved-mobile");
+      return;
     }
-
-    if (currentY <= 40) {
-      nav.classList.remove("nav-collapsed");
-      body.classList.remove("nav-collapsed");
+    const height = nav.offsetHeight || 0;
+    if (height > 0) {
+      rootEl.style.setProperty("--nav-reserved-mobile", `${height}px`);
     }
-    lastScrollY = currentY;
   }
 
-  const onScroll = () => {
-    if (!enabled) return;
-    if (!ticking) {
-      requestAnimationFrame(update);
-      ticking = true;
-    }
-  };
+  update();
+  window.addEventListener("load", update);
+  window.addEventListener("resize", update);
 
-  const onTouchStart = () => {
-    if (!enabled) return;
-    nav.classList.remove("nav-collapsed");
-    body.classList.remove("nav-collapsed");
-  };
-
-  function enable() {
-    if (enabled) return;
-    enabled = true;
-    resetState();
-    container.addEventListener("scroll", onScroll, { passive: true });
-    container.addEventListener("touchstart", onTouchStart, { passive: true });
-  }
-
-  function disable() {
-    if (!enabled) return;
-    enabled = false;
-    resetState();
-    container.removeEventListener("scroll", onScroll);
-    container.removeEventListener("touchstart", onTouchStart);
-  }
-
-  // 初始
-  if (window.matchMedia(MOBILE_MEDIA).matches) enable();
-
-  // 尺寸变化时动态切换
   const mql = window.matchMedia(MOBILE_MEDIA);
-  const onChange = (e) => (e.matches ? enable() : disable());
   if (mql.addEventListener) {
-    mql.addEventListener("change", onChange);
+    mql.addEventListener("change", update);
   } else {
-    mql.addListener(onChange);
+    mql.addListener(update);
   }
 })();
 

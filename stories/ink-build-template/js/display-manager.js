@@ -2,7 +2,7 @@
 class DisplayManager {
   constructor() {
     this.container = document.querySelector("#story");
-    this.scrollContainer = document.querySelector(".outerContainer");
+    this._scrollContainer = document.querySelector(".outerContainer");
     this.history = [];
 
     if (!this.container) {
@@ -15,6 +15,65 @@ class DisplayManager {
     }
 
     this.domHelpers = new DOMHelpers(this.container);
+  }
+
+  /**
+   * 滚动容器：移动端让 body 自然滚动（地址栏可自动收起），桌面端用 outerContainer
+   */
+  get scrollContainer() {
+    return this._isMobileViewport() ? window : this._scrollContainer;
+  }
+
+  _isMobileViewport() {
+    return window.matchMedia("(max-width: 680px)").matches;
+  }
+
+  _getScrollTop(scroller) {
+    return scroller === window ? window.scrollY : scroller.scrollTop;
+  }
+
+  _setScrollTop(scroller, val) {
+    if (scroller === window) {
+      window.scrollTo(0, val);
+    } else {
+      scroller.scrollTop = val;
+    }
+  }
+
+  _getScrollerRect(scroller) {
+    if (scroller === window) {
+      return {
+        top: 0,
+        bottom: window.innerHeight,
+        height: window.innerHeight,
+        left: 0,
+        right: window.innerWidth,
+        width: window.innerWidth,
+      };
+    }
+    return scroller.getBoundingClientRect();
+  }
+
+  _getScrollHeight(scroller) {
+    if (scroller === window) {
+      return Math.max(
+        document.documentElement.scrollHeight,
+        document.body.scrollHeight,
+      );
+    }
+    return scroller.scrollHeight;
+  }
+
+  _getClientHeight(scroller) {
+    return scroller === window ? window.innerHeight : scroller.clientHeight;
+  }
+
+  _getScrollerPaddingTop(scroller) {
+    if (scroller === window) {
+      const oc = this._scrollContainer;
+      return oc ? parseFloat(getComputedStyle(oc).paddingTop) || 0 : 0;
+    }
+    return parseFloat(getComputedStyle(scroller).paddingTop) || 0;
   }
 
   /**
@@ -356,6 +415,12 @@ class DisplayManager {
       return;
     }
 
+    const scroller = this.scrollContainer;
+    if (scroller === window) {
+      window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+      return;
+    }
+
     if (!this.domHelpers) {
       window.errorManager.error(
         "无法滚动——DOM 助手不可用",
@@ -365,7 +430,124 @@ class DisplayManager {
       return;
     }
 
-    this.domHelpers.scrollToTop(this.scrollContainer);
+    this.domHelpers.scrollToTop(scroller);
+  }
+
+  /**
+   * 在正文末尾插入一条居中的水平虚线，用于分隔前后两段剧情
+   * @param {boolean} track - 是否记录到历史（恢复存档时需要重建）
+   * @returns {HTMLElement|null} 创建出的分隔线元素
+   */
+  addDivider(track = true) {
+    if (!this.container) {
+      window.errorManager.error(
+        "无法创建分隔线——故事容器不可用",
+        null,
+        "display",
+      );
+      return null;
+    }
+
+    try {
+      const divider = document.createElement("div");
+      divider.className = "story-divider";
+      divider.setAttribute("aria-hidden", "true");
+      this.container.appendChild(divider);
+
+      if (track) {
+        this.history.push({ type: "divider", timestamp: Date.now() });
+      }
+
+      return divider;
+    } catch (error) {
+      window.errorManager.error("创建分隔线失败", error, "display");
+      return null;
+    }
+  }
+
+  /**
+   * 将指定元素缓缓滚动到故事文本框的上边缘
+   * @param {HTMLElement} element - 目标元素（分隔线）
+   * @param {number} duration - 动画时长（毫秒）
+   */
+  scrollElementToTop(element, duration = 800) {
+    if (!element || !this.scrollContainer) return;
+
+    requestAnimationFrame(() => {
+      try {
+        const scroller = this.scrollContainer;
+        const paddingTop = this._getScrollerPaddingTop(scroller);
+        const scrollerRect = this._getScrollerRect(scroller);
+        const elementRect = element.getBoundingClientRect();
+
+        // 目标位置：使目标元素停在文本框内容区的上边缘，
+        // 留出少量呼吸位，避免图片/布局微调时被顶出框
+        const TOP_GAP = 12;
+        const target = Math.max(
+          0,
+          this._getScrollTop(scroller) +
+            (elementRect.top - scrollerRect.top) -
+            paddingTop -
+            TOP_GAP,
+        );
+
+        // 目标位置超出底部滚动范围时，临时增加底部留白，保证能滚到顶
+        let maxScroll = Math.max(
+          0,
+          this._getScrollHeight(scroller) - this._getClientHeight(scroller),
+        );
+        if (target > maxScroll && this.container) {
+          if (this._baseBottomPadding === undefined) {
+            this._baseBottomPadding =
+              parseFloat(getComputedStyle(this.container).paddingBottom) || 0;
+          }
+          const shortfall = target - maxScroll + 16;
+          const currentExtra = this._extraBottomPadding || 0;
+          const nextExtra = Math.min(
+            this._getClientHeight(scroller),
+            currentExtra + shortfall,
+          );
+          this.container.style.paddingBottom =
+            `${this._baseBottomPadding + nextExtra}px`;
+          this._extraBottomPadding = nextExtra;
+          void this.container.offsetHeight; // 强制重排
+          maxScroll = Math.max(
+            0,
+            this._getScrollHeight(scroller) - this._getClientHeight(scroller),
+          );
+        }
+
+        const destination = Math.min(target, maxScroll);
+        const start = this._getScrollTop(scroller);
+        const distance = destination - start;
+
+        if (Math.abs(distance) < 2) return;
+
+        const startTime = performance.now();
+        const easeInOutCubic = (t) =>
+          t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+        const step = (now) => {
+          const progress = Math.min(1, (now - startTime) / duration);
+          this._setScrollTop(
+            scroller,
+            start + distance * easeInOutCubic(progress),
+          );
+          if (progress < 1) {
+            requestAnimationFrame(step);
+          } else {
+            this._setScrollTop(scroller, destination);
+          }
+        };
+        requestAnimationFrame(step);
+      } catch (error) {
+        window.errorManager.warning(
+          "滚动到分隔线失败",
+          error,
+          "display",
+        );
+      }
+    });
   }
 
   /**
@@ -412,6 +594,12 @@ class DisplayManager {
     // Rebuild from history
     this.history.forEach((item, index) => {
       try {
+        // 分隔线不是段落，单独重建
+        if (item.type === "divider") {
+          this.addDivider(false);
+          return;
+        }
+
         const content = {
           text: item.text || "",
           classes: Array.isArray(item.classes) ? item.classes : [],

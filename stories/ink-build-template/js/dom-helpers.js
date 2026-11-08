@@ -213,9 +213,10 @@ class DOMHelpers {
 
   // Clear story content but preserve certain elements
   clearStoryContent() {
-    // Clear paragraphs and images safely
+    // 段落、图片、跳转分隔线都要清掉——重启/重新加载故事时不该保留上一会话的分隔线
     this.removeAll("p");
     this.removeAll("img");
+    this.storyContainer?.querySelectorAll(".story-divider").forEach((el) => el.remove());
   }
 
   // Scroll container to top
