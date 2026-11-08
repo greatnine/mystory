@@ -9,19 +9,21 @@
 # TONE: bold ⚡
 # TONE: danger warning
 
+#BACKGROUND: assets/background.jpg
+
+
+
 EXTERNAL DEBUG_LOG(message)
 EXTERNAL DEBUG_WARN(message)
 EXTERNAL NOW()
 EXTERNAL FORMAT_DATE(timestamp, locale)
 
 
-~ DEBUG_LOG("Player entered 雨夜客栈")
-~ DEBUG_WARN("这个路径还没有完全写完")
+~DEBUG_LOG("Player entered 雨夜客栈")
+~DEBUG_WARN("这个路径还没有完全写完")
 
 
 VAR LOCALE = "ja-JP"
-Today is {FORMAT_DATE(NOW(), LOCALE)}.
+今天是{FORMAT_DATE(NOW(), LOCALE)}。欢迎品鉴这个互动故事。
 
-INCLUDE 雨夜客栈.ink
-INCLUDE page_menu.ink
 

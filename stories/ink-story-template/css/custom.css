@@ -685,6 +685,9 @@ html.ink-reader {
 
 html.ink-reader body {
   height: auto;
+  /* 清除浏览器默认 8px body 外边距,否则正文起始位置比顶栏底边
+     低 8px,顶栏与正文之间出现一条可见缝隙 */
+  margin: 0;
   /* 用"大视口"高度而不是 dvh:地址栏可见时视口比它小,
      页面天然多出一段可滚动距离,才会触发 Safari 收起地址栏。
      dvh 会刚好贴合当前视口,反而没有可滚动余量。 */

@@ -3,14 +3,9 @@
 // 用过的牌退出牌堆；信任度影响牌内分支文本
 
 
-#BACKGROUND: assets/background.jpg
-/*
-# TONE_INDICATORS: on
-# TONE: flirty 🔥
-# TONE: shy 💜
-# TONE: bold ⚡
-# TONE: danger warning
-*/
+
+
+
 VAR debug = true
 //VAR debug = false
 
@@ -172,11 +167,11 @@ EXTERNAL GET_POEM(theme)
 ===ENDING
 # AUDIO: assets/notification-bell.mp3
 //# AUDIO: assets/guqin.mp3  //一次播放
-# MUSIC: assets/guqin.mp3    //循环播放
+//# MUSIC: assets/guqin.mp3    //循环播放
 【完】
 [---]
- {GET_POEM("雨夜")}
-  {GET_POEM("酒")} 
+{GET_POEM("雨夜")}
+{GET_POEM("酒")}
 # ACHIEVEMENT: 期待有什么收获......  
 ->END
     
