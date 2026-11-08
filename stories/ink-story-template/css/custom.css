@@ -652,8 +652,80 @@ h1, h2, h3, h4 {
 @media screen and (max-width: 680px) {
   #story p,
   #story li {
+    font-size: 15pt;
+  }
+}
+
+/* ============================================================================
+   手机竖屏全屏阅读（沉浸模式）
+   原理:模板默认 body{overflow:hidden} + .outerContainer 内层滚动,地址栏
+   永远不会收起。这里改为文档级滚动(移动浏览器才会自动收起地址栏),
+   顶栏仍固定但随滚动方向隐藏,正文铺满视口。
+   仅在手机竖屏 + 触摸设备生效,桌面端/横屏完全不受影响。
+   ============================================================================ */
+
+/* 两个入口按钮默认隐藏,仅手机竖屏显示 */
+#home-btn,
+#reader-btn {
+  display: none;
+}
+
+@media (max-width: 680px) and (orientation: portrait) and (pointer: coarse) {
+  #home-btn,
+  #reader-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* --- 沉浸模式:把滚动交还给文档 --- */
+html.ink-reader {
+  --ink-nav-height: calc(var(--nav-height-mobile) + env(safe-area-inset-top, 0px));
+  height: auto;
+  overflow-y: auto;
+  overscroll-behavior-y: none;
+  background: var(--color-background);
+}
+
+html.ink-reader body {
+  min-height: 100dvh;
+  overflow: visible;
+}
+
+html.ink-reader .outerContainer {
+  position: static;
+  height: auto;
+  overflow: visible;
+  padding-top: var(--ink-nav-height);
+}
+
+/* 顶栏固定覆盖,滚动时整条上移隐藏 */
+html.ink-reader .top-nav {
+  top: 0;
+  min-height: var(--ink-nav-height);
+  padding-top: calc(4px + env(safe-area-inset-top, 0px));
+  transition: transform 0.22s ease, background-color var(--transition-slow),
+    border-color var(--transition-slow), color var(--transition-slow);
+  will-change: transform;
+}
+
+html.ink-reader.ink-nav-hidden .top-nav {
+  transform: translateY(-100%);
+}
+
+/* 正文底部避开 Home 指示条 */
+html.ink-reader .container {
+  padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* 面板/弹窗跟随沉浸式顶栏高度 */
+html.ink-reader .slide-panel {
+  top: var(--ink-nav-height);
+}
+
 html.ink-reader .slide-panel.show {
-  height: calc(100dvh - var(--nav-height-mobile));
+  height: calc(100dvh - var(--ink-nav-height));
 }
 
 html.ink-reader .panel-content {

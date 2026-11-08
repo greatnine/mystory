@@ -4,6 +4,11 @@
     <meta charset="utf-8" />
     <title class="title"></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 添加到主屏幕后以独立 Web App 全屏启动（iOS 无地址栏/工具栏） -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!-- 让 iOS 状态栏/浏览器顶栏跟随明暗主题 -->
+    <meta name="theme-color" content="#e5e5e5" />
     <link rel="icon" href="assets/favicon.ico" />
     <!-- Prevent dark mode flash - must be before CSS -->
     <script>
@@ -49,9 +54,18 @@
       </div>
       <div class="nav-controls">
         <button
+          id="home-btn"
+          type="button"
+          aria-label="返回主页"
+        >
+          <span class="material-icons-outlined nav-icon" aria-hidden="true"
+            >home</span
+          >
+        </button>
+        <button
           id="rewind"
           type="button"
-          aria-label="重新开始故事08"
+          aria-label="重新开始故事"
           aria-keyshortcuts="Control+r"
         >
           <span class="material-icons-outlined nav-icon" aria-hidden="true"
@@ -76,6 +90,16 @@
         >
           <span class="material-icons-outlined nav-icon" aria-hidden="true"
             >settings</span
+          >
+        </button>
+        <button
+          id="reader-btn"
+          type="button"
+          aria-label="全屏阅读"
+          aria-pressed="false"
+        >
+          <span class="material-icons-outlined nav-icon" aria-hidden="true"
+            >fullscreen</span
           >
         </button>
       </div>

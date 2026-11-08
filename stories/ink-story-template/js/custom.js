@@ -241,3 +241,292 @@ window.INK_CUSTOM_EXTERNALS = {
     scheduleScroll();
   }
 })();
+
+/* =============================================================================
+   手机竖屏全屏阅读（沉浸模式）
+   -----------------------------------------------------------------------------
+   思路与 Ink 网页模板一致:把滚动从 .outerContainer 交还给文档,
+   移动浏览器在文档滚动时才会自动收起地址栏。
+   · 仅 (最大宽度 680px + 竖屏 + 触摸/粗指针) 时启用,桌面与横屏零影响
+   · 顶栏固定覆盖,向下滚动自动隐藏,回到顶部恢复
+   · 手动退出后本次会话不再自动进入(可随时点按钮重进)
+   · 返回主页:window.INK_HOME_URL → ?home= → 同源 referrer → history.back()
+   · theme-color 跟随明暗主题,配合 iOS 主屏 standalone 启动
+   -----------------------------------------------------------------------------
+   对外接口:window.INK_READER = { enter, exit, toggle, isActive }
+   ============================================================================= */
+
+(function () {
+  var MOBILE_QUERY = "(max-width: 680px) and (orientation: portrait)";
+  var COARSE_QUERY = "(pointer: coarse)";
+  var DISMISS_KEY = "ink-reader-dismissed";
+  var NAV_HIDE_OFFSET = 32;
+  var NAV_DELTA = 2;
+
+  var html = document.documentElement;
+  var mobileMq = window.matchMedia(MOBILE_QUERY);
+  var coarseMq = window.matchMedia(COARSE_QUERY);
+
+  var outerEl = null;
+  var patched = false;
+  var originalScrollTo = null;
+  var originalScrollBy = null;
+  var lastY = 0;
+  var ticking = false;
+  var pendingWindowY = null;
+
+  function getOuter() {
+    if (!outerEl) outerEl = document.querySelector(".outerContainer");
+    return outerEl;
+  }
+
+  function readDismissed() {
+    try {
+      return sessionStorage.getItem(DISMISS_KEY) === "1";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function writeDismissed(value) {
+    try {
+      if (value) sessionStorage.setItem(DISMISS_KEY, "1");
+      else sessionStorage.removeItem(DISMISS_KEY);
+    } catch (e) {}
+  }
+
+  function isSupported() {
+    return mobileMq.matches && (coarseMq.matches || navigator.maxTouchPoints > 0);
+  }
+
+  function isActive() {
+    return html.classList.contains("ink-reader");
+  }
+
+  // 模板通过 outerContainer.scrollTo(0,0) 回到顶部,沉浸模式下要转发到 window
+  function patchScroll(on) {
+    var el = getOuter();
+    if (!el) return;
+    if (on && !patched) {
+      originalScrollTo = el.scrollTo;
+      originalScrollBy = el.scrollBy;
+      el.scrollTo = function (a, b) {
+        if (typeof a === "object" && a !== null) {
+          window.scrollTo(a);
+        } else {
+          window.scrollTo(a, b);
+        }
+      };
+      el.scrollBy = function (a, b) {
+        if (typeof a === "object" && a !== null) {
+          window.scrollBy(a);
+        } else {
+          window.scrollBy(a, b);
+        }
+      };
+      patched = true;
+    } else if (!on && patched) {
+      el.scrollTo = originalScrollTo;
+      el.scrollBy = originalScrollBy;
+      patched = false;
+    }
+  }
+
+  function updateButton() {
+    var btn = document.getElementById("reader-btn");
+    if (!btn) return;
+    var active = isActive();
+    btn.setAttribute("aria-pressed", active ? "true" : "false");
+    btn.setAttribute("aria-label", active ? "退出全屏阅读" : "全屏阅读");
+    var icon = btn.querySelector(".nav-icon");
+    if (icon) icon.textContent = active ? "fullscreen_exit" : "fullscreen";
+  }
+
+  function showNav() {
+    html.classList.remove("ink-nav-hidden");
+  }
+
+  function syncThemeColor() {
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) return;
+    var bg = window.getComputedStyle(document.body).backgroundColor;
+    if (bg && bg !== "rgba(0, 0, 0, 0)") meta.setAttribute("content", bg);
+  }
+
+  // 主题切换有 0.6s 过渡,过渡中读到的颜色会偏浅,等过渡结束再同步
+  var themeTimer = null;
+  function scheduleThemeColor() {
+    clearTimeout(themeTimer);
+    themeTimer = setTimeout(syncThemeColor, 800);
+  }
+
+  function enter() {
+    if (!isSupported() || isActive()) return;
+    var el = getOuter();
+    if (!el) return;
+
+    pendingWindowY = el.scrollTop;
+    html.classList.add("ink-reader");
+    showNav();
+    patchScroll(true);
+    lastY = 0;
+    updateButton();
+
+    requestAnimationFrame(function () {
+      window.scrollTo(0, pendingWindowY || 0);
+      pendingWindowY = null;
+    });
+  }
+
+  function exit(options) {
+    if (!isActive()) return;
+    var opts = options || {};
+    var el = getOuter();
+    var windowY = window.scrollY || 0;
+
+    html.classList.remove("ink-reader");
+    showNav();
+    patchScroll(false);
+    updateButton();
+
+    if (opts.manual) writeDismissed(true);
+    if (opts.preserveScroll === false) return;
+
+    requestAnimationFrame(function () {
+      if (el) el.scrollTop = windowY;
+    });
+  }
+
+  function toggle(manual) {
+    if (isActive()) {
+      exit({ manual: manual !== false });
+    } else {
+      writeDismissed(false);
+      enter();
+    }
+  }
+
+  function notify(message) {
+    try {
+      if (window.InkTemplate && window.InkTemplate.notificationManager) {
+        window.InkTemplate.notificationManager.show(message, "info");
+        return;
+      }
+    } catch (e) {}
+    window.alert(message);
+  }
+
+  function resolveHomeUrl() {
+    if (window.INK_HOME_URL) return String(window.INK_HOME_URL);
+    try {
+      var fromQuery = new URLSearchParams(window.location.search).get("home");
+      if (fromQuery) return fromQuery;
+    } catch (e) {}
+    try {
+      if (document.referrer) {
+        var ref = new URL(document.referrer);
+        if (ref.origin === window.location.origin) return ref.href;
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  function goHome() {
+    exit({ manual: false });
+    var url = resolveHomeUrl();
+    if (url) {
+      window.location.assign(url);
+      return;
+    }
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    notify("未配置主页地址，已退出全屏阅读");
+  }
+
+  function onScroll() {
+    if (!isActive() || ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () {
+      var y = window.scrollY || 0;
+      if (y <= NAV_HIDE_OFFSET) {
+        showNav();
+      } else if (y > lastY + NAV_DELTA) {
+        html.classList.add("ink-nav-hidden");
+      } else if (y < lastY - NAV_DELTA) {
+        showNav();
+      }
+      lastY = y;
+      ticking = false;
+    });
+  }
+
+  function syncViewportMode() {
+    if (isSupported()) {
+      if (!readDismissed()) enter();
+    } else {
+      exit({ preserveScroll: false });
+    }
+    updateButton();
+  }
+
+  function init() {
+    var homeBtn = document.getElementById("home-btn");
+    if (homeBtn) homeBtn.addEventListener("click", goHome);
+
+    var readerBtn = document.getElementById("reader-btn");
+    if (readerBtn) {
+      readerBtn.addEventListener("click", function () {
+        toggle(true);
+        if (isActive()) syncThemeColor();
+      });
+    }
+
+    ["rewind", "saves-btn", "settings-btn"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener("click", showNav);
+    });
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    if (mobileMq.addEventListener) {
+      mobileMq.addEventListener("change", syncViewportMode);
+      coarseMq.addEventListener("change", syncViewportMode);
+    } else {
+      mobileMq.addListener(syncViewportMode);
+      coarseMq.addListener(syncViewportMode);
+    }
+
+    document.addEventListener("story:start", scheduleThemeColor);
+
+    try {
+      new MutationObserver(scheduleThemeColor).observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["class", "data-theme", "style"],
+      });
+      new MutationObserver(scheduleThemeColor).observe(document.body, {
+        attributes: true,
+        attributeFilter: ["class", "data-theme", "style"],
+      });
+    } catch (e) {}
+
+    syncThemeColor();
+    syncViewportMode();
+  }
+
+  window.INK_READER = {
+    enter: enter,
+    exit: function (manual) {
+      exit({ manual: manual !== false });
+    },
+    toggle: toggle,
+    isActive: isActive,
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init, { once: true });
+  } else {
+    init();
+  }
+})();
