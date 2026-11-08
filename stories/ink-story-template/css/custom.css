@@ -679,17 +679,25 @@ h1, h2, h3, h4 {
   }
 }
 
-/* --- 沉浸模式:把滚动交还给文档 --- */
+/* --- 沉浸模式:把滚动交还给文档 ---
+   关键:iOS Safari 只有在"根文档本身"滚动时才会收起地址栏。
+   所以这里不能给 html/body 设 overflow:auto/scroll,必须保持默认的
+   visible(与 Winky 参考实现一致),否则会被当成内层滚动容器。 */
 html.ink-reader {
   --ink-nav-height: calc(var(--nav-height-mobile) + env(safe-area-inset-top, 0px));
   height: auto;
-  overflow-y: auto;
+  overflow: visible;
   overscroll-behavior-y: none;
   background: var(--color-background);
 }
 
 html.ink-reader body {
-  min-height: 100dvh;
+  height: auto;
+  /* 用"大视口"高度而不是 dvh:地址栏可见时视口比它小,
+     页面天然多出一段可滚动距离,才会触发 Safari 收起地址栏。
+     dvh 会刚好贴合当前视口,反而没有可滚动余量。 */
+  min-height: 100vh;
+  min-height: 100lvh;
   overflow: visible;
 }
 
